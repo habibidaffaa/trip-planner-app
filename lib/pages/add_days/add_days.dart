@@ -31,11 +31,9 @@ class AddDays extends StatefulWidget {
 }
 
 class _AddDaysState extends State<AddDays> {
-  // Provider
   late ItineraryProvider itineraryProvider;
   late DatabaseProvider databaseProvider;
 
-  // State
   int selectedDayIndex = 0;
   bool isEditing = false;
   late Widget appBarTitle;
@@ -63,9 +61,7 @@ class _AddDaysState extends State<AddDays> {
   }
 
   bool _commitPendingTitleIfAny() {
-    if (!isEditing) {
-      return true;
-    }
+    if (!isEditing) return true;
 
     final trimmedTitle = _pendingTitle.trim();
     if (trimmedTitle.isEmpty) {
@@ -97,18 +93,14 @@ class _AddDaysState extends State<AddDays> {
 
   String? _extractAutoPhotoHash(String filePath) {
     final fileName = filePath.split(Platform.pathSeparator).last;
-    if (!fileName.startsWith('AUTO_')) {
-      return null;
-    }
+    if (!fileName.startsWith('AUTO_')) return null;
 
     final extensionIndex = fileName.lastIndexOf('.');
     final rawHash = extensionIndex > 5
         ? fileName.substring(5, extensionIndex)
         : fileName.substring(5);
 
-    if (rawHash.isEmpty) {
-      return null;
-    }
+    if (rawHash.isEmpty) return null;
     return itineraryProvider.normalizeHiddenPhotoHash(rawHash);
   }
 
@@ -127,7 +119,6 @@ class _AddDaysState extends State<AddDays> {
               shouldNotify: false,
             );
           }
-
           await _safeDeleteFile(removedPath);
         }
       }
@@ -138,23 +129,19 @@ class _AddDaysState extends State<AddDays> {
         shouldNotify: false);
   }
 
-// Fungsi untuk meminta permission galeri dan navigasi jika izin diberikan
   Future<void> requestGalleryPermission(Activity activity) async {
-    var result = await PhotoManager
-        .requestPermissionExtend(); // Langsung meminta permission dan mendapatkan hasilnya
+    var result = await PhotoManager.requestPermissionExtend();
     if (result.isAuth) {
-      // Jika izin diberikan, navigasi ke ActivityPhotoPage
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ActivityPhotoPage(
-              dayIndex: selectedDayIndex,
-              activity:
-                  activity), // Pastikan class ActivityPhotoPage menerima parameter activity
+            dayIndex: selectedDayIndex,
+            activity: activity,
+          ),
         ),
       );
     } else {
-      // Tampilkan dialog jika izin tidak diberikan
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -175,7 +162,6 @@ class _AddDaysState extends State<AddDays> {
   @override
   Widget build(BuildContext context) {
     snackbarHandler = ScaffoldMessenger.of(context);
-
     itineraryProvider = Provider.of(context, listen: true);
     databaseProvider = Provider.of(context, listen: true);
 
@@ -187,27 +173,20 @@ class _AddDaysState extends State<AddDays> {
           _pendingTitle = newTitle;
         },
       );
-
       actionIcon = [];
     } else {
       appBarTitle =
           AppBarItineraryTitle(title: itineraryProvider.itinerary.title);
-
       actionIcon = [
         IconButton(
-          icon: Icon(
-            Icons.mode_edit_outlined,
-            color: CustomColor.whiteColor,
-          ),
+          icon: const Icon(Icons.mode_edit_outlined),
           onPressed: () {
-            setState(
-              () {
-                _pendingTitle = itineraryProvider.itinerary.title;
-                isEditing = true;
-              },
-            );
+            setState(() {
+              _pendingTitle = itineraryProvider.itinerary.title;
+              isEditing = true;
+            });
           },
-        )
+        ),
       ];
     }
 
@@ -215,12 +194,21 @@ class _AddDaysState extends State<AddDays> {
       child: WillPopScope(
         onWillPop: handleBackBehaviour,
         child: Scaffold(
-          backgroundColor: CustomColor.primary,
+          backgroundColor: CustomColor.softOffWhite,
           appBar: AppBar(
             surfaceTintColor: CustomColor.transparentColor,
             title: appBarTitle,
             actions: actionIcon,
             centerTitle: true,
+            backgroundColor: CustomColor.brandElectric,
+            foregroundColor: CustomColor.whiteColor,
+            elevation: 0,
+            titleTextStyle: headingTextStyle.copyWith(
+              fontWeight: semibold,
+              fontSize: 18,
+              color: CustomColor.whiteColor,
+              letterSpacing: -0.36,
+            ),
             leading: Padding(
               padding: const EdgeInsets.all(3.0),
               child: BackButton(
@@ -242,39 +230,37 @@ class _AddDaysState extends State<AddDays> {
                 },
               ),
             ),
-            backgroundColor: CustomColor.primary,
-            elevation: 0,
           ),
           body: Stack(
             children: [
-              Container(
-                color: CustomColor.whiteColor,
-                // padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Day tabs
+                  Container(
+                    color: CustomColor.whiteColor,
+                    child: Stack(
                       children: [
                         SizedBox(
-                          height: 60,
+                          height: 64,
                           child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
                             itemBuilder: (context, index) {
-                              return KartuTanggal(index,
-                                  itineraryProvider.itinerary.days[index].date);
-                            },
-                            itemCount: itineraryProvider.itinerary.days.length,
-                            separatorBuilder:
-                                (BuildContext context, int index) {
-                              return const SizedBox(
-                                // height: 24,
-                                width: 40,
+                              return _DayTab(
+                                index: index,
+                                tanggal: itineraryProvider
+                                    .itinerary.days[index].date,
+                                isSelected: index == selectedDayIndex,
+                                onTap: () =>
+                                    setState(() => selectedDayIndex = index),
                               );
                             },
+                            itemCount:
+                                itineraryProvider.itinerary.days.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 8),
                           ),
                         ),
                         Align(
@@ -299,97 +285,89 @@ class _AddDaysState extends State<AddDays> {
                                 ),
                               );
                             },
-                            child: Card(
-                              elevation: 4,
-                              color: CustomColor.primaryColor900,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(80),
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 12),
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: CustomColor.brandElectric,
+                                shape: BoxShape.circle,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(1.0),
-                                child: Icon(
-                                  Icons.add,
-                                  color: CustomColor.whiteColor,
-                                ),
+                              child: const Icon(
+                                Icons.add,
+                                color: CustomColor.whiteColor,
+                                size: 18,
                               ),
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
-                    Divider(
-                      height: 0,
-                      color: CustomColor.subtitleTextColor,
-                      thickness: 0.5,
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 65),
-                        child: FutureBuilder<List<Activity>>(
-                          future: itineraryProvider.getSortedActivity(
-                              itineraryProvider
-                                  .itinerary.days[selectedDayIndex].activities),
-                          builder: (context, snapshot) {
-                            final data = snapshot.data;
-                            if (data != null) {
-                              return ListView.separated(
-                                padding:
-                                    const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                                scrollDirection: Axis.vertical,
-                                physics: const BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemBuilder: (context, index) {
-                                  final currentActivity = data[index].copy();
-                                  print(
-                                      'activity card : ${data[index].startDateTime}');
-                                  return ActivityCard(
-                                    snackbarHandler: snackbarHandler,
-                                    data: data[index],
-                                    selectedDayIndex: selectedDayIndex,
-                                    activityIndex: index,
-                                    onUndo: () {
-                                      itineraryProvider.insertNewActivity(
-                                          activities: data,
-                                          newActivity: currentActivity);
-                                    },
-                                    onDismiss: () {
-                                      itineraryProvider.removeActivity(
-                                          activities: data,
-                                          removedHashCode:
-                                              data[index].hashCode);
-                                    },
-                                  );
-                                },
-                                separatorBuilder:
-                                    (BuildContext context, int index) {
-                                  return const SizedBox(
-                                    height: 24,
-                                  );
-                                },
-                                itemCount: data.length,
-                              );
-                            } else {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
+                  ),
+                  Container(height: 1, color: CustomColor.lightCoolGray),
+                  // Activity list
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 80),
+                      child: FutureBuilder<List<Activity>>(
+                        future: itineraryProvider.getSortedActivity(
+                            itineraryProvider
+                                .itinerary.days[selectedDayIndex].activities),
+                        builder: (context, snapshot) {
+                          final data = snapshot.data;
+                          if (data != null) {
+                            if (data.isEmpty) {
+                              return _EmptyDayState();
                             }
-                          },
-                        ),
+                            return ListView.separated(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                              scrollDirection: Axis.vertical,
+                              physics: const BouncingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) {
+                                final currentActivity = data[index].copy();
+                                print(
+                                    'activity card : ${data[index].startDateTime}');
+                                return ActivityCard(
+                                  snackbarHandler: snackbarHandler,
+                                  data: data[index],
+                                  selectedDayIndex: selectedDayIndex,
+                                  activityIndex: index,
+                                  onUndo: () {
+                                    itineraryProvider.insertNewActivity(
+                                        activities: data,
+                                        newActivity: currentActivity);
+                                  },
+                                  onDismiss: () {
+                                    itineraryProvider.removeActivity(
+                                        activities: data,
+                                        removedHashCode: data[index].hashCode);
+                                  },
+                                );
+                              },
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
+                              itemCount: data.length,
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
                       ),
-                    )
-                  ],
-                ),
+                    ),
+                  ),
+                ],
               ),
+              // Bottom action panel
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
+                      horizontal: 16, vertical: 10),
                   decoration: AppTheme.actionPanelDecoration(),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: ElevatedButton(
@@ -419,16 +397,15 @@ class _AddDaysState extends State<AddDays> {
                             'Tambah Aktivitas',
                             style: primaryTextStyle.copyWith(
                               fontWeight: semibold,
-                              fontSize: 16,
+                              fontSize: 15,
                               color: CustomColor.whiteColor,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      InkWell(
+                      const SizedBox(width: 8),
+                      _ActionIconButton(
+                        icon: Icons.print_outlined,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -437,131 +414,21 @@ class _AddDaysState extends State<AddDays> {
                             ),
                           );
                         },
-                        customBorder: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: CustomColor.primaryColor500,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(100.0),
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.print,
-                            size: 20,
-                            color: CustomColor.surface,
-                          ),
-                        ),
                       ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      InkWell(
+                      const SizedBox(width: 8),
+                      _ActionIconButton(
+                        icon: Icons.save_outlined,
                         onTap: saveAndExit,
-                        customBorder: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: CustomColor.primaryColor500,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(100.0),
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.save,
-                            size: 20,
-                            color: CustomColor.surface,
-                          ),
-                        ),
                       ),
                     ],
                   ),
                 ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget KartuTanggal(int index, String tanggal) {
-    // Split the date string into day, month, and year components
-    List<String> dateComponents = tanggal.split('/');
-    int day = int.parse(dateComponents[0]);
-    int month = int.parse(dateComponents[1]);
-    int year = int.parse(dateComponents[2]);
-
-    // Construct a DateTime object from the components
-    final parsedDate = DateTime(year, month, day);
-
-    final formattedDate = DateFormat("dd MMM yyyy").format(parsedDate);
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          selectedDayIndex = index;
-        });
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          border: index == selectedDayIndex
-              ? Border(
-                  bottom: BorderSide(
-                    width: 3.0,
-                    color: CustomColor.primaryColor600,
-                  ),
-                )
-              : null,
-        ),
-        child: Container(
-          margin: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Text(
-                'Hari ${index + 1}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'poppins_bold',
-                  color: index == selectedDayIndex
-                      ? CustomColor.primaryColor600
-                      : CustomColor.disabledColor,
-                ),
               ),
-              Text(
-                formattedDate, // Use the formatted date
-                style: TextStyle(
-                  fontSize: 12,
-                  fontFamily: 'poppins_regular',
-                  color: index == selectedDayIndex
-                      ? CustomColor.primaryColor600
-                      : CustomColor.disabledColor,
-                ),
-              )
             ],
           ),
         ),
       ),
     );
-  }
-
-  String getMonthString(int intMonth) {
-    switch (intMonth) {
-      case 1:
-        return "Januari";
-      case 2:
-        return "Februari";
-      default:
-        return "Desember";
-    }
   }
 
   Future<AlertSaveDialogResult?> showAlertSaveDialog(BuildContext context) {
@@ -571,36 +438,31 @@ class _AddDaysState extends State<AddDays> {
         return AlertDialog(
           backgroundColor: CustomColor.whiteColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0), // Ubah bentuk border
+            borderRadius: BorderRadius.circular(16),
           ),
           title: Column(
             children: [
               Container(
-                // alignment: Alignment.center,
-                padding: const EdgeInsets.all(15),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(100.0),
-                  ),
-                  color: CustomColor.warningColor.withOpacity(0.2),
+                  borderRadius: const BorderRadius.all(Radius.circular(100)),
+                  color: CustomColor.warningColor.withOpacity(0.1),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.warning_rounded,
-                  size: 40,
+                  size: 36,
                   color: CustomColor.warningColor,
                 ),
               ),
-              SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 16),
               Text(
-                "Konfirmasi Perubahan Itinerary",
+                "Konfirmasi Perubahan",
                 textAlign: TextAlign.center,
-                style: primaryTextStyle.copyWith(
-                  // fontFamily: 'poppins_bold',
-                  color: CustomColor.blackColor, // Ubah warna teks judul
+                style: headingTextStyle.copyWith(
+                  color: CustomColor.boardroomNavy,
                   fontSize: 16,
-                  fontWeight: FontWeight.bold, // Teks judul menjadi tebal
+                  fontWeight: semibold,
+                  letterSpacing: -0.32,
                 ),
               ),
             ],
@@ -615,34 +477,23 @@ class _AddDaysState extends State<AddDays> {
           ),
           actions: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
                   child: InkWell(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(12.0),
-                    ),
-                    onTap: () {
-                      Navigator.of(context)
-                          .pop(AlertSaveDialogResult.saveWithoutQuit);
-                    },
+                    borderRadius: BorderRadius.circular(100),
+                    onTap: () => Navigator.of(context)
+                        .pop(AlertSaveDialogResult.saveWithoutQuit),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: CustomColor
-                            .warningColor, // Ubah warna latar belakang
-                        borderRadius:
-                            BorderRadius.circular(8), // Ubah bentuk border
+                        color: CustomColor.warningColor,
+                        borderRadius: BorderRadius.circular(100),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                      ), // Atur padding
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                        "Keluar Tanpa Menyimpan",
-                        textAlign:
-                            TextAlign.center, // Pusatkan teks dalam tombol
+                        "Keluar Tanpa Simpan",
+                        textAlign: TextAlign.center,
                         style: primaryTextStyle.copyWith(
-                          // fontFamily: 'poppins_bold',
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: semibold,
                           color: CustomColor.whiteColor,
                         ),
@@ -650,29 +501,23 @@ class _AddDaysState extends State<AddDays> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context)
-                          .pop(AlertSaveDialogResult.saveAndQuit);
-                    },
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(100),
+                    onTap: () => Navigator.of(context)
+                        .pop(AlertSaveDialogResult.saveAndQuit),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: CustomColor.successColor,
-                        borderRadius:
-                            BorderRadius.circular(8), // Ubah bentuk border
+                        color: CustomColor.brandElectric,
+                        borderRadius: BorderRadius.circular(100),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 4,
-                      ), // Atur padding
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                        "Simpan dan Keluar",
-                        textAlign:
-                            TextAlign.center, // Pusatkan teks dalam tombol
+                        "Simpan & Keluar",
+                        textAlign: TextAlign.center,
                         style: primaryTextStyle.copyWith(
-                          // fontFamily: 'poppins_bold',
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: semibold,
                           color: CustomColor.whiteColor,
                         ),
@@ -690,9 +535,7 @@ class _AddDaysState extends State<AddDays> {
 
   Future<bool> persistCurrentItinerary() async {
     FocusScope.of(context).unfocus();
-    if (!_commitPendingTitleIfAny()) {
-      return false;
-    }
+    if (!_commitPendingTitleIfAny()) return false;
 
     context.loaderOverlay.show();
     try {
@@ -710,17 +553,13 @@ class _AddDaysState extends State<AddDays> {
         );
       return false;
     } finally {
-      if (mounted) {
-        context.loaderOverlay.hide();
-      }
+      if (mounted) context.loaderOverlay.hide();
     }
   }
 
   Future<void> saveAndExit() async {
     final didPersist = await persistCurrentItinerary();
-    if (!didPersist || !mounted) {
-      return;
-    }
+    if (!didPersist || !mounted) return;
     Navigator.popUntil(context, ModalRoute.withName(ItineraryList.route));
   }
 
@@ -740,13 +579,140 @@ class _AddDaysState extends State<AddDays> {
       } else {
         shouldPop = false;
       }
-      if (shouldPop) {
-        snackbarHandler.removeCurrentSnackBar();
-      }
+      if (shouldPop) snackbarHandler.removeCurrentSnackBar();
       return shouldPop;
     } else {
       snackbarHandler.removeCurrentSnackBar();
       return true;
     }
+  }
+}
+
+// Day tab widget
+class _DayTab extends StatelessWidget {
+  final int index;
+  final String tanggal;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _DayTab({
+    required this.index,
+    required this.tanggal,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = tanggal.split('/');
+    final parsedDate = DateTime(
+      int.parse(parts[2]),
+      int.parse(parts[1]),
+      int.parse(parts[0]),
+    );
+    final formatted = DateFormat("dd MMM").format(parsedDate);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              width: 2,
+              color:
+                  isSelected ? CustomColor.brandElectric : Colors.transparent,
+            ),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Hari ${index + 1}',
+              style: primaryTextStyle.copyWith(
+                fontWeight: semibold,
+                fontSize: 13,
+                color: isSelected
+                    ? CustomColor.brandElectric
+                    : CustomColor.inputBorderGray,
+              ),
+            ),
+            Text(
+              formatted,
+              style: primaryTextStyle.copyWith(
+                fontSize: 11,
+                color: isSelected
+                    ? CustomColor.brandElectric
+                    : CustomColor.inputBorderGray,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Circular icon action button
+class _ActionIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ActionIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        height: 48,
+        width: 48,
+        decoration: const BoxDecoration(
+          color: CustomColor.lightCoolGray,
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 20, color: CustomColor.boardroomNavy),
+      ),
+    );
+  }
+}
+
+// Empty day state
+class _EmptyDayState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.calendar_today_outlined,
+            size: 40,
+            color: CustomColor.inputBorderGray,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Belum ada aktivitas',
+            style: primaryTextStyle.copyWith(
+              fontSize: 15,
+              fontWeight: medium,
+              color: CustomColor.subtitleTextColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Tambahkan aktivitas untuk hari ini',
+            style: primaryTextStyle.copyWith(
+              fontSize: 13,
+              color: CustomColor.inputBorderGray,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

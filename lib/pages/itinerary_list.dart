@@ -45,7 +45,7 @@ class _ItineraryListState extends State<ItineraryList> {
   }
 
   void _unfocusTextField() {
-    FocusScope.of(context).unfocus(); // Menghapus fokus dari TextField
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -55,161 +55,142 @@ class _ItineraryListState extends State<ItineraryList> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
-        statusBarColor: Color(0xFFF1F2F6),
+        statusBarColor: CustomColor.softOffWhite,
+        statusBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
         resizeToAvoidBottomInset: true,
+        backgroundColor: CustomColor.softOffWhite,
         floatingActionButton: FloatingActionButton(
           elevation: 2,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(100.0))),
-          backgroundColor: CustomColor.primary,
           onPressed: () {
             getItineraryTitle(context);
           },
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.add),
         ),
-        backgroundColor: CustomColor.whiteColor,
         appBar: AppBar(
           centerTitle: false,
-          backgroundColor: CustomColor.primary,
+          backgroundColor: CustomColor.whiteColor,
           elevation: 0,
-          actions: [
-            // IconButton(
-            //   tooltip: 'User Review',
-            //   onPressed: () {
-            //     Navigator.of(context).push(
-            //       MaterialPageRoute(
-            //         builder: (context) => const UserReviewPage(),
-            //       ),
-            //     );
-            //   },
-            //   icon: const Icon(
-            //     Icons.reviews,
-            //     color: Colors.white,
-            //   ),
-            // ),
-          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              height: 1,
+              color: CustomColor.lightCoolGray,
+            ),
+          ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Trip Planner',
-                style: TextStyle(
-                  fontFamily: 'poppins_bold',
-                  color: CustomColor.whiteColor,
-                  fontWeight: FontWeight.bold,
+                style: headingTextStyle.copyWith(
+                  color: CustomColor.boardroomNavy,
+                  fontWeight: bold,
                   fontSize: 20,
+                  letterSpacing: -0.64,
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 2),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-                color: CustomColor.whiteColor,
-                child: const Text(
+                    const EdgeInsets.symmetric(vertical: 2, horizontal: 10),
+                decoration: BoxDecoration(
+                  color: CustomColor.lightCoolGray,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
                   'TRIP SERU, PLANNING GAMPANG',
-                  style: TextStyle(
-                    fontFamily: 'poppins_bold',
-                    color: CustomColor.primary,
-                    fontSize: 10,
+                  style: primaryTextStyle.copyWith(
+                    color: CustomColor.brandElectric,
+                    fontSize: 9,
+                    fontWeight: semibold,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        body: Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          child: Column(
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                color: CustomColor.primaryColor500,
-                child: TextFieldWidget(
-                  controller: searchController,
-                  required: false,
-                  fillColor: CustomColor.whiteColor,
-                  cursorColor: CustomColor.primaryColor500,
-                  onChanged: (value) {
-                    _refreshData();
-                    log('Search input: $value');
-                  },
-                  hintText: 'Cari Trip Anda',
-                  prefixIcon: const Padding(
-                    padding: EdgeInsets.only(left: 12.0, right: 8),
-                    child: Icon(Icons.search),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        const BorderSide(color: CustomColor.disabledColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: CustomColor.primary),
-                  ),
+        body: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              color: CustomColor.whiteColor,
+              child: TextFieldWidget(
+                controller: searchController,
+                required: false,
+                fillColor: CustomColor.softOffWhite,
+                cursorColor: CustomColor.brandElectric,
+                onChanged: (value) {
+                  _refreshData();
+                  log('Search input: $value');
+                },
+                hintText: 'Cari Trip Anda',
+                prefixIcon: const Padding(
+                  padding: EdgeInsets.only(left: 12.0, right: 8),
+                  child: Icon(Icons.search, color: CustomColor.inputBorderGray),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(0),
+                  borderSide:
+                      const BorderSide(color: CustomColor.inputBorderGray),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(0),
+                  borderSide: const BorderSide(color: CustomColor.brandElectric),
                 ),
               ),
-              Expanded(
-                child: FutureBuilder<List<Itinerary>>(
-                  future: dbProvider.itineraryDatas,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (snapshot.hasData) {
-                      final itineraries = snapshot.data!;
-                      if (itineraries.isEmpty) {
-                        return const Center(
-                            child: Text('Anda belum mempunyai trip.'));
-                      }
-
-                      return ListView.separated(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 20, horizontal: 12),
-                        itemCount: itineraries.length,
-                        separatorBuilder: (context, index) => const SizedBox(
-                          height: 20,
-                        ),
-                        itemBuilder: (context, index) {
-                          final itinerary = itineraries[index];
-                          return ItineraryCard(
-                            parentContext: context,
-                            snackbarHandler: snackbarHandler,
-                            itinerary: itinerary,
-                            dbProvider: dbProvider,
-                            onDelete:
-                                _refreshData, // Panggil refresh setelah hapus
-                          );
-                        },
-                      );
+            ),
+            Expanded(
+              child: FutureBuilder<List<Itinerary>>(
+                future: dbProvider.itineraryDatas,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    final itineraries = snapshot.data!;
+                    if (itineraries.isEmpty) {
+                      return const _EmptyState();
                     }
-                    return const Center(child: Text('No itineraries found'));
-                  },
-                ),
+
+                    return ListView.separated(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 0),
+                      itemCount: itineraries.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final itinerary = itineraries[index];
+                        return ItineraryCard(
+                          parentContext: context,
+                          snackbarHandler: snackbarHandler,
+                          itinerary: itinerary,
+                          dbProvider: dbProvider,
+                          onDelete: _refreshData,
+                        );
+                      },
+                    );
+                  }
+                  return const Center(child: Text('No itineraries found'));
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Future<void> getItineraryTitle(BuildContext context) async {
-    _unfocusTextField(); // Tutup keyboard dan hapus fokus
+    _unfocusTextField();
     final result = await showModalBottomSheet<String>(
       backgroundColor: CustomColor.whiteColor,
-      shape: const ContinuousRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(12.0),
-        ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       context: context,
       isScrollControlled: true,
@@ -231,16 +212,60 @@ class _ItineraryListState extends State<ItineraryList> {
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) {
-              return SelectDate(
-                isNewItinerary: true,
-              );
+              return SelectDate(isNewItinerary: true);
             },
           ),
         );
         if (context.mounted) {
-          _refreshData(); // Refresh setelah balik dari SelectDate
+          _refreshData();
         }
       }
     }
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: CustomColor.lightCoolGray,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.map_outlined,
+              size: 48,
+              color: CustomColor.brandElectric,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Belum ada trip',
+            style: headingTextStyle.copyWith(
+              fontSize: 20,
+              fontWeight: semibold,
+              color: CustomColor.boardroomNavy,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Buat itinerary pertama Anda\ndengan menekan tombol +',
+            textAlign: TextAlign.center,
+            style: primaryTextStyle.copyWith(
+              fontSize: 14,
+              color: CustomColor.subtitleTextColor,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -10,68 +10,52 @@ class BottomNavbar extends StatefulWidget {
 }
 
 class _BottomNavbarState extends State<BottomNavbar> {
-  // List<Widget> ?_page;
   int _indexPage = 0;
 
   final List<BottomNavigationBarItem> _bottomNavBarItems = const [
-    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
     BottomNavigationBarItem(
-      icon: Icon(Icons.library_books_sharp),
+      icon: Icon(Icons.library_books_outlined),
       label: 'Paket Wisata',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.list),
+      icon: Icon(Icons.list_alt_outlined),
       label: 'Itinerary',
-    )
+    ),
   ];
 
   final List<Widget> _tabViews = const [
-    // const HomePage(),
-    // const PaketWisata(),
     ItineraryList(),
   ];
 
   @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     body: _tabViews[_indexPage],
-  //     bottomNavigationBar: ClipRRect(
-  //       borderRadius: BorderRadius.all(Radius.circular(30.0)),
-  //       child: BottomNavigationBar(
-  //         backgroundColor: const Color(0xFF42AB9C),
-  //         selectedItemColor: const Color(0xFFD5A364),
-  //         unselectedItemColor: const Color(0xFF1C3131),
-  //         showSelectedLabels: true,
-  //         showUnselectedLabels: false,
-  //         items: _bottomNavBarItems,
-  //         currentIndex: _indexPage,
-  //         onTap: (int index) {
-  //           setState(() {
-  //             _indexPage = index;
-  //           });
-  //         },
-  //       ),
-  //     ),
-  //       );
-  // }
-
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           _tabViews[_indexPage],
           Positioned(
-            bottom: 1,
-            left: 4,
-            right: 4,
+            bottom: 8,
+            left: 16,
+            right: 16,
             child: Container(
-              padding: const EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                color: CustomColor.whiteColor,
+                borderRadius: BorderRadius.circular(100),
+                boxShadow: const [
+                  BoxShadow(
+                    color: CustomColor.actionPanelShadowColor,
+                    blurRadius: 20,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(30.0)),
+                borderRadius: BorderRadius.circular(100),
                 child: BottomNavigationBar(
-                  backgroundColor: CustomColor.primary,
-                  selectedItemColor: CustomColor.blackColor,
-                  unselectedItemColor: CustomColor.primaryColor900,
+                  backgroundColor: CustomColor.whiteColor,
+                  selectedItemColor: CustomColor.brandElectric,
+                  unselectedItemColor: CustomColor.mediumGray,
                   showSelectedLabels: true,
                   showUnselectedLabels: false,
                   items: _bottomNavBarItems,

@@ -23,8 +23,7 @@ class _AddActivitiesState extends State<AddActivities> {
   TimeOfDay _selectedEndTime = TimeOfDay.now();
   bool _isEndTimeValid = true;
   bool _isTitleValid = true;
-  bool _showTitleValidationMessage =
-      false; // Variabel kontrol untuk pesan validasi judul
+  bool _showTitleValidationMessage = false;
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController lokasiController = TextEditingController();
@@ -35,7 +34,6 @@ class _AddActivitiesState extends State<AddActivities> {
   double? longitude;
   bool _isLokasiValid = true;
   bool _isCustomLocation = false;
-
   bool _isFromAutocomplete = false;
 
   @override
@@ -48,9 +46,7 @@ class _AddActivitiesState extends State<AddActivities> {
       _selectedStartTime = widget.initialActivity!.startTimeOfDay;
       _isCustomLocation = widget.initialActivity!.isCustomLocation;
       _isFromAutocomplete = !_isCustomLocation;
-      print('start time : $_selectedStartTime');
       _selectedEndTime = widget.initialActivity!.endTimeOfDay;
-      print('end time : $_selectedEndTime');
     }
     titleController.addListener(() {
       _validateTitle(showMessage: true);
@@ -81,12 +77,10 @@ class _AddActivitiesState extends State<AddActivities> {
       initialTime: _selectedStartTime,
     );
     if (picked != null && picked != _selectedStartTime) {
-      setState(
-        () {
-          _selectedStartTime = picked;
-          _validateEndTime();
-        },
-      );
+      setState(() {
+        _selectedStartTime = picked;
+        _validateEndTime();
+      });
     }
   }
 
@@ -96,29 +90,23 @@ class _AddActivitiesState extends State<AddActivities> {
       initialTime: _selectedEndTime,
     );
     if (picked != null && picked != _selectedEndTime) {
-      setState(
-        () {
-          _selectedEndTime = picked;
-          _validateEndTime();
-        },
-      );
+      setState(() {
+        _selectedEndTime = picked;
+        _validateEndTime();
+      });
     }
   }
 
   void _validateEndTime() {
-    setState(
-      () {
-        _isEndTimeValid = _selectedEndTime.hour > _selectedStartTime.hour ||
-            (_selectedEndTime.hour == _selectedStartTime.hour &&
-                _selectedEndTime.minute > _selectedStartTime.minute);
-      },
-    );
+    setState(() {
+      _isEndTimeValid = _selectedEndTime.hour > _selectedStartTime.hour ||
+          (_selectedEndTime.hour == _selectedStartTime.hour &&
+              _selectedEndTime.minute > _selectedStartTime.minute);
+    });
   }
 
   void _submitActivity() {
-    if (!_isEndTimeValid || !_isTitleValid || !_isLokasiValid) {
-      return;
-    }
+    if (!_isEndTimeValid || !_isTitleValid || !_isLokasiValid) return;
 
     final locale = MaterialLocalizations.of(context);
     final newActivity = Activity(
@@ -126,16 +114,10 @@ class _AddActivitiesState extends State<AddActivities> {
       activityName: titleController.text,
       lokasi: lokasiController.text,
       startActivityTime: locale
-          .formatTimeOfDay(
-            _selectedStartTime,
-            alwaysUse24HourFormat: true,
-          )
+          .formatTimeOfDay(_selectedStartTime, alwaysUse24HourFormat: true)
           .replaceAll(':', '.'),
       endActivityTime: locale
-          .formatTimeOfDay(
-            _selectedEndTime,
-            alwaysUse24HourFormat: true,
-          )
+          .formatTimeOfDay(_selectedEndTime, alwaysUse24HourFormat: true)
           .replaceAll(':', '.'),
       keterangan: keteranganController.text,
       images: List<String>.from(widget.initialActivity?.images ?? []),
@@ -160,20 +142,20 @@ class _AddActivitiesState extends State<AddActivities> {
         (_isCustomLocation
             ? _isLokasiValid
             : (_isLokasiValid && _isFromAutocomplete));
+
     return Scaffold(
-      backgroundColor: CustomColor.whiteColor,
+      backgroundColor: CustomColor.softOffWhite,
       appBar: AppBar(
-        // toolbarHeight: 118,
-        backgroundColor: CustomColor.primaryColor500,
+        backgroundColor: CustomColor.brandElectric,
+        foregroundColor: CustomColor.whiteColor,
         title: Text(
           'Tambah Aktivitas',
-          style: primaryTextStyle.copyWith(
+          style: headingTextStyle.copyWith(
             fontWeight: semibold,
             fontSize: 18,
-            // fontFamily: 'poppins_bold',
             color: CustomColor.whiteColor,
+            letterSpacing: -0.36,
           ),
-          // itineraryProvider.itinerary.title,
         ),
         centerTitle: true,
         leading: Padding(
@@ -183,9 +165,7 @@ class _AddActivitiesState extends State<AddActivities> {
               backgroundColor: Colors.transparent,
               foregroundColor: CustomColor.whiteColor,
             ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
           ),
         ),
         elevation: 0,
@@ -194,16 +174,15 @@ class _AddActivitiesState extends State<AddActivities> {
         children: [
           Container(
             margin: const EdgeInsets.only(bottom: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
                   child: ListView(
                     physics: const BouncingScrollPhysics(),
-                    scrollDirection: Axis.vertical,
                     padding: const EdgeInsets.only(top: 20, bottom: 50),
                     children: [
+                      // Title field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -219,18 +198,17 @@ class _AddActivitiesState extends State<AddActivities> {
                             ),
                             focusedBorder: AppTheme.inputBorder(
                               _isTitleValid
-                                  ? CustomColor.primary
+                                  ? CustomColor.brandElectric
                                   : Theme.of(context).colorScheme.error,
                             ),
                           ),
                           if (_showTitleValidationMessage)
                             Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
+                              padding: const EdgeInsets.only(top: 4),
                               child: Text(
                                 'Judul tidak boleh kosong',
-                                style: TextStyle(
+                                style: primaryTextStyle.copyWith(
                                   fontSize: 12,
-                                  fontFamily: 'Poppins',
                                   color: Theme.of(context).colorScheme.error,
                                 ),
                               ),
@@ -248,172 +226,60 @@ class _AddActivitiesState extends State<AddActivities> {
                             lokasi = value;
                             _isCustomLocation = isCustom;
                             _isFromAutocomplete = fromAutocomplete;
-
                             _isLokasiValid = isCustom
                                 ? value.trim().isNotEmpty
                                 : fromAutocomplete && value.trim().isNotEmpty;
-
-                            log("Lokasi dipilih: $value");
-                            log("isCustom: $isCustom");
-                            log("fromAutocomplete: $fromAutocomplete");
+                            log("Lokasi: $value | isCustom: $isCustom | fromAuto: $fromAutocomplete");
                           });
                         },
                       ),
                       const SizedBox(height: 20),
+                      // Time pickers
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Mulai',
-                                  style: TextStyle(
-                                    color: CustomColor.blackColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: GestureDetector(
-                                    onTap: () => _selectStartTime(context),
-                                    child: Container(
-                                      width: 145,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                          color: CustomColor.borderColor,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                _selectedStartTime
-                                                    .format(context),
-                                                style: const TextStyle(
-                                                  fontFamily: 'Poppins',
-                                                  fontSize: 20,
-                                                  color: CustomColor.blackColor,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            const Icon(
-                                              Icons.access_time,
-                                              size: 25,
-                                              color: CustomColor.borderColor,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            child: _TimePicker(
+                              label: 'Mulai',
+                              time: _selectedStartTime,
+                              onTap: () => _selectStartTime(context),
                             ),
                           ),
-                          const SizedBox(width: 24),
+                          const SizedBox(width: 16),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Selesai',
-                                  style: TextStyle(
-                                    color: CustomColor.blackColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: GestureDetector(
-                                    onTap: () => _selectEndTime(context),
-                                    child: Container(
-                                      width: 145,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                          color: CustomColor.borderColor,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                _selectedEndTime
-                                                    .format(context),
-                                                style: const TextStyle(
-                                                  fontFamily: 'Poppins',
-                                                  fontSize: 20,
-                                                  color: CustomColor.blackColor,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            const Icon(
-                                              Icons.access_time,
-                                              size: 25,
-                                              color: CustomColor.borderColor,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            child: _TimePicker(
+                              label: 'Selesai',
+                              time: _selectedEndTime,
+                              onTap: () => _selectEndTime(context),
+                              hasError: !_isEndTimeValid,
                             ),
                           ),
                         ],
                       ),
                       if (!_isEndTimeValid)
                         Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
+                          padding: const EdgeInsets.only(top: 8),
                           child: Text(
                             'Waktu Selesai tidak boleh mendahului Waktu Mulai!',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
+                            style: primaryTextStyle.copyWith(
+                              fontSize: 12,
                               color: Theme.of(context).colorScheme.error,
                             ),
                           ),
                         ),
-                      const SizedBox(height: 25),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextFieldWidget(
-                            label: 'Keterangan',
-                            hintText:
-                                'Cth. Pastikan semua barang tidak ada yang tertinggal',
-                            controller: keteranganController,
-                            required: false,
-                            keyboardType: TextInputType.multiline,
-                            minLines: 4,
-                            maxLines: null,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 15,
-                              vertical: 20,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 20),
+                      TextFieldWidget(
+                        label: 'Keterangan',
+                        hintText:
+                            'Cth. Pastikan semua barang tidak ada yang tertinggal',
+                        controller: keteranganController,
+                        required: false,
+                        keyboardType: TextInputType.multiline,
+                        minLines: 4,
+                        maxLines: null,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
                       ),
                     ],
                   ),
@@ -421,36 +287,93 @@ class _AddActivitiesState extends State<AddActivities> {
               ],
             ),
           ),
+          // Bottom save button
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: AppTheme.actionPanelDecoration(),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: isFormValid ? _submitActivity : null,
-                      child: Text(
-                        'Simpan Aktivitas',
-                        style: primaryTextStyle.copyWith(
-                          fontWeight: semibold,
-                          fontSize: 16,
-                          color: CustomColor.whiteColor,
-                        ),
-                      ),
-                    ),
+              child: ElevatedButton(
+                onPressed: isFormValid ? _submitActivity : null,
+                child: Text(
+                  'Simpan Aktivitas',
+                  style: primaryTextStyle.copyWith(
+                    fontWeight: semibold,
+                    fontSize: 16,
+                    color: CustomColor.whiteColor,
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TimePicker extends StatelessWidget {
+  final String label;
+  final TimeOfDay time;
+  final VoidCallback onTap;
+  final bool hasError;
+
+  const _TimePicker({
+    required this.label,
+    required this.time,
+    required this.onTap,
+    this.hasError = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: primaryTextStyle.copyWith(
+            color: CustomColor.pitchBlack,
+            fontWeight: medium,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 6),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 56,
+            decoration: BoxDecoration(
+              color: CustomColor.whiteColor,
+              border: Border.all(
+                color: hasError
+                    ? Theme.of(context).colorScheme.error
+                    : CustomColor.inputBorderGray,
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  time.format(context),
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 20,
+                    fontWeight: medium,
+                    color: CustomColor.pitchBlack,
+                  ),
+                ),
+                const Icon(
+                  Icons.access_time_outlined,
+                  size: 22,
+                  color: CustomColor.inputBorderGray,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

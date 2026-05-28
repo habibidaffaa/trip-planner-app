@@ -2,63 +2,78 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 abstract class CustomColor {
-  static const primary = Color(0xFFF4B666);
-  static const surface = Color(0xFFFAF8F1);
-  static const buttonColor = Color(0xFFC58940);
-  static const dateBackground = Color(0xFFED9D3B);
-  static const borderColor = Color(0xFF979797);
-  static const backgroundColor = Color(0xFFFAF8F1);
+  // Core brand palette — Officevibe Design System
+  static const boardroomNavy = Color(0xFF0C1754);
+  static const brandElectric = Color(0xFF2545FF);
+  static const lilacAccent = Color(0xFFD9D4FF);
+  static const feedbackYellow = Color(0xFFFFC13A);
+  static const softOffWhite = Color(0xFFF9F8F6);
+  static const pitchBlack = Color(0xFF171417);
+  static const mediumGray = Color(0xFF222222);
+  static const lightCoolGray = Color(0xFFEAEBF8);
+  static const inputBorderGray = Color(0xFFCCCCCC);
+  static const accentOrange = Color(0xFFFF5B22);
 
-  static const primaryColor50 = Color(0xfffef8f0);
-  static const primaryColor100 = Color(0xFFfce8d0);
-  static const primaryColor200 = Color(0xFFfaddb9);
-  static const primaryColor300 = Color(0xFFf8ce98);
-  static const primaryColor400 = Color(0xFFf4b666);
-  static const primaryColor500 = Color(0xFFF4B666);
-  static const primaryColor600 = Color(0xFFdea65d);
-  static const primaryColor700 = Color(0xFFad8148);
-  static const primaryColor800 = Color(0xFF866438);
-  static const primaryColor900 = Color(0xFF664c2b);
+  // Semantic aliases — kept for backward compatibility
+  static const primary = brandElectric;
+  static const surface = softOffWhite;
+  static const buttonColor = brandElectric;
+  static const dateBackground = lilacAccent;
+  static const borderColor = inputBorderGray;
+  static const backgroundColor = softOffWhite;
 
+  // Brand Electric scale (replaces amber scale)
+  static const primaryColor50 = Color(0xFFEEF0FF);
+  static const primaryColor100 = Color(0xFFD9D4FF); // lilacAccent
+  static const primaryColor200 = Color(0xFFB3AEFF);
+  static const primaryColor300 = Color(0xFF8F87FF);
+  static const primaryColor400 = Color(0xFF5C62FF);
+  static const primaryColor500 = brandElectric;
+  static const primaryColor600 = Color(0xFF1D3BDD);
+  static const primaryColor700 = Color(0xFF162EB8);
+  static const primaryColor800 = Color(0xFF0E2190);
+  static const primaryColor900 = boardroomNavy;
+
+  // Neutral
   static const whiteColor = Color(0xFFFFFFFF);
-  static const blackColor = Color(0xFF343434);
+  static const blackColor = pitchBlack;
 
-  static const subtitleTextColor = Color(0xFF808080);
-  static const hintTextColor = Color(0xFFBAC2C7);
-  static const warningColor = Color(0xFFff3f56);
+  static const subtitleTextColor = Color(0xFF6B7280);
+  static const hintTextColor = inputBorderGray;
+  static const warningColor = Color(0xFFFF3F56);
 
-  static const greyBackgroundColor = Color(0xFFF9F9F9);
-
-  static const disabledColor = Color(0xFFC4C4C4);
+  static const greyBackgroundColor = softOffWhite;
+  static const disabledColor = inputBorderGray;
   static const transparentColor = Colors.transparent;
 
-  static const scaffoldBackground = whiteColor;
-  static const cardBackground = primaryColor50;
-  static const cardBorder = Color(0xFFDADADA);
-  static const dividerColor = Color(0xFFDADADA);
-  static const inputFillColor = greyBackgroundColor;
-  static const inputBorderColor = borderColor;
+  static const scaffoldBackground = softOffWhite;
+  static const cardBackground = whiteColor;
+  static const cardBorder = lightCoolGray;
+  static const dividerColor = lightCoolGray;
+  static const inputFillColor = whiteColor;
+  static const inputBorderColor = inputBorderGray;
   static const successColor = Color(0xFF4FD968);
-  static const shadowColor = Color(0x14000000);
-  static const actionPanelShadowColor = Color(0x26000000);
+  static const shadowColor = Color(0x0A0C1754);
+  static const actionPanelShadowColor = Color(0x1A0C1754);
 }
 
 class AppTheme {
-  static const BorderRadius fieldRadius = BorderRadius.all(Radius.circular(5));
-  static const BorderRadius largeRadius = BorderRadius.all(Radius.circular(12));
+  // DESIGN.md: inputs 0px, cards 16px, buttons 100px
+  static const BorderRadius fieldRadius = BorderRadius.all(Radius.circular(0));
+  static const BorderRadius largeRadius = BorderRadius.all(Radius.circular(16));
   static const BorderRadius pillRadius = BorderRadius.all(Radius.circular(100));
 
   static final ColorScheme colorScheme = ColorScheme.fromSeed(
-    seedColor: CustomColor.primary,
-    primary: CustomColor.primary,
-    secondary: CustomColor.buttonColor,
+    seedColor: CustomColor.brandElectric,
+    primary: CustomColor.brandElectric,
+    secondary: CustomColor.boardroomNavy,
     surface: CustomColor.whiteColor,
     error: CustomColor.warningColor,
     brightness: Brightness.light,
   ).copyWith(
     onPrimary: CustomColor.whiteColor,
     onSecondary: CustomColor.whiteColor,
-    onSurface: CustomColor.blackColor,
+    onSurface: CustomColor.pitchBlack,
     onError: CustomColor.whiteColor,
   );
 
@@ -81,7 +96,7 @@ class AppTheme {
       boxShadow: const [
         BoxShadow(
           color: CustomColor.shadowColor,
-          blurRadius: 10,
+          blurRadius: 12,
           offset: Offset(0, 4),
         ),
       ],
@@ -94,8 +109,8 @@ class AppTheme {
       boxShadow: [
         BoxShadow(
           color: CustomColor.actionPanelShadowColor,
-          blurRadius: 12,
-          offset: Offset(0, 2),
+          blurRadius: 16,
+          offset: Offset(0, -2),
         ),
       ],
     );
@@ -104,7 +119,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     final base = ThemeData(
       colorScheme: colorScheme,
-      primaryColor: CustomColor.primary,
+      primaryColor: CustomColor.brandElectric,
       scaffoldBackgroundColor: CustomColor.scaffoldBackground,
       canvasColor: CustomColor.whiteColor,
       dividerColor: CustomColor.dividerColor,
@@ -112,26 +127,27 @@ class AppTheme {
       splashColor: CustomColor.primaryColor100,
       highlightColor: CustomColor.primaryColor50,
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: CustomColor.primary,
+        color: CustomColor.brandElectric,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: CustomColor.primary,
-        foregroundColor: CustomColor.whiteColor,
+        backgroundColor: CustomColor.whiteColor,
+        foregroundColor: CustomColor.boardroomNavy,
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: CustomColor.transparentColor,
-        titleTextStyle: primaryTextStyle.copyWith(
+        titleTextStyle: headingTextStyle.copyWith(
           fontWeight: semibold,
           fontSize: 18,
-          color: CustomColor.whiteColor,
+          color: CustomColor.boardroomNavy,
+          letterSpacing: -0.36,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
         filled: true,
-        fillColor: CustomColor.inputFillColor,
+        fillColor: CustomColor.whiteColor,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
+          horizontal: 16,
           vertical: 14,
         ),
         hintStyle: primaryTextStyle.copyWith(
@@ -146,13 +162,13 @@ class AppTheme {
         ),
         border: inputBorder(),
         enabledBorder: inputBorder(),
-        focusedBorder: inputBorder(CustomColor.primary),
+        focusedBorder: inputBorder(CustomColor.brandElectric),
         errorBorder: inputBorder(colorScheme.error),
         focusedErrorBorder: inputBorder(colorScheme.error),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: CustomColor.primary,
+          backgroundColor: CustomColor.brandElectric,
           foregroundColor: CustomColor.whiteColor,
           disabledBackgroundColor: CustomColor.disabledColor,
           disabledForegroundColor: CustomColor.whiteColor,
@@ -167,19 +183,19 @@ class AppTheme {
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: CustomColor.primary,
+        backgroundColor: CustomColor.brandElectric,
         foregroundColor: CustomColor.whiteColor,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: pillRadius),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: CustomColor.blackColor,
+        backgroundColor: CustomColor.boardroomNavy,
         contentTextStyle: primaryTextStyle.copyWith(
           color: CustomColor.whiteColor,
           fontWeight: medium,
         ),
-        actionTextColor: CustomColor.primaryColor100,
+        actionTextColor: CustomColor.lilacAccent,
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: CustomColor.whiteColor,
@@ -187,9 +203,9 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: largeRadius),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: CustomColor.primary,
-        selectedItemColor: CustomColor.blackColor,
-        unselectedItemColor: CustomColor.primaryColor900,
+        backgroundColor: CustomColor.whiteColor,
+        selectedItemColor: CustomColor.brandElectric,
+        unselectedItemColor: CustomColor.mediumGray,
         selectedLabelStyle: primaryTextStyle.copyWith(
           fontSize: 12,
           fontWeight: semibold,
@@ -201,23 +217,30 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: CustomColor.whiteColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
 
     return base.copyWith(
-      textTheme: GoogleFonts.poppinsTextTheme(base.textTheme).apply(
-        bodyColor: CustomColor.blackColor,
-        displayColor: CustomColor.blackColor,
+      textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
+        bodyColor: CustomColor.pitchBlack,
+        displayColor: CustomColor.boardroomNavy,
       ),
     );
   }
 }
 
-TextStyle primaryTextStyle = GoogleFonts.poppins(
-  color: CustomColor.blackColor,
+// Body / UI text — Inter 400/500/700
+TextStyle primaryTextStyle = GoogleFonts.inter(
+  color: CustomColor.pitchBlack,
+);
+
+// Heading text — Inter with tight letter-spacing (simulates geometric display font)
+TextStyle headingTextStyle = GoogleFonts.inter(
+  color: CustomColor.boardroomNavy,
+  letterSpacing: -0.64,
 );
 
 FontWeight light = FontWeight.w300;

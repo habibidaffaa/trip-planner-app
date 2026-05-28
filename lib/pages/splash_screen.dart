@@ -15,53 +15,59 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Navigate after 2 seconds
     Future.delayed(const Duration(milliseconds: 1500), () {
-      Navigator.pushReplacementNamed(context, ItineraryList.route);
+      if (mounted) Navigator.pushReplacementNamed(context, ItineraryList.route);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: CustomColor.surface,
+      backgroundColor: CustomColor.softOffWhite,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8, // responsive
+              width: MediaQuery.of(context).size.width * 0.8,
               child: Image.asset(
                 'assets/images/AppLogo.png',
                 fit: BoxFit.contain,
-                width: 170,
-                height: 170,
+                width: 120,
+                height: 120,
               ),
             ),
-            const Text(
+            const SizedBox(height: 24),
+            Text(
               'Trip Planner',
-              style: TextStyle(
-                fontSize: 40, // responsive
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w800,
-                color: CustomColor.buttonColor,
+              style: headingTextStyle.copyWith(
+                fontSize: 40,
+                fontWeight: bold,
+                letterSpacing: -2.0,
+                color: CustomColor.boardroomNavy,
               ),
             ),
-            AnimatedTextKit(
-              animatedTexts: [
-                TypewriterAnimatedText(
-                  'Your Personal Itinerary Assistant',
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: CustomColor.lilacAccent,
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: AnimatedTextKit(
+                animatedTexts: [
+                  TypewriterAnimatedText(
+                    'Your Personal Itinerary Assistant',
+                    textStyle: primaryTextStyle.copyWith(
+                      fontSize: 14,
+                      fontWeight: medium,
+                      color: CustomColor.boardroomNavy,
+                    ),
+                    speed: const Duration(milliseconds: 40),
                   ),
-                  speed: const Duration(milliseconds: 15),
-                ),
-              ],
-              totalRepeatCount: 1, // animasi akan diulang sekali saja
+                ],
+                totalRepeatCount: 1,
+              ),
             ),
           ],
         ),

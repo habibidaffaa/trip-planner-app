@@ -29,8 +29,7 @@ class ItineraryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       customBorder: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(16), // naikkan sedikit untuk lebih halus
+        borderRadius: BorderRadius.circular(16),
       ),
       onTap: () {
         FocusScope.of(parentContext).unfocus();
@@ -44,35 +43,33 @@ class ItineraryCard extends StatelessWidget {
         }));
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: AppTheme.softCardDecoration(),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(20),
-            color: CustomColor.primaryColor50,
+            color: CustomColor.whiteColor,
             child: Stack(
               alignment: Alignment.topRight,
               children: [
                 IntrinsicHeight(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Day count badge
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
+                                horizontal: 12,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: CustomColor.primaryColor300,
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(50.0),
-                                ),
+                                color: CustomColor.lightCoolGray,
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 itinerary.days.length > 1
@@ -80,121 +77,121 @@ class ItineraryCard extends StatelessWidget {
                                     : '${itinerary.days.length} Day',
                                 style: primaryTextStyle.copyWith(
                                   fontWeight: semibold,
-                                  color: CustomColor.whiteColor,
+                                  color: CustomColor.boardroomNavy,
                                   fontSize: 12,
                                 ),
-                                textAlign: TextAlign.center,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             Text(
                               itinerary.title,
-                              style: primaryTextStyle.copyWith(
+                              style: headingTextStyle.copyWith(
                                 fontWeight: semibold,
-                                fontSize: 24,
-                                color: CustomColor.primaryColor900,
+                                fontSize: 22,
+                                color: CustomColor.boardroomNavy,
+                                letterSpacing: -0.44,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 10),
                           ],
                         ),
                       ),
                       const VerticalDivider(
-                        width: 50,
+                        width: 40,
                         thickness: 1,
-                        indent: 10,
-                        endIndent: 10,
-                        color: CustomColor.dividerColor,
+                        indent: 4,
+                        endIndent: 4,
+                        color: CustomColor.lightCoolGray,
                       ),
-                      Expanded(
+                      // Date column
+                      SizedBox(
+                        width: 90,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'MULAI',
-                                  style: primaryTextStyle.copyWith(
-                                    fontWeight: regular,
-                                    fontSize: 12,
-                                    color: CustomColor.subtitleTextColor,
-                                  ),
-                                ),
-                                Text(
-                                  AppHelper.formatDate(
-                                      itinerary.days.first.date),
-                                  style: primaryTextStyle.copyWith(
-                                    fontWeight: regular,
-                                    fontSize: 16,
-                                    color: CustomColor.subtitleTextColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (itinerary.days.length > 1)
-                              const SizedBox(height: 20),
-                            if (itinerary.days.length > 1)
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'SELESAI',
-                                    style: primaryTextStyle.copyWith(
-                                      fontWeight: regular,
-                                      fontSize: 12,
-                                      color: CustomColor.subtitleTextColor,
-                                    ),
-                                  ),
-                                  Text(
-                                    AppHelper.formatDate(
-                                        itinerary.days.last.date),
-                                    style: primaryTextStyle.copyWith(
-                                      fontWeight: regular,
-                                      fontSize: 16,
-                                      color: CustomColor.subtitleTextColor,
-                                    ),
-                                  ),
-                                ],
+                            Text(
+                              'MULAI',
+                              style: primaryTextStyle.copyWith(
+                                fontWeight: semibold,
+                                fontSize: 10,
+                                color: CustomColor.brandElectric,
+                                letterSpacing: 0.5,
                               ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              AppHelper.formatDate(itinerary.days.first.date),
+                              style: primaryTextStyle.copyWith(
+                                fontWeight: medium,
+                                fontSize: 13,
+                                color: CustomColor.pitchBlack,
+                              ),
+                            ),
+                            if (itinerary.days.length > 1) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                'SELESAI',
+                                style: primaryTextStyle.copyWith(
+                                  fontWeight: semibold,
+                                  fontSize: 10,
+                                  color: CustomColor.brandElectric,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                AppHelper.formatDate(itinerary.days.last.date),
+                                style: primaryTextStyle.copyWith(
+                                  fontWeight: medium,
+                                  fontSize: 13,
+                                  color: CustomColor.pitchBlack,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                      InkWell(
-                        onTap: () {
-                          snackbarHandler.removeCurrentSnackBar();
-                          final itineraryCopy = itinerary.copy();
-                          dbProvider
-                              .deleteItinerary(itinerary: itinerary)
-                              .whenComplete(() {
-                            onDelete?.call();
-                            snackbarHandler.showSnackBar(
-                              SnackBar(
-                                content: const Text("Item dihapus!"),
-                                action: SnackBarAction(
-                                  label: "Undo",
-                                  onPressed: () {
-                                    dbProvider.insertItinerary(
-                                        itinerary: itineraryCopy);
-                                    onDelete?.call();
-                                    snackbarHandler.removeCurrentSnackBar();
-                                  },
-                                ),
-                              ),
-                            );
-                          });
-                        },
-                        child: Icon(
-                          Icons.delete,
-                          size: 18,
-                          color: CustomColor.primaryColor900,
-                        ),
-                      ),
+                      const SizedBox(width: 28), // space for delete icon
                     ],
+                  ),
+                ),
+                // Delete button
+                InkWell(
+                  onTap: () {
+                    snackbarHandler.removeCurrentSnackBar();
+                    final itineraryCopy = itinerary.copy();
+                    dbProvider
+                        .deleteItinerary(itinerary: itinerary)
+                        .whenComplete(() {
+                      onDelete?.call();
+                      snackbarHandler.showSnackBar(
+                        SnackBar(
+                          content: const Text("Item dihapus!"),
+                          action: SnackBarAction(
+                            label: "Undo",
+                            onPressed: () {
+                              dbProvider.insertItinerary(
+                                  itinerary: itineraryCopy);
+                              onDelete?.call();
+                              snackbarHandler.removeCurrentSnackBar();
+                            },
+                          ),
+                        ),
+                      );
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(100),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: CustomColor.inputBorderGray,
+                    ),
                   ),
                 ),
               ],
