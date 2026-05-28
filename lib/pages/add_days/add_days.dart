@@ -257,45 +257,47 @@ class _AddDaysState extends State<AddDays> {
                                     setState(() => selectedDayIndex = index),
                               );
                             },
-                            itemCount:
-                                itineraryProvider.itinerary.days.length,
+                            itemCount: itineraryProvider.itinerary.days.length,
                             separatorBuilder: (_, __) =>
                                 const SizedBox(width: 8),
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: InkWell(
-                            onTap: () {
-                              log(itineraryProvider.itinerary.days
-                                  .map((e) => e.getDatetime())
-                                  .toList()
-                                  .toString());
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return SelectDate(
-                                      isNewItinerary: false,
-                                      initialDates: itineraryProvider
-                                          .itinerary.days
-                                          .map((e) => e.getDatetime())
-                                          .toList(),
-                                    );
-                                  },
+                        Positioned(
+                          right: 12,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: InkWell(
+                              onTap: () {
+                                log(itineraryProvider.itinerary.days
+                                    .map((e) => e.getDatetime())
+                                    .toList()
+                                    .toString());
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return SelectDate(
+                                        isNewItinerary: false,
+                                        initialDates: itineraryProvider
+                                            .itinerary.days
+                                            .map((e) => e.getDatetime())
+                                            .toList(),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: const BoxDecoration(
+                                  color: CustomColor.brandElectric,
+                                  shape: BoxShape.circle,
                                 ),
-                              );
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 12),
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: CustomColor.brandElectric,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.add,
-                                color: CustomColor.whiteColor,
-                                size: 18,
+                                child: const Icon(
+                                  Icons.add,
+                                  color: CustomColor.whiteColor,
+                                  size: 18,
+                                ),
                               ),
                             ),
                           ),
@@ -319,8 +321,7 @@ class _AddDaysState extends State<AddDays> {
                               return _EmptyDayState();
                             }
                             return ListView.separated(
-                              padding:
-                                  const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                               scrollDirection: Axis.vertical,
                               physics: const BouncingScrollPhysics(),
                               shrinkWrap: true,
@@ -364,8 +365,8 @@ class _AddDaysState extends State<AddDays> {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: AppTheme.actionPanelDecoration(),
                   child: Row(
                     children: [
