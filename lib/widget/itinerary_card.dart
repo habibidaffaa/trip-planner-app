@@ -8,6 +8,7 @@ import 'package:iterasi1/provider/database_provider.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_helper.dart';
+import 'package:iterasi1/widget/confirm_delete_dialog.dart';
 
 class ItineraryCard extends StatelessWidget {
   final DatabaseProvider dbProvider;
@@ -161,28 +162,22 @@ class ItineraryCard extends StatelessWidget {
                 ),
                 // Delete button
                 InkWell(
-                  onTap: () {
-                    snackbarHandler.removeCurrentSnackBar();
-                    final itineraryCopy = itinerary.copy();
-                    dbProvider
-                        .deleteItinerary(itinerary: itinerary)
-                        .whenComplete(() {
-                      onDelete?.call();
-                      snackbarHandler.showSnackBar(
-                        SnackBar(
-                          content: const Text("Item dihapus!"),
-                          action: SnackBarAction(
-                            label: "Undo",
-                            onPressed: () {
-                              dbProvider.insertItinerary(
-                                  itinerary: itineraryCopy);
-                              onDelete?.call();
-                              snackbarHandler.removeCurrentSnackBar();
-                            },
-                          ),
-                        ),
-                      );
-                    });
+                  onTap: () async {
+                    final shouldDelete = await ConfirmDeleteDialog.show(
+                      context,
+                      title: 'Konfirmasi Hapus',
+                      message:
+                          'Apakah kamu yakin ingin menghapus daftar perjalanan ini?',
+                    );
+
+                    if (shouldDelete == true) {
+                      snackbarHandler.removeCurrentSnackBar();
+                      dbProvider
+                          .deleteItinerary(itinerary: itinerary)
+                          .whenComplete(() {
+                        onDelete?.call();
+                      });
+                    }
                   },
                   borderRadius: BorderRadius.circular(100),
                   child: Padding(

@@ -5,6 +5,7 @@ import 'package:iterasi1/pages/add_activities/add_activities.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_helper.dart';
+import 'package:iterasi1/widget/confirm_delete_dialog.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -58,8 +59,8 @@ class ActivityCard extends StatelessWidget {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("Perizinan Ditolak"),
-            content: const Text(
-                "Aplikasi memerlukan izin untuk mengakses galeri."),
+            content:
+                const Text("Aplikasi memerlukan izin untuk mengakses galeri."),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -373,8 +374,7 @@ class ActivityCard extends StatelessWidget {
                           color: CustomColor.lightCoolGray,
                         ),
                         const SizedBox(width: 8),
-                        _TimeChip(
-                            label: 'SELESAI', time: data.endActivityTime),
+                        _TimeChip(label: 'SELESAI', time: data.endActivityTime),
                       ],
                     ),
                   ],
@@ -388,21 +388,17 @@ class ActivityCard extends StatelessWidget {
           top: 8,
           right: 8,
           child: InkWell(
-            onTap: () {
-              snackbarHandler.removeCurrentSnackBar();
-              onDismiss();
-              snackbarHandler.showSnackBar(
-                SnackBar(
-                  content: const Text("Item dihapus!"),
-                  action: SnackBarAction(
-                    label: "Undo",
-                    onPressed: () {
-                      onUndo();
-                      snackbarHandler.removeCurrentSnackBar();
-                    },
-                  ),
-                ),
+            onTap: () async {
+              final shouldDelete = await ConfirmDeleteDialog.show(
+                context,
+                title: 'Konfirmasi Hapus',
+                message: 'Apakah kamu yakin ingin menghapus kegiatan ini?',
               );
+
+              if (shouldDelete == true) {
+                snackbarHandler.removeCurrentSnackBar();
+                onDismiss();
+              }
             },
             borderRadius: BorderRadius.circular(100),
             child: Padding(
