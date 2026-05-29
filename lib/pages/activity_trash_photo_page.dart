@@ -5,6 +5,8 @@ import 'package:flutter_masonry_view/flutter_masonry_view.dart';
 import 'package:get/get.dart';
 import 'package:iterasi1/model/activity.dart';
 import 'package:iterasi1/pages/activity_photo_controller.dart';
+import 'package:iterasi1/resource/theme.dart';
+import 'package:iterasi1/widget/iterasi_text.dart';
 
 class ActivityTrashPhotoPage extends StatefulWidget {
   final Activity activity;
@@ -35,61 +37,68 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),
-          title: const Text(
+          title: Text(
             'Pulihkan Foto',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'poppins_bold',
-              color: Color(0xFFC58940),
-              fontWeight: FontWeight.bold,
+            style: displayStyle.copyWith(
+              color: CustomColor.warnAmber,
+              fontSize: 18,
             ),
           ),
-          content: const Text(
+          content: IterasiBody(
             'Apa kamu yakin ingin mengembalikan foto ini?',
-            textAlign: TextAlign.center,
+            color: CustomColor.ocean700,
           ),
+          contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
           actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 24),
-                    child: const Text(
-                      'Batal',
-                      style: TextStyle(
-                        fontFamily: 'poppins_bold',
-                        color: Colors.white,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: CustomColor.ocean900.withOpacity(0.25),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                      ),
+                      child: Text(
+                        'Batal',
+                        style: bodyStyle.copyWith(
+                          color: CustomColor.ocean900,
+                          fontWeight: medium,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 24),
-                    child: const Text(
-                      'Pulihkan',
-                      style: TextStyle(
-                        fontFamily: 'poppins_bold',
-                        color: Colors.white,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColor.success,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Pulihkan',
+                        style: bodyStyle.copyWith(
+                          color: Colors.white,
+                          fontWeight: medium,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         );
@@ -117,11 +126,9 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
 
           double dialogWidth, dialogHeight;
           if (aspectRatio > 1) {
-            // Landscape
             dialogWidth = maxDialogWidth;
             dialogHeight = dialogWidth / aspectRatio;
           } else {
-            // Portrait
             dialogHeight = maxDialogHeight;
             dialogWidth = dialogHeight * aspectRatio;
           }
@@ -159,85 +166,120 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Gambar Dihapus",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: 'poppins_bold',
-            fontSize: 24,
-            fontWeight: FontWeight.normal,
-            color: Color(0xFFC58940),
-          ),
-        ),
-      ),
-      body: ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Column(
-                //   children: [
-                //     // ElevatedButton(
-                //     //   onPressed: () async {
-                //     //     var files = await loadPhotos();
-                //     //     if (files.isNotEmpty) {
-                //     //       setState(() {
-                //     //         image = files;
-                //     //       });
-                //     //     }
-                //     //   },
-                //     //   style: ButtonStyle(
-                //     //       // backgroundColor: MaterialStateProperty<Colors.black>
-                //     //       //     WidgetStateProperty.resolveWith<Color?>(
-                //     //       //   (Set<WidgetState> states) {
-                //     //       //     if (states.contains(WidgetState.pressed)) {
-                //     //       //       return Colors.grey[100];
-                //     //       //     }
-                //     //       //     return Colors.grey;
-                //     //       //   },
-                //     //       // ),
-                //     //       ),
-                //     //   child: const Text(
-                //     //     'Gallery',
-                //     //     style: TextStyle(
-                //     //       color: Colors.white,
-                //     //     ),
-                //     //   ),
-                //     // )
-                //   ],
-                // ),
-                const SizedBox(
-                  height: 6,
-                ),
-                MasonryView(
-                  listOfItem: removedImages,
-                  numberOfColumn: 2,
-                  itemBuilder: (item) {
-                    final file = item as File;
-                    return GestureDetector(
-                      onTap: () {
-                        _showImageDialog(file);
-                      },
-                      onLongPress: () {
-                        _confirmRestorePhoto(file);
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.file(
-                          file,
-                          fit: BoxFit.cover,
+      backgroundColor: CustomColor.paper,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: CustomColor.ocean900.withOpacity(0.25),
                         ),
                       ),
-                    );
-                  },
-                ),
-              ],
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: CustomColor.ocean900,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        IterasiKicker(
+                          'foto terhapus',
+                          color: CustomColor.muted,
+                        ),
+                        IterasiDisplay(
+                          'Foto Terhapus',
+                          style: const TextStyle(fontSize: 17),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.restore_outlined,
+                      color: CustomColor.ocean900,
+                    ),
+                    tooltip: 'Long-press foto untuk pulihkan',
+                    onPressed: null,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+
+            Container(
+              height: 1,
+              color: CustomColor.ocean900.withOpacity(0.08),
+            ),
+
+            // Grid
+            Expanded(
+              child: ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    child: removedImages.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 60),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.delete_outline,
+                                    size: 48,
+                                    color:
+                                        CustomColor.muted.withOpacity(0.5),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  IterasiBody(
+                                    'Tidak ada foto yang dihapus',
+                                    color: CustomColor.muted,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : MasonryView(
+                            listOfItem: removedImages,
+                            numberOfColumn: 2,
+                            itemBuilder: (item) {
+                              final file = item as File;
+                              return GestureDetector(
+                                onTap: () => _showImageDialog(file),
+                                onLongPress: () =>
+                                    _confirmRestorePhoto(file),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.file(
+                                    file,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

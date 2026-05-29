@@ -14,6 +14,7 @@ import 'package:iterasi1/pages/activity_photo_controller.dart';
 import 'package:iterasi1/pages/activity_trash_photo_page.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
+import 'package:iterasi1/widget/iterasi_text.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path/path.dart' as path_lib;
 import 'package:path_provider/path_provider.dart';
@@ -45,17 +46,13 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
 
   Future<void> requestPermission() async {
     const permission = Permission.manageExternalStorage;
-
     if (await permission.isDenied) {
       final result = await permission.request();
       if (result.isGranted) {
-        // Permission is granted
         log('Permission granted');
       } else if (result.isDenied) {
-        // Permission is denied
         log('Permission denied');
       } else if (await permission.isPermanentlyDenied) {
-        // Permission is permanently denied
         log('Permission permanently denied');
       }
     }
@@ -75,10 +72,8 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
       if (!await albumDir.exists()) {
         await albumDir.create(recursive: true);
       }
-
       final File albumFile = File('${albumDir.path}/$fileName');
       final copiedFile = await sourceFile.copy(albumFile.path);
-
       try {
         await _mediaScannerChannel.invokeMethod('scanFile', {
           'path': copiedFile.path,
@@ -86,7 +81,6 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
       } catch (e) {
         log('Media scanner failed for ${copiedFile.path}: $e');
       }
-
       return copiedFile;
     } catch (e) {
       log('Failed to save file to Trip Planner album: $e');
@@ -159,7 +153,7 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     controller.activityDate =
         itineraryProvider.itinerary.days[widget.dayIndex].date;
     requestPermission();
-    cleanUpImages(); // Bersihkan daftar gambar sebelum inisialisasi
+    cleanUpImages();
     controller.image.value =
         controller.convertPathsToFiles(widget.activity.images!);
     log('Initial images: ${widget.activity.images}');
@@ -172,7 +166,7 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     widget.activity.images = widget.activity.images!
         .where((image) => image.isNotEmpty)
         .toSet()
-        .toList(); // Hapus duplikasi dan path kosong
+        .toList();
     log('Cleaned images: ${widget.activity.images}');
   }
 
@@ -189,11 +183,9 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
 
           double dialogWidth, dialogHeight;
           if (aspectRatio > 1) {
-            // Landscape
             dialogWidth = maxDialogWidth;
             dialogHeight = dialogWidth / aspectRatio;
           } else {
-            // Portrait
             dialogHeight = maxDialogHeight;
             dialogWidth = dialogHeight * aspectRatio;
           }
@@ -230,139 +222,252 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final photoCount = widget.activity.images?.length ?? 0;
+
     return Scaffold(
-      backgroundColor: CustomColor.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: CustomColor.primaryColor500,
-        title: Text(
-          'Foto Aktivitas',
-          style: primaryTextStyle.copyWith(
-            fontWeight: semibold,
-            fontSize: 18,
-            // fontFamily: 'poppins_bold',
-            color: CustomColor.whiteColor,
-          ),
-          // itineraryProvider.itinerary.title,
-        ),
-        centerTitle: true,
-        leading: Padding(
-          padding: const EdgeInsets.all(3.0),
-          child: BackButton(
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: CustomColor.whiteColor,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.delete,
-              color: CustomColor.whiteColor,
-            ),
-            tooltip: '',
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ActivityTrashPhotoPage(
-                            activity: widget.activity,
-                          )));
-            },
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await controller.syncGalleryIncremental(force: true);
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Obx(() {
-            if (controller.isLoading.isTrue) {
-              return ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
+      backgroundColor: CustomColor.paper,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Custom header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
                 children: [
-                  const SizedBox(height: 100),
-                  Center(
-                    child: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: LoadingAnimationWidget.discreteCircle(
-                        color: CustomColor.surface,
-                        size: 200,
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: CustomColor.ocean900.withOpacity(0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: CustomColor.ocean900,
+                        size: 18,
                       ),
                     ),
                   ),
-                ],
-              );
-            }
-
-            if (controller.image.isEmpty) {
-              return ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 220),
-                  Center(
-                    child: Text(
-                      "Tidak ada gambar yang ditampilkan",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'poppins',
-                        color: Colors.black,
+                  const Expanded(
+                    child: Center(
+                      child: IterasiKicker(
+                        'jurnal aktivitas',
+                        color: CustomColor.muted,
                       ),
                     ),
                   ),
-                ],
-              );
-            }
-
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: MasonryView(
-                listOfItem: controller.image,
-                numberOfColumn: 2,
-                itemBuilder: (item) {
-                  final file = item as File;
-                  return GestureDetector(
-                    onTap: () {
-                      _showImageDialog(file);
-                    },
-                    onLongPress: () {
-                      controller.showDeleteConfirmationDialog(context, file);
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: Image.file(
-                        file,
-                        fit: BoxFit.cover,
-                      ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.ios_share_outlined,
+                      color: CustomColor.ocean900,
+                      size: 20,
                     ),
-                  );
-                },
+                    onPressed: () {},
+                  ),
+                ],
               ),
-            );
-          }),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        elevation: 2,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(100.0))),
-        backgroundColor: CustomColor.primary,
-        onPressed: () async {
-          await _saveCameraImage();
-        },
-        child: const Icon(
-          Icons.camera_enhance,
-          color: Colors.white,
+            ),
+
+            // Hero section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IterasiKicker(
+                    '${widget.activity.startActivityTime} · hari ${widget.dayIndex + 1}',
+                    color: CustomColor.coral700,
+                  ),
+                  const SizedBox(height: 4),
+                  IterasiDisplay(
+                    widget.activity.activityName,
+                    style: const TextStyle(
+                        fontSize: 22, fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 2),
+                  IterasiMono(
+                    '${widget.activity.lokasi} · $photoCount foto',
+                    color: CustomColor.muted,
+                  ),
+                ],
+              ),
+            ),
+
+            // Photo grid
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await controller.syncGalleryIncremental(force: true);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Obx(() {
+                    if (controller.isLoading.isTrue) {
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          const SizedBox(height: 100),
+                          Center(
+                            child: SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: LoadingAnimationWidget.discreteCircle(
+                                color: CustomColor.paper,
+                                size: 200,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    if (controller.image.isEmpty) {
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          const SizedBox(height: 80),
+                          Center(
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.photo_library_outlined,
+                                  size: 48,
+                                  color: CustomColor.muted.withOpacity(0.5),
+                                ),
+                                const SizedBox(height: 12),
+                                IterasiBody(
+                                  'Belum ada foto',
+                                  color: CustomColor.muted,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: MasonryView(
+                        listOfItem: controller.image,
+                        numberOfColumn: 3,
+                        itemBuilder: (item) {
+                          final file = item as File;
+                          return GestureDetector(
+                            onTap: () => _showImageDialog(file),
+                            onLongPress: () {
+                              controller.showDeleteConfirmationDialog(
+                                  context, file);
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Image.file(file, fit: BoxFit.cover),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+
+            // Bottom action bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: CustomColor.paper.withOpacity(0.95),
+                border: Border(
+                  top: BorderSide(
+                    color: CustomColor.ocean900.withOpacity(0.10),
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Camera
+                  GestureDetector(
+                    onTap: () async => await _saveCameraImage(),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: CustomColor.ocean900.withOpacity(0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_outlined,
+                        color: CustomColor.ocean900,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Gallery pill
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async => await _saveGalleryImage(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColor.ocean900,
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(
+                        Icons.photo_library_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      label: Text(
+                        'Tambah dari galeri',
+                        style: bodyStyle.copyWith(
+                          color: Colors.white,
+                          fontWeight: medium,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Trash
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ActivityTrashPhotoPage(
+                            activity: widget.activity,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        color: CustomColor.coral500,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -23,7 +23,7 @@
 | P1 | [phase-1-theme.md](phase-1-theme.md) | ✅ Selesai | 8/8 |
 | P2 | [phase-2-model.md](phase-2-model.md) | ✅ Selesai | 7/7 |
 | P3 | [phase-3-widgets.md](phase-3-widgets.md) | ✅ Selesai | 13/13 |
-| P4 | [phase-4-screens.md](phase-4-screens.md) | 🔴 Belum | 0/20 |
+| P4 | [phase-4-screens.md](phase-4-screens.md) | ✅ Selesai | 20/20 |
 | P5 | [phase-5-cleanup.md](phase-5-cleanup.md) | 🔴 Belum | 0/8 |
 | P6 | [phase-6-docs.md](phase-6-docs.md) | 🔴 Belum | 0/4 |
 | P7 | [phase-7-verify.md](phase-7-verify.md) | 🔴 Belum | 0/12 |

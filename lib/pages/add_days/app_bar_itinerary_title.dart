@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iterasi1/resource/theme.dart';
+import 'package:iterasi1/widget/iterasi_text.dart';
 
 class AppBarItineraryTitle extends StatelessWidget {
   final String title;
@@ -7,14 +8,10 @@ class AppBarItineraryTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
+    return IterasiDisplay(
       title,
-      style: primaryTextStyle.copyWith(
-        fontWeight: semibold,
-        fontSize: 18,
-        color: Colors.white,
-      ),
-      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 17),
+      color: CustomColor.ocean900,
     );
   }
 }

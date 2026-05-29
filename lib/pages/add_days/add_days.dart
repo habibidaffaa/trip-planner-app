@@ -4,18 +4,20 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:iterasi1/model/alert_save_dialog_result.dart';
 import 'package:iterasi1/pages/activity_photo_page.dart';
 import 'package:iterasi1/pages/add_activities/add_activities.dart';
-import 'package:iterasi1/pages/add_days/app_bar_itinerary_title.dart';
 import 'package:iterasi1/pages/add_days/search_field.dart';
 import 'package:iterasi1/pages/datepicker/select_date.dart';
 import 'package:iterasi1/pages/itinerary_list.dart';
 import 'package:iterasi1/pages/pdf/preview_pdf_page.dart';
 import 'package:iterasi1/provider/database_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
+import 'package:iterasi1/utilities/thumbnail_storage.dart';
 import 'package:iterasi1/widget/activity_card.dart';
+import 'package:iterasi1/widget/iterasi_text.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
@@ -36,8 +38,6 @@ class _AddDaysState extends State<AddDays> {
 
   int selectedDayIndex = 0;
   bool isEditing = false;
-  late Widget appBarTitle;
-  late List<Widget> actionIcon;
 
   late ScaffoldMessengerState snackbarHandler;
   String _pendingTitle = '';
@@ -52,7 +52,6 @@ class _AddDaysState extends State<AddDays> {
         );
       return;
     }
-
     itineraryProvider.setNewItineraryTitle(trimmedTitle, shouldNotify: true);
     _pendingTitle = trimmedTitle;
     setState(() {
@@ -62,7 +61,6 @@ class _AddDaysState extends State<AddDays> {
 
   bool _commitPendingTitleIfAny() {
     if (!isEditing) return true;
-
     final trimmedTitle = _pendingTitle.trim();
     if (trimmedTitle.isEmpty) {
       snackbarHandler
@@ -72,7 +70,6 @@ class _AddDaysState extends State<AddDays> {
         );
       return false;
     }
-
     itineraryProvider.setNewItineraryTitle(trimmedTitle, shouldNotify: true);
     setState(() {
       isEditing = false;
@@ -94,12 +91,10 @@ class _AddDaysState extends State<AddDays> {
   String? _extractAutoPhotoHash(String filePath) {
     final fileName = filePath.split(Platform.pathSeparator).last;
     if (!fileName.startsWith('AUTO_')) return null;
-
     final extensionIndex = fileName.lastIndexOf('.');
     final rawHash = extensionIndex > 5
         ? fileName.substring(5, extensionIndex)
         : fileName.substring(5);
-
     if (rawHash.isEmpty) return null;
     return itineraryProvider.normalizeHiddenPhotoHash(rawHash);
   }
@@ -109,7 +104,6 @@ class _AddDaysState extends State<AddDays> {
       for (final activity in day.activities) {
         final removedPaths =
             List<String>.from(activity.removedImages ?? const <String>[]);
-
         for (final removedPath in removedPaths) {
           final hiddenHash = _extractAutoPhotoHash(removedPath);
           if (hiddenHash != null) {
@@ -123,7 +117,6 @@ class _AddDaysState extends State<AddDays> {
         }
       }
     }
-
     final removedPaths = itineraryProvider.getAllRemovedPhotoPaths();
     itineraryProvider.purgeRemovedPhotoReferences(removedPaths,
         shouldNotify: false);
@@ -159,272 +152,419 @@ class _AddDaysState extends State<AddDays> {
     }
   }
 
+  Future<void> _editThumbnail() async {
+    final picker = ImagePicker();
+    final XFile? picked =
+        await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null && mounted) {
+      final id = itineraryProvider.itinerary.id?.toString() ??
+          DateTime.now().millisecondsSinceEpoch.toString();
+      final path = await persistThumbnail(File(picked.path), id);
+      itineraryProvider.setThumbnail(path);
+    }
+  }
+
+  String _dayRangeText() {
+    final days = itineraryProvider.itinerary.days;
+    if (days.isEmpty) return '';
+    final fmt = DateFormat('d MMM', 'id_ID');
+    final first = _parseDate(days.first.date);
+    final last = _parseDate(days.last.date);
+    return '${fmt.format(first)} – ${fmt.format(last)}';
+  }
+
+  DateTime _parseDate(String ddMMyyyy) {
+    final parts = ddMMyyyy.split('/');
+    return DateTime(
+      int.parse(parts[2]),
+      int.parse(parts[1]),
+      int.parse(parts[0]),
+    );
+  }
+
+  String _dayLabel(int index) {
+    final day = itineraryProvider.itinerary.days[index];
+    final date = _parseDate(day.date);
+    return DateFormat('EEE, d MMM', 'id_ID').format(date);
+  }
+
   @override
   Widget build(BuildContext context) {
     snackbarHandler = ScaffoldMessenger.of(context);
     itineraryProvider = Provider.of(context, listen: true);
     databaseProvider = Provider.of(context, listen: true);
 
-    if (isEditing) {
-      appBarTitle = SearchField(
-        initialText: _pendingTitle,
-        onSubmit: _submitItineraryTitle,
-        onValueChange: (newTitle) {
-          _pendingTitle = newTitle;
-        },
-      );
-      actionIcon = [];
-    } else {
-      appBarTitle =
-          AppBarItineraryTitle(title: itineraryProvider.itinerary.title);
-      actionIcon = [
-        IconButton(
-          icon: const Icon(Icons.mode_edit_outlined),
-          onPressed: () {
-            setState(() {
-              _pendingTitle = itineraryProvider.itinerary.title;
-              isEditing = true;
-            });
-          },
-        ),
-      ];
-    }
-
     return LoaderOverlay(
       child: WillPopScope(
         onWillPop: handleBackBehaviour,
         child: Scaffold(
-          backgroundColor: CustomColor.softOffWhite,
-          appBar: AppBar(
-            surfaceTintColor: CustomColor.transparentColor,
-            title: appBarTitle,
-            actions: actionIcon,
-            centerTitle: true,
-            backgroundColor: CustomColor.brandElectric,
-            foregroundColor: CustomColor.whiteColor,
-            elevation: 0,
-            titleTextStyle: headingTextStyle.copyWith(
-              fontWeight: semibold,
-              fontSize: 18,
-              color: CustomColor.whiteColor,
-              letterSpacing: -0.36,
-            ),
-            leading: Padding(
-              padding: const EdgeInsets.all(3.0),
-              child: BackButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: CustomColor.whiteColor,
-                ),
-                onPressed: () {
-                  handleBackBehaviour().then(
-                    (shouldPop) {
-                      if (shouldPop) {
-                        Navigator.popUntil(
-                          context,
-                          ModalRoute.withName(ItineraryList.route),
-                        );
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-          body: Stack(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Day tabs
-                  Container(
-                    color: CustomColor.whiteColor,
-                    child: Stack(
-                      children: [
-                        SizedBox(
-                          height: 64,
-                          child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            scrollDirection: Axis.horizontal,
-                            physics: const BouncingScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              return _DayTab(
-                                index: index,
-                                tanggal: itineraryProvider
-                                    .itinerary.days[index].date,
-                                isSelected: index == selectedDayIndex,
-                                onTap: () =>
-                                    setState(() => selectedDayIndex = index),
-                              );
-                            },
-                            itemCount:
-                                itineraryProvider.itinerary.days.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 8),
+          backgroundColor: CustomColor.paper,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Custom header
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      child: Row(
+                        children: [
+                          // Back button
+                          _CircleBackButton(onTap: () {
+                            handleBackBehaviour().then((shouldPop) {
+                              if (shouldPop) {
+                                Navigator.popUntil(
+                                  context,
+                                  ModalRoute.withName(ItineraryList.route),
+                                );
+                              }
+                            });
+                          }),
+                          const SizedBox(width: 8),
+                          // Title / edit area
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IterasiMono(
+                                  _dayRangeText(),
+                                  style: const TextStyle(fontSize: 11),
+                                  color: CustomColor.muted,
+                                ),
+                                const SizedBox(height: 2),
+                                if (isEditing)
+                                  SearchField(
+                                    initialText: _pendingTitle,
+                                    onSubmit: _submitItineraryTitle,
+                                    onValueChange: (newTitle) {
+                                      _pendingTitle = newTitle;
+                                    },
+                                  )
+                                else
+                                  GestureDetector(
+                                    onTap: () => setState(() {
+                                      _pendingTitle =
+                                          itineraryProvider.itinerary.title;
+                                      isEditing = true;
+                                    }),
+                                    child: IterasiDisplay(
+                                      itineraryProvider.itinerary.title,
+                                      style: const TextStyle(fontSize: 17),
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: InkWell(
+                          const SizedBox(width: 8),
+                          // Thumbnail edit button
+                          IconButton(
+                            icon: const Icon(
+                              Icons.camera_alt_outlined,
+                              size: 18,
+                              color: CustomColor.muted,
+                            ),
+                            onPressed: _editThumbnail,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          // Save pill
+                          GestureDetector(
                             onTap: () {
-                              log(itineraryProvider.itinerary.days
-                                  .map((e) => e.getDatetime())
-                                  .toList()
-                                  .toString());
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return SelectDate(
+                              if (!isEditing) {
+                                saveAndExit();
+                              } else {
+                                _submitItineraryTitle(_pendingTitle);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: CustomColor.ocean900,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                'Simpan',
+                                style: bodyStyle.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: semibold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      height: 1,
+                      color: CustomColor.ocean900.withOpacity(0.08),
+                    ),
+
+                    // Day chips row
+                    Container(
+                      color: CustomColor.paper,
+                      child: Stack(
+                        children: [
+                          SizedBox(
+                            height: 52,
+                            child: ListView.separated(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                return _DayChip(
+                                  index: index,
+                                  tanggal: itineraryProvider
+                                      .itinerary.days[index].date,
+                                  isSelected: index == selectedDayIndex,
+                                  onTap: () =>
+                                      setState(() => selectedDayIndex = index),
+                                );
+                              },
+                              itemCount:
+                                  itineraryProvider.itinerary.days.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 6),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: InkWell(
+                              onTap: () {
+                                log(itineraryProvider.itinerary.days
+                                    .map((e) => e.getDatetime())
+                                    .toList()
+                                    .toString());
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => SelectDate(
                                       isNewItinerary: false,
                                       initialDates: itineraryProvider
                                           .itinerary.days
                                           .map((e) => e.getDatetime())
                                           .toList(),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 12),
+                                padding: const EdgeInsets.all(6),
+                                decoration: const BoxDecoration(
+                                  color: CustomColor.coral500,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      height: 1,
+                      color: CustomColor.ocean900.withOpacity(0.06),
+                    ),
+
+                    // Big day header
+                    if (itineraryProvider.itinerary.days.isNotEmpty)
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IterasiKicker(
+                              'hari ${selectedDayIndex + 1} · ${_dayLabel(selectedDayIndex)}',
+                              color: CustomColor.coral700,
+                            ),
+                            const SizedBox(height: 4),
+                            IterasiDisplay(
+                              'Hari ${selectedDayIndex + 1}',
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Activity list
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 80),
+                        child: FutureBuilder<List<Activity>>(
+                          future: itineraryProvider.getSortedActivity(
+                              itineraryProvider
+                                  .itinerary
+                                  .days[selectedDayIndex]
+                                  .activities),
+                          builder: (context, snapshot) {
+                            final data = snapshot.data;
+                            if (data != null) {
+                              if (data.isEmpty) {
+                                return _EmptyDayState();
+                              }
+                              return ListView.separated(
+                                padding: const EdgeInsets.fromLTRB(
+                                    16, 8, 16, 0),
+                                scrollDirection: Axis.vertical,
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  final currentActivity =
+                                      data[index].copy();
+                                  return ActivityCard(
+                                    snackbarHandler: snackbarHandler,
+                                    data: data[index],
+                                    selectedDayIndex: selectedDayIndex,
+                                    activityIndex: index,
+                                    onUndo: () {
+                                      itineraryProvider.insertNewActivity(
+                                          activities: data,
+                                          newActivity: currentActivity);
+                                    },
+                                    onDismiss: () {
+                                      itineraryProvider.removeActivity(
+                                          activities: data,
+                                          removedHashCode:
+                                              data[index].hashCode);
+                                    },
+                                  );
+                                },
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemCount: data.length,
+                              );
+                            } else {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Bottom action bar
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: CustomColor.paper.withOpacity(0.95),
+                      border: Border(
+                        top: BorderSide(
+                          color: CustomColor.ocean900.withOpacity(0.10),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return AddActivities(
+                                      onSubmit: (newActivity) {
+                                        itineraryProvider.insertNewActivity(
+                                            activities: itineraryProvider
+                                                .itinerary
+                                                .days[selectedDayIndex]
+                                                .activities,
+                                            newActivity: newActivity);
+                                        log("${itineraryProvider.itinerary.days[selectedDayIndex].activities.length}");
+                                      },
                                     );
                                   },
                                 ),
                               );
                             },
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 12),
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: CustomColor.brandElectric,
-                                shape: BoxShape.circle,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: CustomColor.ocean900,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
                               ),
-                              child: const Icon(
-                                Icons.add,
-                                color: CustomColor.whiteColor,
-                                size: 18,
+                              elevation: 0,
+                            ),
+                            icon: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            label: Text(
+                              'Tambah aktivitas',
+                              style: bodyStyle.copyWith(
+                                color: Colors.white,
+                                fontWeight: semibold,
+                                fontSize: 14,
                               ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (builder) => PdfPreviewPage(
+                                    itinerary: itineraryProvider.itinerary),
+                              ),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: CustomColor.ocean900.withOpacity(0.25),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 14, horizontal: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                          ),
+                          icon: const Icon(
+                            Icons.share_outlined,
+                            size: 16,
+                            color: CustomColor.ocean900,
+                          ),
+                          label: Text(
+                            'Bagikan PDF',
+                            style: bodyStyle.copyWith(
+                              color: CustomColor.ocean900,
+                              fontWeight: medium,
+                              fontSize: 13,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Container(height: 1, color: CustomColor.lightCoolGray),
-                  // Activity list
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 80),
-                      child: FutureBuilder<List<Activity>>(
-                        future: itineraryProvider.getSortedActivity(
-                            itineraryProvider
-                                .itinerary.days[selectedDayIndex].activities),
-                        builder: (context, snapshot) {
-                          final data = snapshot.data;
-                          if (data != null) {
-                            if (data.isEmpty) {
-                              return _EmptyDayState();
-                            }
-                            return ListView.separated(
-                              padding:
-                                  const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                              scrollDirection: Axis.vertical,
-                              physics: const BouncingScrollPhysics(),
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                final currentActivity = data[index].copy();
-                                print(
-                                    'activity card : ${data[index].startDateTime}');
-                                return ActivityCard(
-                                  snackbarHandler: snackbarHandler,
-                                  data: data[index],
-                                  selectedDayIndex: selectedDayIndex,
-                                  activityIndex: index,
-                                  onUndo: () {
-                                    itineraryProvider.insertNewActivity(
-                                        activities: data,
-                                        newActivity: currentActivity);
-                                  },
-                                  onDismiss: () {
-                                    itineraryProvider.removeActivity(
-                                        activities: data,
-                                        removedHashCode: data[index].hashCode);
-                                  },
-                                );
-                              },
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 12),
-                              itemCount: data.length,
-                            );
-                          } else {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              // Bottom action panel
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
-                  decoration: AppTheme.actionPanelDecoration(),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  print(itineraryProvider.itinerary
-                                      .days[selectedDayIndex].activities);
-                                  return AddActivities(
-                                    onSubmit: (newActivity) {
-                                      itineraryProvider.insertNewActivity(
-                                          activities: itineraryProvider
-                                              .itinerary
-                                              .days[selectedDayIndex]
-                                              .activities,
-                                          newActivity: newActivity);
-                                      log("${itineraryProvider.itinerary.days[selectedDayIndex].activities.length}");
-                                    },
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'Tambah Aktivitas',
-                            style: primaryTextStyle.copyWith(
-                              fontWeight: semibold,
-                              fontSize: 15,
-                              color: CustomColor.whiteColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _ActionIconButton(
-                        icon: Icons.print_outlined,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (builder) => PdfPreviewPage(
-                                  itinerary: itineraryProvider.itinerary),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      _ActionIconButton(
-                        icon: Icons.save_outlined,
-                        onTap: saveAndExit,
-                      ),
-                    ],
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -436,7 +576,7 @@ class _AddDaysState extends State<AddDays> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: CustomColor.whiteColor,
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -446,86 +586,89 @@ class _AddDaysState extends State<AddDays> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(100)),
-                  color: CustomColor.warningColor.withOpacity(0.1),
+                  color: CustomColor.danger.withOpacity(0.1),
                 ),
                 child: const Icon(
                   Icons.warning_rounded,
                   size: 36,
-                  color: CustomColor.warningColor,
+                  color: CustomColor.danger,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 "Konfirmasi Perubahan",
                 textAlign: TextAlign.center,
-                style: headingTextStyle.copyWith(
-                  color: CustomColor.boardroomNavy,
-                  fontSize: 16,
+                style: displayStyle.copyWith(
+                  color: CustomColor.ocean900,
+                  fontSize: 18,
                   fontWeight: semibold,
-                  letterSpacing: -0.32,
                 ),
               ),
             ],
           ),
           content: Text(
             "Itinerary Anda telah diubah. Simpan sebelum keluar?",
-            style: primaryTextStyle.copyWith(
+            style: bodyStyle.copyWith(
               fontSize: 14,
-              color: CustomColor.subtitleTextColor,
+              color: CustomColor.muted,
             ),
             textAlign: TextAlign.center,
           ),
           actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(100),
-                    onTap: () => Navigator.of(context)
-                        .pop(AlertSaveDialogResult.saveWithoutQuit),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: CustomColor.warningColor,
-                        borderRadius: BorderRadius.circular(100),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context)
+                          .pop(AlertSaveDialogResult.saveWithoutQuit),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: CustomColor.danger.withOpacity(0.5),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Text(
                         "Keluar Tanpa Simpan",
                         textAlign: TextAlign.center,
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 13,
+                        style: bodyStyle.copyWith(
+                          fontSize: 12,
                           fontWeight: semibold,
-                          color: CustomColor.whiteColor,
+                          color: CustomColor.danger,
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(100),
-                    onTap: () => Navigator.of(context)
-                        .pop(AlertSaveDialogResult.saveAndQuit),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: CustomColor.brandElectric,
-                        borderRadius: BorderRadius.circular(100),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context)
+                          .pop(AlertSaveDialogResult.saveAndQuit),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColor.ocean900,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        elevation: 0,
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Text(
                         "Simpan & Keluar",
                         textAlign: TextAlign.center,
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 13,
+                        style: bodyStyle.copyWith(
+                          fontSize: 12,
                           fontWeight: semibold,
-                          color: CustomColor.whiteColor,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         );
@@ -536,7 +679,6 @@ class _AddDaysState extends State<AddDays> {
   Future<bool> persistCurrentItinerary() async {
     FocusScope.of(context).unfocus();
     if (!_commitPendingTitleIfAny()) return false;
-
     context.loaderOverlay.show();
     try {
       await _finalizeRemovedPhotos();
@@ -568,9 +710,7 @@ class _AddDaysState extends State<AddDays> {
         isEditing && _pendingTitle.trim() != itineraryProvider.itinerary.title;
     if (itineraryProvider.isDataChanged || hasPendingTitleChange) {
       final resultSaveDialog = await showAlertSaveDialog(context);
-
       late bool shouldPop;
-
       if (resultSaveDialog == AlertSaveDialogResult.saveWithoutQuit) {
         shouldPop = true;
       } else if (resultSaveDialog == AlertSaveDialogResult.saveAndQuit) {
@@ -588,14 +728,40 @@ class _AddDaysState extends State<AddDays> {
   }
 }
 
-// Day tab widget
-class _DayTab extends StatelessWidget {
+class _CircleBackButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CircleBackButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: CustomColor.ocean900.withOpacity(0.25),
+          ),
+        ),
+        child: const Icon(
+          Icons.arrow_back,
+          color: CustomColor.ocean900,
+          size: 18,
+        ),
+      ),
+    );
+  }
+}
+
+class _DayChip extends StatelessWidget {
   final int index;
   final String tanggal;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _DayTab({
+  const _DayChip({
     required this.index,
     required this.tanggal,
     required this.isSelected,
@@ -610,78 +776,50 @@ class _DayTab extends StatelessWidget {
       int.parse(parts[1]),
       int.parse(parts[0]),
     );
-    final formatted = DateFormat("dd MMM").format(parsedDate);
+    final dayAbbr = DateFormat('EEE', 'id_ID').format(parsedDate);
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              width: 2,
-              color:
-                  isSelected ? CustomColor.brandElectric : Colors.transparent,
-            ),
+          color: isSelected ? CustomColor.ocean900 : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
+          border: isSelected
+              ? null
+              : Border.all(
+                  color: CustomColor.ocean900.withOpacity(0.15),
+                ),
+        ),
+        child: RichText(
+          text: TextSpan(
+            style: monoStyle.copyWith(fontSize: 12),
+            children: [
+              TextSpan(
+                text: 'D${index + 1} ',
+                style: TextStyle(
+                  color: isSelected
+                      ? Colors.white
+                      : CustomColor.ocean900,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextSpan(
+                text: dayAbbr,
+                style: TextStyle(
+                  color: isSelected
+                      ? Colors.white.withOpacity(0.85)
+                      : CustomColor.ocean700,
+                ),
+              ),
+            ],
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Hari ${index + 1}',
-              style: primaryTextStyle.copyWith(
-                fontWeight: semibold,
-                fontSize: 13,
-                color: isSelected
-                    ? CustomColor.brandElectric
-                    : CustomColor.inputBorderGray,
-              ),
-            ),
-            Text(
-              formatted,
-              style: primaryTextStyle.copyWith(
-                fontSize: 11,
-                color: isSelected
-                    ? CustomColor.brandElectric
-                    : CustomColor.inputBorderGray,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 }
 
-// Circular icon action button
-class _ActionIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _ActionIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      customBorder: const CircleBorder(),
-      child: Container(
-        height: 48,
-        width: 48,
-        decoration: const BoxDecoration(
-          color: CustomColor.lightCoolGray,
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 20, color: CustomColor.boardroomNavy),
-      ),
-    );
-  }
-}
-
-// Empty day state
 class _EmptyDayState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -689,27 +827,22 @@ class _EmptyDayState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.calendar_today_outlined,
             size: 40,
-            color: CustomColor.inputBorderGray,
+            color: CustomColor.muted.withOpacity(0.5),
           ),
           const SizedBox(height: 12),
-          Text(
+          IterasiBody(
             'Belum ada aktivitas',
-            style: primaryTextStyle.copyWith(
-              fontSize: 15,
-              fontWeight: medium,
-              color: CustomColor.subtitleTextColor,
-            ),
+            style: const TextStyle(fontSize: 15),
+            color: CustomColor.muted,
           ),
           const SizedBox(height: 4),
-          Text(
+          IterasiBody(
             'Tambahkan aktivitas untuk hari ini',
-            style: primaryTextStyle.copyWith(
-              fontSize: 13,
-              color: CustomColor.inputBorderGray,
-            ),
+            style: const TextStyle(fontSize: 13),
+            color: CustomColor.muted,
           ),
         ],
       ),

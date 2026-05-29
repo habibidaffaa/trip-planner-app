@@ -9,6 +9,7 @@ import 'package:iterasi1/pages/add_days/add_days.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_helper.dart';
+import 'package:iterasi1/widget/iterasi_text.dart';
 import 'package:iterasi1/widget/recommendaation_activity_card.dart';
 import 'package:provider/provider.dart';
 
@@ -31,6 +32,7 @@ class _SuggestionPageState extends State<SuggestionPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() => setState(() {}));
   }
 
   @override
@@ -48,81 +50,99 @@ class _SuggestionPageState extends State<SuggestionPage>
     }
 
     return Scaffold(
-      backgroundColor: CustomColor.whiteColor,
-      appBar: AppBar(
-        backgroundColor: CustomColor.primary,
-        leading: Padding(
-          padding: const EdgeInsets.all(3.0),
-          child: BackButton(
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: CustomColor.whiteColor,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        title: Text(
-          "Rekomendasi Itinerary",
-          style: primaryTextStyle.copyWith(
-            fontSize: 18,
-            fontWeight: semibold,
-            color: CustomColor.surface,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          Container(
-            color: CustomColor.whiteColor,
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: CustomColor.primaryColor600,
-              indicatorWeight: 3,
-              labelColor: CustomColor.primaryColor600,
-              unselectedLabelColor: CustomColor.subtitleTextColor,
-              labelStyle: primaryTextStyle.copyWith(
-                fontWeight: semibold,
+      backgroundColor: CustomColor.paper,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: CustomColor.ocean900.withOpacity(0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: CustomColor.ocean900,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                  const Expanded(
+                    child: Center(
+                      child: IterasiMono(
+                        '2 rancangan · geser →',
+                        style: TextStyle(fontSize: 11),
+                        color: CustomColor.muted,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 40),
+                ],
               ),
-              tabs: const [
-                Tab(text: "Rekomendasi 1"),
-                Tab(text: "Rekomendasi 2"),
-              ],
             ),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildItineraryContent(index: 0),
-                _buildItineraryContent(index: 1),
-              ],
+
+            // Tab bar
+            Container(
+              color: CustomColor.paper,
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: CustomColor.coral500,
+                indicatorWeight: 2,
+                labelColor: CustomColor.ocean900,
+                unselectedLabelColor: CustomColor.muted,
+                labelStyle: bodyStyle.copyWith(
+                  fontWeight: semibold,
+                  fontSize: 13,
+                ),
+                unselectedLabelStyle: bodyStyle.copyWith(fontSize: 13),
+                tabs: const [
+                  Tab(text: "v 1 · santai"),
+                  Tab(text: "v 2 · padat"),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: CustomColor.whiteColor,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x19000000),
-              blurRadius: 24,
-              offset: Offset(0, 2),
+
+            // Tab content
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildItineraryContent(index: 0),
+                  _buildItineraryContent(index: 1),
+                ],
+              ),
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: CustomColor.paper,
+          border: Border(
+            top: BorderSide(
+              color: CustomColor.ocean900.withOpacity(0.10),
+            ),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: CustomColor.primaryColor500,
+            backgroundColor: CustomColor.coral500,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(100),
             ),
-            // padding: const EdgeInsets.symmetric(vertical: 16),
-            minimumSize: const Size(double.infinity, 48),
+            minimumSize: const Size(double.infinity, 52),
+            elevation: 0,
           ),
           onPressed: () {
             log('Itinerary terpilih: ${_tabController.index}');
@@ -139,11 +159,11 @@ class _SuggestionPageState extends State<SuggestionPage>
             );
           },
           child: Text(
-            "PILIH",
-            style: primaryTextStyle.copyWith(
-              fontSize: 18,
+            "Pilih versi ini",
+            style: bodyStyle.copyWith(
+              fontSize: 16,
               fontWeight: semibold,
-              color: CustomColor.surface,
+              color: Colors.white,
             ),
           ),
         ),
@@ -152,61 +172,47 @@ class _SuggestionPageState extends State<SuggestionPage>
   }
 
   Widget _buildItineraryContent({required int index}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shrinkWrap: true,
-        itemCount: widget.itineraries[index].days.length,
-        separatorBuilder: (context, index) {
-          return const SizedBox(height: 10);
-        },
-        itemBuilder: (context, indexDay) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                alignment: Alignment.center,
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      itemCount: widget.itineraries[index].days.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, indexDay) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: CustomColor.disabledColor,
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(100.0),
-                  ),
+                  color: CustomColor.sand300.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(100),
                 ),
-                child: Text(
+                child: IterasiKicker(
                   "Hari ke-${indexDay + 1} ${AppHelper.formatDate(widget.itineraries[index].days[indexDay].date)}",
-                  style: primaryTextStyle.copyWith(
-                    fontSize: 14,
-                    color: CustomColor.blackColor,
-                    // fontWeight: semibold,
-                    // fontWeight: FontWeight.bold,
-                  ),
+                  color: CustomColor.coral700,
                 ),
               ),
-              SizedBox(height: 10),
-              ListView.separated(
-                physics: NeverScrollableScrollPhysics(),
-                separatorBuilder: (context, index) {
-                  return SizedBox(height: 10);
-                },
-                shrinkWrap: true,
-                itemCount:
-                    widget.itineraries[index].days[indexDay].activities.length,
-                itemBuilder: (context, indexActivity) {
-                  List<Activity> activities =
-                      widget.itineraries[index].days[indexDay].activities;
-                  return RecommendaationActivityCard(
-                    data: activities[indexActivity],
-                  );
-                },
-              ),
-              SizedBox(height: 10),
-            ],
-          );
-        },
-      ),
+            ),
+            ListView.separated(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: 8),
+              itemCount: widget.itineraries[index]
+                  .days[indexDay].activities.length,
+              itemBuilder: (context, indexActivity) {
+                List<Activity> activities =
+                    widget.itineraries[index].days[indexDay].activities;
+                return RecommendaationActivityCard(
+                  data: activities[indexActivity],
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
