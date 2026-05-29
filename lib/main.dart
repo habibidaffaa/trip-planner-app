@@ -22,6 +22,12 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: CustomColor.paper,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
 
   runApp(const MyApp());
 }

@@ -1,0 +1,2431 @@
+<!doctype html>
+<html lang="en"><head><script data-od-sandbox-shim="">(function(){
+  function makeStore(){
+    var data = {};
+    var api = {
+      getItem: function(k){ return Object.prototype.hasOwnProperty.call(data, k) ? data[k] : null; },
+      setItem: function(k, v){ data[k] = String(v); },
+      removeItem: function(k){ delete data[k]; },
+      clear: function(){ data = {}; },
+      key: function(i){ return Object.keys(data)[i] || null; }
+    };
+    Object.defineProperty(api, 'length', { get: function(){ return Object.keys(data).length; } });
+    return api;
+  }
+  function tryShim(name){
+    var works = false;
+    try { works = !!window[name] && typeof window[name].getItem === 'function'; void window[name].length; }
+    catch (_) { works = false; }
+    if (works) return;
+    try { Object.defineProperty(window, name, { configurable: true, value: makeStore() }); }
+    catch (_) { try { window[name] = makeStore(); } catch (__) {} }
+  }
+  tryShim('localStorage');
+  tryShim('sessionStorage');
+  document.addEventListener('click', (e) => {
+    if (!e.target || !(e.target instanceof Element)) return;
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (href === null) return;
+    var isAnchor = href.startsWith('#') || href === '';
+    if (isAnchor) {
+      e.preventDefault();
+      if (href === '' || href === '#') {
+        window.scrollTo({ top: 0 });
+        history.replaceState(null, '', ' ');
+      } else {
+        var targetId = href.slice(1);
+        var target = targetId ? document.getElementById(targetId) : null;
+        if (target) {
+          target.scrollIntoView();
+          location.hash === href && history.replaceState(null, '', ' ');
+          location.hash = href;
+        }
+      }
+    } else if (link.getAttribute('target') === '_blank') {
+      e.preventDefault();
+      let safe = false;
+      try {
+        var url = new URL(href, location.href);
+        safe =
+          url.protocol === 'http:' ||
+          url.protocol === 'https:' ||
+          url.protocol === 'mailto:';
+      } catch (_) {}
+      safe && window.open(href, '_blank', 'noopener,noreferrer');
+    }
+  });
+})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iterasi — Visual Redesign · Quiet Luxury Coastal</title>
+<!--
+  DIRECTION: Quiet Luxury Coastal
+  Blue (primary):  #0A2540 deep ocean  ·  #143155 / #1B3A5F deeper  ·  #3A5878 mid
+  Warm accents:    #D4684A terracotta coral  ·  #C9A875 sand  ·  #E8DAC2 dune  ·  #FAF6EF paper
+  Type:            Instrument Serif (display, italic-leaning) + DM Sans (body) + DM Mono (times/utility)
+
+  Rationale: Deep ocean evokes the Indonesian archipelago — Raja Ampat dusk, Komodo channels, Bali at
+  6 a.m. — without slipping into Stripe / Material territory. Pairing it with terracotta coral and warm
+  sand pushes the system away from corporate fintech and toward a printed travel atlas: serif display,
+  cream paper, room to breathe. Indonesian copy where it counts; English where the convention is
+  English. No SaaS gradients, no AI-slop neon, no admin-dashboard energy.
+-->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&amp;family=DM+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ocean: {
+            950: '#06192F',
+            900: '#0A2540',
+            800: '#143155',
+            700: '#1B3A5F',
+            600: '#284F77',
+            500: '#3A5878',
+            400: '#5B7A9C',
+            300: '#7A93AC',
+            200: '#C7D5E0',
+            100: '#DEE6EF',
+            50:  '#EFF4F8',
+          },
+          sand: {
+            700: '#A78854',
+            500: '#C9A875',
+            400: '#D8BC92',
+            300: '#E8DAC2',
+            200: '#EFE3CD',
+            100: '#F5EDDD',
+          },
+          coral: {
+            800: '#8E3F2A',
+            700: '#B2533A',
+            600: '#C25E42',
+            500: '#D4684A',
+            400: '#E08366',
+            300: '#E89878',
+            200: '#F2BFA8',
+          },
+          paper:  '#FAF6EF',
+          paper2: '#F2EEE6',
+          ink:    '#0A2540',
+          muted:  '#6B7A8F',
+        },
+        fontFamily: {
+          display: ['"Instrument Serif"', 'Cormorant Garamond', 'Georgia', 'serif'],
+          sans:    ['"DM Sans"', 'system-ui', 'sans-serif'],
+          mono:    ['"DM Mono"', 'ui-monospace', 'monospace'],
+        },
+        boxShadow: {
+          phone:    '0 40px 80px -28px rgba(10,37,64,0.32), 0 12px 28px -10px rgba(10,37,64,0.18)',
+          soft:     '0 2px 8px rgba(10,37,64,0.06)',
+          card:     '0 1px 2px rgba(10,37,64,0.05), 0 8px 24px -12px rgba(10,37,64,0.12)',
+          inset:    'inset 0 0 0 1px rgba(10,37,64,0.08)',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root {
+    --paper:  #FAF6EF;
+    --paper2: #F2EEE6;
+    --ink:    #0A2540;
+  }
+  html, body { background: var(--paper2); color: var(--ink); }
+  body { font-family: 'DM Sans', system-ui, sans-serif; font-feature-settings: 'ss01','cv11'; }
+  .font-display { font-family: 'Instrument Serif', Georgia, serif; }
+  .font-mono { font-family: 'DM Mono', ui-monospace, monospace; }
+
+  /* iPhone 14 frame — outer chrome lives outside the 390×844 screen */
+  .device {
+    width: 412px; padding: 11px;
+    border-radius: 56px;
+    background: linear-gradient(170deg, #1a1d22 0%, #0c0d10 100%);
+    box-shadow: 0 40px 80px -28px rgba(10,37,64,0.32), 0 12px 28px -10px rgba(10,37,64,0.18), inset 0 0 0 1.5px rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .screen {
+    width: 390px; height: 844px;
+    border-radius: 46px;
+    overflow: hidden;
+    position: relative;
+    background: var(--paper);
+  }
+  /* Side buttons */
+  .device::before, .device::after { content: ''; position: absolute; background: #15171b; border-radius: 2px; }
+  .device::before { left: -2px; top: 110px; width: 3px; height: 32px; box-shadow: 0 50px 0 #15171b, 0 110px 0 #15171b; }
+  .device::after  { right: -2px; top: 160px; width: 3px; height: 56px; }
+
+  /* Dynamic Island */
+  .dyn-island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 124px; height: 34px; background: #000; border-radius: 999px; z-index: 30;
+  }
+  .status-bar {
+    height: 47px; padding: 16px 28px 0 28px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    font: 600 15px/1 'DM Sans', system-ui, sans-serif; letter-spacing: -0.01em;
+    position: relative; z-index: 20;
+  }
+  .status-bar .time { font-variant-numeric: tabular-nums; }
+  .status-bar .right { display: flex; align-items: center; gap: 6px; }
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; border-radius: 100px; background: currentColor; opacity: 0.55;
+  }
+
+  /* utilities */
+  .grain {
+    background-image: radial-gradient(rgba(10,37,64,0.05) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+  .grain-soft {
+    background-image: radial-gradient(rgba(10,37,64,0.03) 1px, transparent 1px);
+    background-size: 5px 5px;
+  }
+  .paper-tex {
+    background-color: #FAF6EF;
+    background-image:
+      radial-gradient(rgba(167,136,84,0.06) 1px, transparent 1.5px),
+      radial-gradient(rgba(10,37,64,0.03) 1px, transparent 1.5px);
+    background-size: 7px 7px, 11px 11px;
+    background-position: 0 0, 2px 3px;
+  }
+  .ocean-deep {
+    background:
+      radial-gradient(ellipse at 50% 25%, rgba(91,122,156,0.55) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 90%, rgba(212,104,74,0.18) 0%, transparent 50%),
+      linear-gradient(180deg, #0A2540 0%, #06192F 100%);
+  }
+  .ocean-card {
+    background:
+      radial-gradient(ellipse at 80% 0%, rgba(212,104,74,0.18) 0%, transparent 55%),
+      linear-gradient(160deg, #143155 0%, #0A2540 100%);
+  }
+  .topo {
+    background-color: #EFF4F8;
+    background-image:
+      radial-gradient(circle at 18% 28%, rgba(201,168,117,0.22) 0%, transparent 32%),
+      radial-gradient(circle at 72% 58%, rgba(212,104,74,0.16) 0%, transparent 32%),
+      radial-gradient(circle at 48% 84%, rgba(58,88,120,0.20) 0%, transparent 38%),
+      repeating-radial-gradient(circle at 50% 50%, rgba(58,88,120,0.08) 0 1px, transparent 1px 14px);
+  }
+  .scroll-hide::-webkit-scrollbar { display: none; }
+  .scroll-hide { scrollbar-width: none; }
+
+  .day-line { position: relative; }
+  .day-line::before {
+    content: ''; position: absolute; left: 9px; top: 22px; bottom: -10px;
+    border-left: 1.5px dashed rgba(10,37,64,0.22);
+  }
+
+  @keyframes pulse-dot { 0%,100% { opacity:.25; transform: translateY(0); } 50% { opacity:1; transform: translateY(-2px); } }
+  .pdot { animation: pulse-dot 1.4s ease-in-out infinite; }
+  .pdot:nth-child(2) { animation-delay: .15s; }
+  .pdot:nth-child(3) { animation-delay: .30s; }
+
+  @keyframes drift { 0%,100% { transform: translateX(0) translateY(0); } 50% { transform: translateX(28px) translateY(-6px); } }
+  .drift { animation: drift 6s ease-in-out infinite; }
+
+  @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 240px 0; } }
+  .shimmer {
+    background: linear-gradient(90deg, rgba(10,37,64,0.06) 0%, rgba(10,37,64,0.12) 40%, rgba(10,37,64,0.06) 80%);
+    background-size: 240px 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #6B7A8F;
+  }
+  .kicker {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  /* Map mock — concentric topo + thin coast lines */
+  .map-canvas {
+    background:
+      radial-gradient(circle at 35% 45%, #E8DAC2 0 12%, transparent 12.5%),
+      radial-gradient(circle at 60% 62%, #E8DAC2 0 18%, transparent 18.5%),
+      radial-gradient(circle at 30% 70%, #DCC9A5 0 7%, transparent 7.5%),
+      linear-gradient(180deg, #DEE6EF 0%, #C7D5E0 100%);
+  }
+
+  /* small svg icon line weight tuning */
+  .ico { stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Bali photo placeholder — terraces */
+  .photo-terrace {
+    background:
+      linear-gradient(180deg, rgba(10,37,64,0.0) 30%, rgba(10,37,64,0.45) 100%),
+      repeating-linear-gradient(170deg, #6F8A52 0 14px, #819C5E 14px 22px, #5E7B4A 22px 32px, #95B26F 32px 44px),
+      #6F8A52;
+  }
+  .photo-bromo {
+    background:
+      linear-gradient(180deg, rgba(255,210,170,0.65) 0%, rgba(212,104,74,0.55) 35%, rgba(10,37,64,0.65) 100%),
+      radial-gradient(circle at 70% 78%, #2a2825 0 14%, transparent 14.5%),
+      linear-gradient(180deg, #f7c9a3 0%, #c97a4f 60%, #4a3b32 100%);
+  }
+  .photo-komodo {
+    background:
+      linear-gradient(180deg, rgba(10,37,64,0.25) 0%, rgba(10,37,64,0.55) 100%),
+      radial-gradient(ellipse at 20% 90%, #C9A875 0 18%, transparent 18.5%),
+      radial-gradient(ellipse at 75% 78%, #A78854 0 14%, transparent 14.5%),
+      linear-gradient(180deg, #7AB6D9 0%, #3A6E8E 100%);
+  }
+  .photo-yogya {
+    background:
+      linear-gradient(180deg, rgba(212,104,74,0.45) 0%, rgba(10,37,64,0.55) 100%),
+      repeating-linear-gradient(90deg, #5A4733 0 4px, #6B5640 4px 8px),
+      #5A4733;
+  }
+  .photo-jimbaran {
+    background:
+      linear-gradient(180deg, rgba(232,152,120,0.65) 0%, rgba(212,104,74,0.7) 50%, rgba(10,37,64,0.85) 100%),
+      linear-gradient(180deg, #fbd7b9 0%, #d97f5c 55%, #2c3d57 100%);
+  }
+</style>
+<style data-od-tweaks-bridge-style="">
+[data-od-tweaks-hidden] .tw-panel {
+  transform: translateX(calc(100% + 32px)) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.tw-restore { display: none !important; }
+</style><script data-od-tweaks-bridge="">(function(){
+  // Synchronously hide BEFORE the artifact body parses so the panel never
+  // flashes on initial paint. The host removes the attribute via postMessage
+  // once it knows the desired state.
+  document.documentElement.setAttribute('data-od-tweaks-hidden', '');
+
+  var suppressEcho = false;
+  var observer = null;
+
+  function panelEl(){ return document.querySelector('.tw-panel'); }
+
+  function applyClassesToPanel(visible){
+    var panel = panelEl();
+    if (panel) panel.classList.toggle('tw-hidden', !visible);
+  }
+
+  function setPanelVisible(visible){
+    suppressEcho = true;
+    document.documentElement.toggleAttribute('data-od-tweaks-hidden', !visible);
+    applyClassesToPanel(visible);
+    // Clear flag after the MutationObserver has had a chance to fire for this
+    // change so we don't echo our own host-driven toggles back to the host.
+    Promise.resolve().then(function(){ suppressEcho = false; });
+  }
+
+  function postState(){
+    var panel = panelEl();
+    if (!panel) return;
+    try {
+      parent.postMessage({
+        type: 'od:tweaks-panel-state',
+        visible: !panel.classList.contains('tw-hidden'),
+      }, '*');
+    } catch (e) {}
+  }
+
+  function postAvailability(){
+    try {
+      parent.postMessage({
+        type: 'od:tweaks-available',
+        available: !!panelEl(),
+      }, '*');
+    } catch (e) {}
+  }
+
+  function attachObserver(){
+    var panel = panelEl();
+    if (!panel || observer) return;
+    observer = new MutationObserver(function(){
+      if (suppressEcho) return;
+      postState();
+    });
+    observer.observe(panel, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  function onReady(){
+    // Capture the panel authored visibility BEFORE we apply the host hidden
+    // attribute. The bridge sets data-od-tweaks-hidden synchronously in head
+    // (before the body parses), so on entry to onReady the attribute is
+    // always present even though the artifact may have authored the panel
+    // as default-visible. Reading the panel class first is the only place
+    // we can still observe the author intent. Then drive the attribute,
+    // classes, and posted state from that captured value so a default
+    // visible tw-panel reports visible:true and the toolbar toggle starts
+    // ON. Issue surfaced in PR #1643 review.
+    var panel = panelEl();
+    var initialVisible = !!panel && !panel.classList.contains('tw-hidden');
+    document.documentElement.toggleAttribute('data-od-tweaks-hidden', !initialVisible);
+    applyClassesToPanel(initialVisible);
+    attachObserver();
+    postAvailability();
+    // Post the captured initial visibility so the toolbar toggle reflects
+    // the default state on mount. Without this the toggle reads OFF while
+    // a default-visible tw-panel artifact clearly shows its panel and the
+    // user would have to click toggle-on then toggle-off to actually hide.
+    postState();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onReady);
+  } else {
+    onReady();
+  }
+
+  window.addEventListener('message', function(ev){
+    if (!ev.data || ev.data.type !== 'od:tweaks-panel-visible') return;
+    setPanelVisible(!!ev.data.visible);
+  });
+})();</script></head>
+<body class="min-h-screen pb-32 antialiased">
+
+<!-- ============================================================
+     HEADER · brand intro
+     ============================================================ -->
+<header class="max-w-6xl mx-auto px-8 pt-20 pb-10" data-od-id="path-0">
+  <div class="flex items-baseline justify-between gap-12 mb-8" data-od-id="path-0-0">
+    <div>
+      <div class="kicker text-coral-700 mb-3">Visual redesign · v2.0</div>
+      <h1 class="font-display text-[88px] leading-[0.95] text-ocean-900 tracking-tight" data-od-id="path-0-0-0-1">
+        iterasi<span class="italic text-coral-600">.</span>
+      </h1>
+      <p class="font-display italic text-2xl text-ocean-700 mt-3 max-w-xl leading-snug">
+        Perjalanan, dirancang dengan tangan — a quiet luxury coastal direction for an Indonesian trip planner.
+      </p>
+    </div>
+    <div class="hidden md:block text-right text-[13px] leading-relaxed text-ocean-700/80 max-w-sm">
+      <div class="kicker mb-2 text-ocean-500">Anchor · deep ocean blue</div>
+      Reinvents the brand blue as <span class="font-mono">#0A2540</span> — the indigo of an Indonesian
+      pre-dawn sea — and pairs it with terracotta, sand, and cream paper so it never reads
+      fintech, admin, or AI-slop neon.
+    </div>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[12px]" data-od-id="path-0-1">
+    <div class="rounded-lg bg-ocean-900 text-paper p-4 aspect-[5/2] flex flex-col justify-between">
+      <div class="font-mono opacity-70">#0A2540</div>
+      <div class="font-display italic text-lg">Deep ocean</div>
+    </div>
+    <div class="rounded-lg bg-coral-500 text-paper p-4 aspect-[5/2] flex flex-col justify-between">
+      <div class="font-mono opacity-90">#D4684A</div>
+      <div class="font-display italic text-lg">Terracotta</div>
+    </div>
+    <div class="rounded-lg bg-sand-500 text-ocean-900 p-4 aspect-[5/2] flex flex-col justify-between">
+      <div class="font-mono opacity-80">#C9A875</div>
+      <div class="font-display italic text-lg">Sand</div>
+    </div>
+    <div class="rounded-lg bg-paper text-ocean-900 p-4 aspect-[5/2] flex flex-col justify-between shadow-inset">
+      <div class="font-mono opacity-60">#FAF6EF</div>
+      <div class="font-display italic text-lg">Paper</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     DESIGN SYSTEM
+     ============================================================ -->
+<section class="max-w-6xl mx-auto px-8 pb-16" data-od-id="path-1">
+  <div class="border-t border-ocean-900/15 pt-8 mb-10 flex items-baseline justify-between gap-6" data-od-id="path-1-0">
+    <h2 class="font-display text-5xl text-ocean-900" data-od-id="path-1-0-0">Design system</h2>
+    <div class="section-label">00 · Foundations</div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10" data-od-id="path-1-1">
+    <!-- Color tokens -->
+    <div class="lg:col-span-1">
+      <div class="section-label mb-4">Color tokens</div>
+      <div class="space-y-3">
+        <!-- ocean ramp -->
+        <div>
+          <div class="text-[12px] font-mono text-muted mb-1.5">ocean / brand</div>
+          <div class="flex rounded-md overflow-hidden h-12 shadow-inset">
+            <div class="flex-1 bg-ocean-950"></div><div class="flex-1 bg-ocean-900"></div>
+            <div class="flex-1 bg-ocean-800"></div><div class="flex-1 bg-ocean-700"></div>
+            <div class="flex-1 bg-ocean-500"></div><div class="flex-1 bg-ocean-300"></div>
+            <div class="flex-1 bg-ocean-100"></div><div class="flex-1 bg-ocean-50"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono text-muted mt-1">
+            <span>950</span><span>900</span><span>800</span><span>700</span>
+            <span>500</span><span>300</span><span>100</span><span>50</span>
+          </div>
+        </div>
+        <div>
+          <div class="text-[12px] font-mono text-muted mb-1.5">coral / accent</div>
+          <div class="flex rounded-md overflow-hidden h-12 shadow-inset">
+            <div class="flex-1 bg-coral-800"></div><div class="flex-1 bg-coral-700"></div>
+            <div class="flex-1 bg-coral-500"></div><div class="flex-1 bg-coral-400"></div>
+            <div class="flex-1 bg-coral-300"></div><div class="flex-1 bg-coral-200"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-[12px] font-mono text-muted mb-1.5">sand / warm neutral</div>
+          <div class="flex rounded-md overflow-hidden h-12 shadow-inset">
+            <div class="flex-1 bg-sand-700"></div><div class="flex-1 bg-sand-500"></div>
+            <div class="flex-1 bg-sand-400"></div><div class="flex-1 bg-sand-300"></div>
+            <div class="flex-1 bg-sand-100"></div><div class="flex-1 bg-paper"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-[12px] font-mono text-muted mb-1.5">semantic</div>
+          <div class="grid grid-cols-4 gap-1.5">
+            <div class="rounded h-10 bg-emerald-700 flex items-end justify-center pb-1 text-[10px] font-mono text-emerald-50">ok</div>
+            <div class="rounded h-10 bg-amber-600 flex items-end justify-center pb-1 text-[10px] font-mono text-amber-50">warn</div>
+            <div class="rounded h-10 bg-coral-700 flex items-end justify-center pb-1 text-[10px] font-mono text-coral-50">danger</div>
+            <div class="rounded h-10 bg-ocean-700 flex items-end justify-center pb-1 text-[10px] font-mono text-ocean-50">info</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Type -->
+    <div class="lg:col-span-1">
+      <div class="section-label mb-4">Type scale</div>
+      <div class="space-y-4">
+        <div class="border-b border-ocean-900/10 pb-3">
+          <div class="font-display text-[56px] leading-none text-ocean-900">Bali, jam 6 pagi.</div>
+          <div class="text-[11px] font-mono text-muted mt-2">Display · Instrument Serif · 56/52 · italic-leaning</div>
+        </div>
+        <div class="border-b border-ocean-900/10 pb-3">
+          <div class="font-display text-[32px] leading-tight text-ocean-900">Section title — display 32</div>
+          <div class="text-[11px] font-mono text-muted mt-1">H2 · 32/38</div>
+        </div>
+        <div class="border-b border-ocean-900/10 pb-3">
+          <div class="text-[20px] font-medium leading-snug text-ocean-900">Card title · DM Sans 20 medium</div>
+          <div class="text-[11px] font-mono text-muted mt-1">H3 · 20/26 · -0.01em</div>
+        </div>
+        <div class="border-b border-ocean-900/10 pb-3">
+          <div class="text-[15px] leading-relaxed text-ocean-900">Body text — DM Sans 15 / 22, ample line-height for travel copy in Bahasa Indonesia and English.</div>
+          <div class="text-[11px] font-mono text-muted mt-1">Body · 15/22</div>
+        </div>
+        <div>
+          <div class="font-mono text-[13px] tracking-wide text-ocean-700">06.00  ·  5D4N  ·  GA 411</div>
+          <div class="text-[11px] font-mono text-muted mt-1">Mono · DM Mono · times, codes, utility</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacing + components -->
+    <div class="lg:col-span-1">
+      <div class="section-label mb-4">Spacing · 4 pt base</div>
+      <div class="flex items-end gap-2 mb-8">
+        <div class="bg-ocean-200 rounded-sm" style="width:16px;height:16px"></div>
+        <div class="bg-ocean-300 rounded-sm" style="width:16px;height:24px"></div>
+        <div class="bg-ocean-400 rounded-sm" style="width:16px;height:32px"></div>
+        <div class="bg-ocean-500 rounded-sm" style="width:16px;height:48px"></div>
+        <div class="bg-ocean-700 rounded-sm" style="width:16px;height:72px"></div>
+        <div class="bg-ocean-900 rounded-sm" style="width:16px;height:96px"></div>
+      </div>
+      <div class="flex justify-between text-[10px] font-mono text-muted -mt-6 mb-8 pr-2">
+        <span>4</span><span>8</span><span>12</span><span>16</span><span>24</span><span>32</span>
+      </div>
+
+      <div class="section-label mb-4">Radii · soft, never pillowy</div>
+      <div class="flex items-center gap-3 mb-8">
+        <div class="bg-ocean-100 border border-ocean-900/15" style="width:54px;height:54px;border-radius:6px"></div>
+        <div class="bg-ocean-100 border border-ocean-900/15" style="width:54px;height:54px;border-radius:12px"></div>
+        <div class="bg-ocean-100 border border-ocean-900/15" style="width:54px;height:54px;border-radius:18px"></div>
+        <div class="bg-ocean-100 border border-ocean-900/15" style="width:54px;height:54px;border-radius:999px"></div>
+      </div>
+
+      <div class="section-label mb-4">Components</div>
+      <div class="space-y-3">
+        <!-- buttons -->
+        <div class="flex flex-wrap gap-2">
+          <button class="px-5 py-3 rounded-full bg-ocean-900 text-paper text-[14px] font-medium tracking-tight" data-od-id="path-1-1-2-6-0-0">Primary action</button>
+          <button class="px-5 py-3 rounded-full border border-ocean-900/25 text-ocean-900 text-[14px] font-medium" data-od-id="path-1-1-2-6-0-1">Secondary</button>
+          <button class="px-4 py-2.5 rounded-full bg-coral-500 text-paper text-[13px] font-medium" data-od-id="path-1-1-2-6-0-2">Accent</button>
+        </div>
+        <!-- chips -->
+        <div class="flex flex-wrap gap-1.5">
+          <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/15 text-[12px] text-ocean-900">Pantai</span>
+          <span class="px-3 py-1.5 rounded-full bg-ocean-900 text-paper text-[12px]">Romantis</span>
+          <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/15 text-[12px] text-ocean-900">Kuliner</span>
+          <span class="px-3 py-1.5 rounded-full bg-coral-500 text-paper text-[12px]">Petualangan</span>
+        </div>
+        <!-- input -->
+        <label class="block">
+          <span class="text-[11px] font-mono uppercase tracking-wider text-muted">Destinasi</span>
+          <div class="mt-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-paper border border-ocean-900/15">
+            <svg class="ico w-4 h-4 text-ocean-600" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.5-4.5"></path></svg>
+            <span class="text-[14px] text-ocean-700">Mau ke mana?</span>
+          </div>
+        </label>
+        <!-- card -->
+        <div class="rounded-2xl bg-paper border border-ocean-900/10 shadow-card p-4 flex gap-3 items-center">
+          <div class="w-14 h-14 rounded-lg photo-terrace shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-display italic text-coral-700 text-[11px]">Card · trip preview</div>
+            <div class="font-medium text-[15px] text-ocean-900 truncate">Bali 5D4N — Ubud &amp; Canggu</div>
+            <div class="font-mono text-[11px] text-muted">12–16 Mar · 5 hari · 18 aktivitas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Component lineup row -->
+  <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6" data-od-id="path-1-2">
+    <div class="rounded-xl border border-ocean-900/10 p-5 bg-paper">
+      <div class="section-label mb-3">Icon language</div>
+      <div class="flex items-center gap-4 text-ocean-700">
+        <svg class="ico w-6 h-6" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
+        <svg class="ico w-6 h-6" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"></circle><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12Z"></path></svg>
+        <svg class="ico w-6 h-6" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 11h18"></path></svg>
+        <svg class="ico w-6 h-6" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <svg class="ico w-6 h-6" viewBox="0 0 24 24"><path d="M4 7h16M6 7v13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7M9 7V4h6v3M10 11v6M14 11v6"></path></svg>
+        <svg class="ico w-6 h-6" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"></path></svg>
+      </div>
+      <p class="text-[12px] text-muted mt-3 leading-relaxed">1.5 px stroke, rounded caps, no fills — drawn from a printed-atlas vocabulary, not Material.</p>
+    </div>
+
+    <div class="rounded-xl border border-ocean-900/10 p-5 bg-paper">
+      <div class="section-label mb-3">Bottom navigation</div>
+      <div class="rounded-2xl bg-paper border border-ocean-900/10 px-2 py-2 flex items-center justify-around">
+        <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl bg-ocean-900 text-paper">
+          <svg class="ico w-5 h-5" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5 10v10h14V10"></path></svg>
+          <span class="text-[10px] font-medium">Trip</span>
+        </div>
+        <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 text-muted">
+          <svg class="ico w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 1.5L13.5 16 7 14.5z"></path></svg>
+          <span class="text-[10px]">Jelajah</span>
+        </div>
+        <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 text-muted">
+          <svg class="ico w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"></circle><path d="M4 21c.8-4 4-7 8-7s7.2 3 8 7"></path></svg>
+          <span class="text-[10px]">Profil</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-ocean-900/10 p-5 bg-paper">
+      <div class="section-label mb-3">Motion language</div>
+      <ul class="text-[13px] text-ocean-900 leading-relaxed space-y-1">
+        <li>· spring · stiffness 220 damping 26 — sheet open</li>
+        <li>· ease-out 280 ms — page transitions</li>
+        <li>· coral underline draws in on tab change</li>
+        <li>· no bouncing icons, no parallax theatre</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN GRID
+     ============================================================ -->
+<main class="max-w-6xl mx-auto px-8 space-y-20" data-od-id="path-2">
+
+<!-- ====================== 01 · SPLASH ====================== -->
+<section data-od-id="path-2-0">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-0-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-0-0-0">01 · Splash</h2>
+    <p class="text-[13px] text-muted">Two seconds on launch. Wordmark + tagline, then transitions into the Itinerary List.</p>
+  </div>
+  <div class="device" data-od-id="path-2-0-1">
+    <div class="dyn-island"></div>
+    <div class="screen ocean-deep text-paper">
+      <div class="status-bar dark"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1" opacity=".4"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+      <!-- compass mark -->
+      <div class="absolute top-[120px] left-1/2 -translate-x-1/2">
+        <svg width="58" height="58" viewBox="0 0 58 58" fill="none">
+          <circle cx="29" cy="29" r="27.5" stroke="#E8DAC2" stroke-width="1" opacity=".55"></circle>
+          <circle cx="29" cy="29" r="20" stroke="#E8DAC2" stroke-width=".5" opacity=".35"></circle>
+          <path d="M29 8 32 29 29 50 26 29z" fill="#D4684A"></path>
+          <path d="M8 29 29 32 50 29 29 26z" fill="#E8DAC2" opacity=".75"></path>
+          <circle cx="29" cy="29" r="2" fill="#FAF6EF"></circle>
+        </svg>
+      </div>
+      <div class="absolute inset-x-0 top-[210px] text-center px-6">
+        <div class="kicker text-coral-300 mb-2">est. 2026 · jakarta</div>
+        <div class="font-display text-[112px] leading-[0.85] tracking-tight">iterasi<span class="italic text-coral-400">.</span></div>
+        <p class="font-display italic text-[20px] mt-4 text-paper/85 leading-snug max-w-[260px] mx-auto">
+          Perjalanan, dirancang dengan tangan.
+        </p>
+      </div>
+
+      <!-- decorative coast line -->
+      <svg class="absolute bottom-[110px] left-0 right-0 w-full" height="80" viewBox="0 0 390 80" fill="none">
+        <path d="M0 50 Q 60 30 110 45 T 220 40 T 320 55 T 390 42" stroke="#E8DAC2" stroke-width="1" opacity=".6"></path>
+        <path d="M0 60 Q 70 48 130 55 T 250 52 T 390 58" stroke="#D4684A" stroke-width=".8" opacity=".5"></path>
+      </svg>
+
+      <div class="absolute bottom-[60px] left-0 right-0 text-center">
+        <div class="kicker text-paper/40">v 2.0 · raja ampat build</div>
+      </div>
+      <div class="home-indicator text-paper"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== 02 · ITINERARY LIST ====================== -->
+<section data-od-id="path-2-1">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-1-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-1-0-0">02 · Itinerary List <span class="text-coral-600 italic">— Home</span></h2>
+    <p class="text-[13px] text-muted">Saved trips. Search, delete, and a prominent CTA into Select Date.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10" data-od-id="path-2-1-1">
+
+  <!-- populated -->
+  <div>
+  <div class="kicker text-muted mb-3">Populated</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+      <div class="px-6 pt-2 pb-3">
+        <div class="kicker text-coral-700">selamat pagi</div>
+        <div class="flex items-end justify-between">
+          <h1 class="font-display text-[46px] leading-none mt-1" data-od-id="path-2-1-1-0-1-1-1-1-0">Trip <span class="italic">kamu</span></h1>
+          <button class="w-11 h-11 rounded-full bg-paper border border-ocean-900/15 grid place-items-center" data-od-id="path-2-1-1-0-1-1-1-1-1">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"></circle><path d="M4 21c.8-4 4-7 8-7s7.2 3 8 7"></path></svg>
+          </button>
+        </div>
+        <p class="font-display italic text-ocean-700 text-[16px] mt-1">4 perjalanan tersimpan, Maya.</p>
+      </div>
+
+      <!-- search -->
+      <div class="px-6 pb-3">
+        <div class="flex items-center gap-2 px-4 py-3 rounded-full bg-paper border border-ocean-900/12 shadow-soft">
+          <svg class="ico w-4 h-4 text-muted" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.5-4.5"></path></svg>
+          <input class="bg-transparent text-[14px] flex-1 outline-none placeholder:text-muted" placeholder="Cari Bromo, Bali, Yogya…">
+          <span class="kicker text-muted">⌘K</span>
+        </div>
+      </div>
+
+      <!-- filter row -->
+      <div class="px-6 flex gap-1.5 mb-3 overflow-x-auto scroll-hide">
+        <span class="px-3 py-1 rounded-full bg-ocean-900 text-paper text-[12px] whitespace-nowrap">Semua · 4</span>
+        <span class="px-3 py-1 rounded-full border border-ocean-900/15 text-[12px] whitespace-nowrap">Datang</span>
+        <span class="px-3 py-1 rounded-full border border-ocean-900/15 text-[12px] whitespace-nowrap">Akan datang</span>
+        <span class="px-3 py-1 rounded-full border border-ocean-900/15 text-[12px] whitespace-nowrap">Arsip</span>
+      </div>
+
+      <!-- card list -->
+      <div class="px-6 space-y-3 overflow-y-auto scroll-hide" style="max-height:430px">
+        <article class="rounded-2xl bg-paper border border-ocean-900/10 shadow-card overflow-hidden" data-od-id="path-2-1-1-0-1-1-4-0">
+          <div class="h-24 photo-terrace relative" data-od-id="path-2-1-1-0-1-1-4-0-0">
+            <div class="absolute inset-x-3 bottom-2 flex items-center justify-between">
+              <span class="kicker text-paper/90">Bali · ubud + canggu</span>
+              <span class="px-2 py-0.5 rounded-full bg-paper/95 text-ocean-900 text-[10px] font-mono">5D4N</span>
+            </div>
+          </div>
+          <div class="p-4" data-od-id="path-2-1-1-0-1-1-4-0-1">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="font-display text-[22px] leading-tight" data-od-id="path-2-1-1-0-1-1-4-0-1-0-0">Bali 5D4N — Ubud &amp; Canggu</h3>
+              <button class="text-muted -m-1 p-1" data-od-id="path-2-1-1-0-1-1-4-0-1-0-1"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor"></circle><circle cx="12" cy="12" r="1.4" fill="currentColor"></circle><circle cx="19" cy="12" r="1.4" fill="currentColor"></circle></svg></button>
+            </div>
+            <div class="flex items-center gap-3 mt-1 text-[12px] font-mono text-muted">
+              <span>12 — 16 Mar 2026</span><span class="opacity-40">·</span><span>18 aktivitas</span>
+            </div>
+            <div class="mt-2 flex items-center gap-1.5">
+              <span class="kicker text-coral-700">Hari ini</span>
+              <span class="text-[13px] text-ocean-700">06.00 · Sunrise Tegallalang</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-2xl bg-paper border border-ocean-900/10 shadow-card overflow-hidden" data-od-id="path-2-1-1-0-1-1-4-1">
+          <div class="h-24 photo-bromo relative" data-od-id="path-2-1-1-0-1-1-4-1-0">
+            <div class="absolute inset-x-3 bottom-2 flex items-center justify-between">
+              <span class="kicker text-paper/95">Jawa timur · bromo</span>
+              <span class="px-2 py-0.5 rounded-full bg-paper/95 text-ocean-900 text-[10px] font-mono">3D2N</span>
+            </div>
+          </div>
+          <div class="p-4" data-od-id="path-2-1-1-0-1-1-4-1-1">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="font-display text-[22px] leading-tight" data-od-id="path-2-1-1-0-1-1-4-1-1-0-0">Bromo Sunrise <span class="italic">3D2N</span></h3>
+              <button class="text-muted -m-1 p-1" data-od-id="path-2-1-1-0-1-1-4-1-1-0-1"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor"></circle><circle cx="12" cy="12" r="1.4" fill="currentColor"></circle><circle cx="19" cy="12" r="1.4" fill="currentColor"></circle></svg></button>
+            </div>
+            <div class="flex items-center gap-3 mt-1 text-[12px] font-mono text-muted">
+              <span>22 — 24 Mar 2026</span><span class="opacity-40">·</span><span>9 aktivitas</span>
+            </div>
+            <div class="mt-2 flex items-center gap-1.5">
+              <span class="kicker text-ocean-500">3 minggu lagi</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-2xl bg-paper border border-ocean-900/10 shadow-card overflow-hidden" data-od-id="path-2-1-1-0-1-1-4-2">
+          <div class="h-20 photo-yogya relative" data-od-id="path-2-1-1-0-1-1-4-2-0">
+            <div class="absolute inset-x-3 bottom-2 flex items-center justify-between">
+              <span class="kicker text-paper/95">DI yogyakarta</span>
+              <span class="px-2 py-0.5 rounded-full bg-paper/95 text-ocean-900 text-[10px] font-mono">4D3N</span>
+            </div>
+          </div>
+          <div class="p-4" data-od-id="path-2-1-1-0-1-1-4-2-1">
+            <h3 class="font-display text-[20px] leading-tight" data-od-id="path-2-1-1-0-1-1-4-2-1-0">Yogyakarta Heritage</h3>
+            <div class="flex items-center gap-3 mt-1 text-[12px] font-mono text-muted">
+              <span>5 — 8 Apr 2026</span><span class="opacity-40">·</span><span>14 aktivitas</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- FAB -->
+      <button class="absolute bottom-[120px] right-6 z-20 pl-5 pr-6 py-3.5 rounded-full bg-ocean-900 text-paper flex items-center gap-2 shadow-card" data-od-id="path-2-1-1-0-1-1-5">
+        <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+        <span class="text-[14px] font-medium tracking-tight">Trip baru</span>
+      </button>
+
+      <!-- bottom nav -->
+      <nav class="absolute bottom-0 inset-x-0 px-4 pb-6 pt-3 bg-paper/95 backdrop-blur border-t border-ocean-900/8" data-od-id="path-2-1-1-0-1-1-6">
+        <div class="flex items-center justify-around" data-od-id="path-2-1-1-0-1-1-6-0">
+          <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl bg-ocean-900 text-paper">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5 10v10h14V10"></path></svg>
+            <span class="text-[10px] font-medium">Trip</span>
+          </div>
+          <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 text-muted">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 1.5L13.5 16 7 14.5z"></path></svg>
+            <span class="text-[10px]">Jelajah</span>
+          </div>
+          <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 text-muted">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"></circle><path d="M4 21c.8-4 4-7 8-7s7.2 3 8 7"></path></svg>
+            <span class="text-[10px]">Profil</span>
+          </div>
+        </div>
+      </nav>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- empty state -->
+  <div>
+  <div class="kicker text-muted mb-3">Empty state · first launch</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+      <div class="px-6 pt-2 pb-3">
+        <div class="kicker text-coral-700">halo</div>
+        <h1 class="font-display text-[46px] leading-none mt-1" data-od-id="path-2-1-1-1-1-1-1-1">Trip <span class="italic">kamu</span></h1>
+        <p class="font-display italic text-ocean-700 text-[16px] mt-1">Belum ada yang tersimpan.</p>
+      </div>
+
+      <!-- big illustration: paper-airplane + ticket stub -->
+      <div class="px-6 mt-6">
+        <div class="aspect-[5/4] rounded-3xl border border-dashed border-ocean-900/20 grain-soft relative overflow-hidden grid place-items-center">
+          <svg width="220" height="180" viewBox="0 0 220 180" fill="none">
+            <!-- horizon -->
+            <path d="M0 130 Q 60 122 110 128 T 220 124" stroke="#7A93AC" stroke-width="1" opacity=".7"></path>
+            <path d="M0 142 Q 70 134 130 140 T 220 138" stroke="#C9A875" stroke-width="1" opacity=".5"></path>
+            <!-- ticket -->
+            <g transform="translate(28 30) rotate(-6)">
+              <rect x="0" y="0" width="120" height="50" rx="6" fill="#FAF6EF" stroke="#0A2540" stroke-width="1"></rect>
+              <line x1="78" y1="4" x2="78" y2="46" stroke="#0A2540" stroke-width="1" stroke-dasharray="2 3"></line>
+              <text x="10" y="20" font-family="DM Mono" font-size="9" fill="#0A2540" letter-spacing="2">CGK → DPS</text>
+              <text x="10" y="38" font-family="Instrument Serif" font-size="16" fill="#0A2540" font-style="italic">Bali</text>
+              <text x="86" y="20" font-family="DM Mono" font-size="9" fill="#0A2540">14C</text>
+              <text x="86" y="38" font-family="DM Mono" font-size="9" fill="#D4684A">06.45</text>
+            </g>
+            <!-- paper plane -->
+            <g transform="translate(110 65) rotate(15)">
+              <path d="M0 30 L80 0 L 56 38 L 36 28 Z" fill="#D4684A"></path>
+              <path d="M36 28 L 56 38 L 42 48 Z" fill="#B2533A"></path>
+              <path d="M0 30 L 36 28" stroke="#0A2540" stroke-width="0.6" opacity=".25"></path>
+            </g>
+            <!-- compass tiny -->
+            <g transform="translate(180 25)">
+              <circle r="14" fill="none" stroke="#0A2540" stroke-width="1"></circle>
+              <path d="M0 -10 L2 0 L 0 10 L -2 0 Z" fill="#0A2540"></path>
+            </g>
+          </svg>
+        </div>
+        <div class="text-center mt-6">
+          <h2 class="font-display text-[28px] leading-tight" data-od-id="path-2-1-1-1-1-1-2-1-0">Mulai dari mana?</h2>
+          <p class="text-[14px] text-ocean-700 mt-2 leading-relaxed max-w-[280px] mx-auto">
+            Pilih tanggal dulu — lalu susun hari demi hari sendiri, atau biarkan AI menyiapkan dua rancangan untuk kamu pilih.
+          </p>
+        </div>
+      </div>
+
+      <div class="absolute bottom-[120px] inset-x-6 flex flex-col gap-2.5">
+        <button class="w-full py-3.5 rounded-full bg-ocean-900 text-paper text-[15px] font-medium tracking-tight" data-od-id="path-2-1-1-1-1-1-3-0">Buat itinerary pertama</button>
+        <button class="w-full py-3 text-[13px] text-ocean-700 font-mono" data-od-id="path-2-1-1-1-1-1-3-1">Lihat contoh perjalanan ⌐</button>
+      </div>
+
+      <nav class="absolute bottom-0 inset-x-0 px-4 pb-6 pt-3 bg-paper/95 backdrop-blur border-t border-ocean-900/8" data-od-id="path-2-1-1-1-1-1-4">
+        <div class="flex items-center justify-around" data-od-id="path-2-1-1-1-1-1-4-0">
+          <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl bg-ocean-900 text-paper">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5 10v10h14V10"></path></svg>
+            <span class="text-[10px] font-medium">Trip</span>
+          </div>
+          <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 text-muted">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 1.5L13.5 16 7 14.5z"></path></svg>
+            <span class="text-[10px]">Jelajah</span>
+          </div>
+          <div class="flex flex-col items-center gap-0.5 px-4 py-1.5 text-muted">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"></circle><path d="M4 21c.8-4 4-7 8-7s7.2 3 8 7"></path></svg>
+            <span class="text-[10px]">Profil</span>
+          </div>
+        </div>
+      </nav>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+  </div>
+  </div>
+</section>
+
+<!-- ====================== 03 · SELECT DATE ====================== -->
+<section data-od-id="path-2-2">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-2-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-2-0-0">03 · Select Date</h2>
+    <p class="text-[13px] text-muted">Date-range picker, then a fork: build by hand, or ask the AI (capped at 3 days).</p>
+  </div>
+  <div class="device" data-od-id="path-2-2-1">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <header class="px-6 pt-2 pb-4 flex items-center justify-between" data-od-id="path-2-2-1-1-1">
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-2-1-1-1-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="kicker text-muted" data-od-id="path-2-2-1-1-1-1">step 1 of 3</div>
+        <div class="w-10" data-od-id="path-2-2-1-1-1-2"></div>
+      </header>
+
+      <div class="px-6">
+        <div class="kicker text-coral-700 mb-2">tanggal perjalanan</div>
+        <h1 class="font-display text-[34px] leading-[1.05] tracking-tight" data-od-id="path-2-2-1-1-2-1">Kapan kamu <span class="italic">berangkat</span>?</h1>
+        <p class="text-[14px] text-ocean-700 mt-1.5">Pilih hari pertama dan hari pulang.</p>
+      </div>
+
+      <!-- mini calendar -->
+      <div class="mx-6 mt-5 rounded-2xl bg-paper border border-ocean-900/10 shadow-soft p-4">
+        <div class="flex items-center justify-between mb-3">
+          <button class="w-7 h-7 grid place-items-center text-muted" data-od-id="path-2-2-1-1-3-0-0"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg></button>
+          <div class="font-display text-[20px]">Maret 2026</div>
+          <button class="w-7 h-7 grid place-items-center text-muted" data-od-id="path-2-2-1-1-3-0-2"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M10 6l6 6-6 6"></path></svg></button>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-mono text-muted mb-1.5">
+          <span>S</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span><span>M</span>
+        </div>
+        <div class="grid grid-cols-7 gap-y-1 text-center text-[13px]">
+          <span class="text-muted/40 py-1.5">23</span><span class="text-muted/40 py-1.5">24</span>
+          <span class="text-muted/40 py-1.5">25</span><span class="text-muted/40 py-1.5">26</span>
+          <span class="text-muted/40 py-1.5">27</span><span class="text-muted/40 py-1.5">28</span>
+          <span class="py-1.5">1</span>
+          <span class="py-1.5">2</span><span class="py-1.5">3</span><span class="py-1.5">4</span>
+          <span class="py-1.5">5</span><span class="py-1.5">6</span><span class="py-1.5">7</span>
+          <span class="py-1.5">8</span>
+          <span class="py-1.5">9</span><span class="py-1.5">10</span><span class="py-1.5">11</span>
+          <!-- start -->
+          <span class="py-1.5 bg-ocean-900 text-paper rounded-l-full font-medium">12</span>
+          <span class="py-1.5 bg-coral-300/35 text-ocean-900">13</span>
+          <span class="py-1.5 bg-coral-300/35 text-ocean-900">14</span>
+          <span class="py-1.5 bg-coral-300/35 text-ocean-900">15</span>
+          <!-- end -->
+          <span class="py-1.5 bg-ocean-900 text-paper rounded-r-full font-medium">16</span>
+          <span class="py-1.5">17</span><span class="py-1.5">18</span>
+          <span class="py-1.5">19</span><span class="py-1.5">20</span><span class="py-1.5">21</span>
+          <span class="py-1.5">22</span>
+          <span class="py-1.5">23</span><span class="py-1.5">24</span><span class="py-1.5">25</span>
+          <span class="py-1.5">26</span><span class="py-1.5">27</span><span class="py-1.5">28</span>
+          <span class="py-1.5">29</span>
+          <span class="py-1.5">30</span><span class="py-1.5">31</span>
+          <span class="text-muted/40 py-1.5">1</span><span class="text-muted/40 py-1.5">2</span>
+          <span class="text-muted/40 py-1.5">3</span><span class="text-muted/40 py-1.5">4</span>
+          <span class="text-muted/40 py-1.5">5</span>
+        </div>
+
+        <!-- range readout -->
+        <div class="mt-4 pt-3 border-t border-ocean-900/8 flex items-center justify-between">
+          <div>
+            <div class="kicker text-muted">berangkat</div>
+            <div class="font-display text-[18px]">Kam, 12 Mar</div>
+          </div>
+          <svg class="w-10 h-3 text-coral-600" viewBox="0 0 40 12" fill="none"><path d="M0 6h36m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-right">
+            <div class="kicker text-muted">pulang</div>
+            <div class="font-display text-[18px]">Sen, 16 Mar</div>
+          </div>
+        </div>
+        <div class="mt-2 text-center font-mono text-[12px] text-coral-700">5 hari · 4 malam</div>
+      </div>
+
+      <!-- path picker -->
+      <div class="px-6 mt-5">
+        <div class="kicker text-muted mb-2">cara menyusun</div>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="rounded-2xl bg-paper border border-ocean-900/12 p-4 text-left" data-od-id="path-2-2-1-1-4-1-0">
+            <svg class="ico w-6 h-6 mb-3 text-ocean-700" viewBox="0 0 24 24"><path d="M3 6h14M3 12h14M3 18h10"></path><path d="M19 4v6M22 7h-6" stroke-width="1.5"></path></svg>
+            <div class="font-display text-[18px] leading-tight">Susun sendiri</div>
+            <div class="text-[12px] text-muted mt-1">Bangun hari demi hari.</div>
+          </button>
+          <button class="rounded-2xl bg-ocean-900 text-paper p-4 text-left relative overflow-hidden" data-od-id="path-2-2-1-1-4-1-1">
+            <div class="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-coral-500/30 blur-xl"></div>
+            <svg class="ico w-6 h-6 mb-3 text-coral-300 relative" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2 2M16.5 16.5l2 2M5.5 18.5l2-2M16.5 7.5l2-2"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <div class="font-display text-[18px] leading-tight relative">Minta AI <span class="italic">menyusun</span></div>
+            <div class="text-[12px] text-paper/70 mt-1 relative">Maks. 3 hari · dua rancangan.</div>
+          </button>
+        </div>
+        <div class="mt-3 flex items-start gap-2 text-[12px] text-amber-700">
+          <svg class="ico w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16v.5"></path></svg>
+          <span>Pilih AI? Trip-mu akan dipotong ke 3 hari pertama (12–14 Mar).</span>
+        </div>
+      </div>
+
+      <div class="absolute bottom-[36px] inset-x-6">
+        <button class="w-full py-3.5 rounded-full bg-ocean-900 text-paper text-[15px] font-medium tracking-tight" data-od-id="path-2-2-1-1-5-0">Lanjut · susun sendiri</button>
+      </div>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== 04 · FORM SUGGESTION ====================== -->
+<section data-od-id="path-2-3">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-3-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-3-0-0">04 · Form Suggestion <span class="italic text-coral-600">— AI input</span></h2>
+    <p class="text-[13px] text-muted">Destination, vibe, notes. Single CTA feeds GPT-4o.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10" data-od-id="path-2-3-1">
+
+  <!-- form -->
+  <div>
+  <div class="kicker text-muted mb-3">Form · ready to generate</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-3-1-0-1-1-1">
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-3-1-0-1-1-1-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="kicker text-muted" data-od-id="path-2-3-1-0-1-1-1-1">step 2 of 3</div>
+        <div class="w-10" data-od-id="path-2-3-1-0-1-1-1-2"></div>
+      </header>
+
+      <div class="px-6 mb-4">
+        <div class="kicker text-coral-700 mb-1">12 — 14 Mar 2026 · 3 hari</div>
+        <h1 class="font-display text-[32px] leading-[1.05] tracking-tight" data-od-id="path-2-3-1-0-1-1-2-1">Ceritakan <span class="italic">tripmu</span>.</h1>
+        <p class="text-[13px] text-ocean-700 mt-1">Iterasi akan menyusun dua rancangan untuk kamu pilih.</p>
+      </div>
+
+      <div class="px-6 space-y-3.5 overflow-y-auto scroll-hide" style="max-height:530px;padding-bottom:120px">
+        <!-- destination -->
+        <label class="block">
+          <span class="kicker text-muted">destinasi</span>
+          <div class="mt-1.5 flex items-center gap-2 px-4 py-3.5 rounded-xl bg-paper border border-ocean-900/15">
+            <svg class="ico w-4 h-4 text-coral-600" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"></circle><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12Z"></path></svg>
+            <span class="text-[15px] text-ocean-900">Bali</span>
+            <span class="text-[13px] text-muted">— Ubud &amp; Canggu</span>
+          </div>
+        </label>
+
+        <!-- vibe chips -->
+        <div>
+          <span class="kicker text-muted">vibe perjalanan</span>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <span class="px-3 py-1.5 rounded-full bg-ocean-900 text-paper text-[12px]">Romantis</span>
+            <span class="px-3 py-1.5 rounded-full bg-coral-500 text-paper text-[12px]">Kuliner</span>
+            <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/18 text-[12px]">Petualangan</span>
+            <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/18 text-[12px]">Keluarga</span>
+            <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/18 text-[12px]">Pantai</span>
+            <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/18 text-[12px]">Wellness</span>
+            <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/18 text-[12px]">Budaya</span>
+            <span class="px-3 py-1.5 rounded-full bg-paper border border-ocean-900/18 text-[12px]">Solo</span>
+          </div>
+        </div>
+
+        <!-- notes -->
+        <label class="block">
+          <span class="kicker text-muted">catatan tambahan</span>
+          <div class="mt-1.5 px-4 py-3 rounded-xl bg-paper border border-ocean-900/15">
+            <p class="text-[14px] leading-relaxed text-ocean-900">
+              Pertama kali ke Bali sama pasangan. <span class="italic text-coral-700">Suka kopi specialty, ada satu malam fine-dining.</span> Hindari klub &amp; pantai yang terlalu ramai.
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <!-- bottom CTA -->
+      <div class="absolute bottom-0 inset-x-0 px-6 pt-3 pb-9 bg-gradient-to-t from-paper via-paper to-paper/0">
+        <button class="w-full py-3.5 rounded-full bg-ocean-900 text-paper text-[15px] font-medium tracking-tight flex items-center justify-center gap-2" data-od-id="path-2-3-1-0-1-1-4-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M5.5 5.5l2 2M16.5 16.5l2 2M5.5 18.5l2-2M16.5 7.5l2-2"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          Generate dua itinerary
+        </button>
+      </div>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- loading -->
+  <div>
+  <div class="kicker text-muted mb-3">Loading · GPT-4o is drafting (~18s)</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen ocean-deep text-paper">
+      <div class="status-bar dark"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1" opacity=".4"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <div class="px-7 mt-3">
+        <button class="w-10 h-10 rounded-full bg-paper/10 grid place-items-center backdrop-blur" data-od-id="path-2-3-1-1-1-1-1-0">
+          <svg class="ico w-4 h-4 text-paper" viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"></path></svg>
+        </button>
+      </div>
+
+      <div class="px-7 mt-12">
+        <div class="kicker text-coral-300 mb-2">menyusun</div>
+        <h1 class="font-display text-[42px] leading-[1.02] tracking-tight" data-od-id="path-2-3-1-1-1-1-2-1">
+          Iterasi sedang <span class="italic text-coral-300">menggambar</span> dua versi tripmu.
+        </h1>
+        <p class="font-display italic text-paper/70 mt-3 text-[16px] leading-snug max-w-[300px]">
+          Biasanya 15–25 detik. Ambil kopi dulu.
+        </p>
+      </div>
+
+      <!-- drifting compass + ribbon -->
+      <div class="relative h-[230px] mt-6">
+        <svg class="absolute inset-0 w-full" viewBox="0 0 390 230" fill="none">
+          <path d="M-20 140 Q 80 110 170 130 T 350 120 T 410 140" stroke="#E8DAC2" stroke-width="0.8" opacity=".4"></path>
+          <path d="M-20 160 Q 100 140 200 150 T 410 160" stroke="#D4684A" stroke-width="0.6" opacity=".5"></path>
+          <path d="M-20 180 Q 120 165 230 175 T 410 180" stroke="#C9A875" stroke-width="0.6" opacity=".4"></path>
+        </svg>
+        <div class="drift absolute top-12 left-1/2 -translate-x-1/2">
+          <svg width="84" height="84" viewBox="0 0 84 84" fill="none">
+            <circle cx="42" cy="42" r="40" stroke="#E8DAC2" stroke-width="1" opacity=".4"></circle>
+            <circle cx="42" cy="42" r="32" stroke="#E8DAC2" stroke-width=".5" opacity=".25"></circle>
+            <path d="M42 8 46 42 42 76 38 42z" fill="#D4684A"></path>
+            <path d="M8 42 42 46 76 42 42 38z" fill="#E8DAC2" opacity=".7"></path>
+            <circle cx="42" cy="42" r="2.5" fill="#FAF6EF"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <!-- progress steps -->
+      <div class="absolute bottom-[150px] inset-x-7 space-y-2.5">
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full bg-coral-500 grid place-items-center"><svg class="ico w-3 h-3 text-paper" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg></div>
+          <span class="text-[13px] text-paper">Membaca catatan &amp; vibe</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full bg-coral-500 grid place-items-center"><svg class="ico w-3 h-3 text-paper" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg></div>
+          <span class="text-[13px] text-paper">Memilih tempat di Ubud &amp; Canggu</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full border-2 border-coral-300 grid place-items-center">
+            <div class="w-2 h-2 rounded-full bg-coral-300 animate-pulse"></div>
+          </div>
+          <span class="text-[13px] text-paper">Menyusun urutan &amp; jadwal kuliner…</span>
+        </div>
+        <div class="flex items-center gap-3 opacity-50">
+          <div class="w-6 h-6 rounded-full border border-paper/30"></div>
+          <span class="text-[13px] text-paper/60">Menyusun jeda istirahat &amp; ritme harian</span>
+        </div>
+      </div>
+
+      <div class="absolute bottom-[80px] inset-x-7 text-center">
+        <div class="flex items-center justify-center gap-1.5 mb-2">
+          <span class="pdot w-1.5 h-1.5 rounded-full bg-coral-300"></span>
+          <span class="pdot w-1.5 h-1.5 rounded-full bg-coral-300"></span>
+          <span class="pdot w-1.5 h-1.5 rounded-full bg-coral-300"></span>
+        </div>
+        <span class="font-mono text-[11px] text-paper/50 tracking-widest">~12 DETIK LAGI</span>
+      </div>
+
+      <div class="home-indicator text-paper"></div>
+    </div>
+  </div>
+  </div>
+
+  </div>
+</section>
+
+<!-- ====================== 05 · SUGGESTION PAGE ====================== -->
+<section data-od-id="path-2-4">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-4-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-4-0-0">05 · Suggestion Page <span class="italic text-coral-600">— AI output</span></h2>
+    <p class="text-[13px] text-muted">Two swipeable variants. Expand a day to inspect. "Pilih" lives inside each card.</p>
+  </div>
+  <div class="device" data-od-id="path-2-4-1">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-4-1-1-1">
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-4-1-1-1-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="kicker text-muted" data-od-id="path-2-4-1-1-1-1">2 rancangan · geser →</div>
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-4-1-1-1-2">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M3 6h13M3 12h13M3 18h13M19 8v8M16 12h6"></path></svg>
+        </button>
+      </header>
+
+      <div class="px-6 mb-2 flex items-baseline justify-between">
+        <h1 class="font-display text-[28px] leading-tight" data-od-id="path-2-4-1-1-2-0">Bali, dua versi.</h1>
+        <span class="kicker text-coral-700">v 1 / 2</span>
+      </div>
+
+      <!-- carousel with peeking second card -->
+      <div class="pl-6 pr-2 flex gap-3 overflow-x-auto scroll-hide" style="height:600px">
+        <!-- card A active -->
+        <article class="shrink-0 w-[280px] rounded-3xl bg-paper border border-ocean-900/12 shadow-card overflow-hidden flex flex-col" data-od-id="path-2-4-1-1-3-0">
+          <div class="h-32 photo-terrace relative" data-od-id="path-2-4-1-1-3-0-0">
+            <div class="absolute inset-x-3 top-2 flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded-full bg-paper/95 text-ocean-900 text-[10px] font-mono">v 1 · slow</span>
+              <span class="px-2 py-0.5 rounded-full bg-ocean-900/85 text-paper text-[10px] font-mono">3 hari · 11 stops</span>
+            </div>
+            <div class="absolute inset-x-3 bottom-2">
+              <div class="font-display italic text-paper text-[17px]">Ubud first · rice fields, slow coffee, sunset</div>
+            </div>
+          </div>
+          <div class="p-4 flex-1 overflow-y-auto scroll-hide" data-od-id="path-2-4-1-1-3-0-1">
+            <!-- day 1 expanded -->
+            <details open="" class="border-b border-ocean-900/10 pb-3 mb-3">
+              <summary class="flex items-center justify-between cursor-pointer list-none">
+                <div>
+                  <div class="kicker text-coral-700">Hari 1 · Kam, 12 Mar</div>
+                  <div class="font-display text-[18px] mt-0.5">Tiba &amp; Ubud awal</div>
+                </div>
+                <svg class="ico w-4 h-4 text-muted" viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"></path></svg>
+              </summary>
+              <ol class="mt-3 space-y-2.5">
+                <li class="flex gap-2.5">
+                  <span class="font-mono text-[11px] text-coral-700 pt-0.5 w-10 shrink-0">14.20</span>
+                  <div>
+                    <div class="text-[13px] font-medium leading-snug">Mendarat DPS, jemput sopir</div>
+                    <div class="text-[11px] text-muted">I Gusti Ngurah Rai</div>
+                  </div>
+                </li>
+                <li class="flex gap-2.5">
+                  <span class="font-mono text-[11px] text-coral-700 pt-0.5 w-10 shrink-0">17.00</span>
+                  <div>
+                    <div class="text-[13px] font-medium leading-snug">Check-in Tanamas Villas, Ubud</div>
+                  </div>
+                </li>
+                <li class="flex gap-2.5">
+                  <span class="font-mono text-[11px] text-coral-700 pt-0.5 w-10 shrink-0">19.30</span>
+                  <div>
+                    <div class="text-[13px] font-medium leading-snug">Dinner di Locavore To Go</div>
+                    <div class="text-[11px] text-muted">tasting 5-course · reservasi</div>
+                  </div>
+                </li>
+              </ol>
+            </details>
+
+            <details class="border-b border-ocean-900/10 pb-3 mb-3">
+              <summary class="flex items-center justify-between cursor-pointer list-none">
+                <div>
+                  <div class="kicker text-muted">Hari 2 · Jum, 13 Mar</div>
+                  <div class="font-display text-[18px] mt-0.5">Tegallalang &amp; seniman</div>
+                </div>
+                <svg class="ico w-4 h-4 text-muted" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg>
+              </summary>
+            </details>
+
+            <details class="border-b border-ocean-900/10 pb-3 mb-3">
+              <summary class="flex items-center justify-between cursor-pointer list-none">
+                <div>
+                  <div class="kicker text-muted">Hari 3 · Sab, 14 Mar</div>
+                  <div class="font-display text-[18px] mt-0.5">Pindah ke Canggu</div>
+                </div>
+                <svg class="ico w-4 h-4 text-muted" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg>
+              </summary>
+            </details>
+          </div>
+          <!-- card CTA -->
+          <div class="px-4 pt-3 pb-4 border-t border-ocean-900/10 bg-paper" data-od-id="path-2-4-1-1-3-0-2">
+            <button class="w-full py-3 rounded-full bg-coral-500 text-paper text-[13px] font-medium tracking-tight flex items-center justify-center gap-2" data-od-id="path-2-4-1-1-3-0-2-0">
+              <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"></path></svg>
+              Pilih versi ini
+            </button>
+          </div>
+        </article>
+
+        <!-- card B peek -->
+        <article class="shrink-0 w-[280px] rounded-3xl bg-paper border border-ocean-900/12 shadow-card overflow-hidden flex flex-col" data-od-id="path-2-4-1-1-3-1">
+          <div class="h-32 photo-jimbaran relative" data-od-id="path-2-4-1-1-3-1-0">
+            <div class="absolute inset-x-3 top-2 flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded-full bg-paper/95 text-ocean-900 text-[10px] font-mono">v 2 · coastal</span>
+              <span class="px-2 py-0.5 rounded-full bg-ocean-900/85 text-paper text-[10px] font-mono">3 hari · 12 stops</span>
+            </div>
+            <div class="absolute inset-x-3 bottom-2">
+              <div class="font-display italic text-paper text-[17px]">Canggu start · surf, sunsets, Jimbaran fish</div>
+            </div>
+          </div>
+          <div class="p-4 flex-1" data-od-id="path-2-4-1-1-3-1-1">
+            <div class="kicker text-coral-700">Hari 1 · Kam, 12 Mar</div>
+            <div class="font-display text-[18px]">Canggu sore</div>
+            <div class="mt-2 text-[12px] text-muted">5 stops · 1 dinner</div>
+          </div>
+          <div class="px-4 pt-3 pb-4 border-t border-ocean-900/10 bg-paper" data-od-id="path-2-4-1-1-3-1-2">
+            <button class="w-full py-3 rounded-full border border-ocean-900/25 text-ocean-900 text-[13px] font-medium tracking-tight flex items-center justify-center gap-2" data-od-id="path-2-4-1-1-3-1-2-0">
+              Pilih versi ini
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- bottom: swipe indicator only -->
+      <div class="absolute bottom-0 inset-x-0 px-6 pt-3 pb-8 bg-gradient-to-t from-paper via-paper to-paper/0">
+        <div class="flex justify-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-ocean-900"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-ocean-200"></span>
+        </div>
+        <p class="text-center text-[11px] text-muted mt-2 font-mono tracking-widest">GESER UNTUK BANDINGKAN</p>
+      </div>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== 06 · ADD DAYS ====================== -->
+<section data-od-id="path-2-5">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-5-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-5-0-0">06 · Add Days <span class="italic text-coral-600">— editor + detail</span></h2>
+    <p class="text-[13px] text-muted">Doubles as itinerary detail. Day tabs, chronological list, bottom bar with add + share PDF.</p>
+  </div>
+  <div class="device" data-od-id="path-2-5-1">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-5-1-1-1">
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-5-1-1-1-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="text-center" data-od-id="path-2-5-1-1-1-1">
+          <div class="kicker text-muted">12 — 16 Mar 2026</div>
+          <div class="font-display text-[17px] -mt-0.5">Bali 5D4N</div>
+        </div>
+        <button class="px-3.5 h-10 rounded-full bg-ocean-900 text-paper text-[12px] font-medium" data-od-id="path-2-5-1-1-1-2">Simpan</button>
+      </header>
+
+      <!-- day chips -->
+      <div class="px-6 mt-2 flex gap-1.5 overflow-x-auto scroll-hide pb-2">
+        <button class="px-4 py-2 rounded-full bg-ocean-900 text-paper text-[12px] whitespace-nowrap flex items-center gap-1.5" data-od-id="path-2-5-1-1-2-0">
+          <span class="font-mono">D1</span><span class="opacity-60">Kam</span>
+        </button>
+        <button class="px-4 py-2 rounded-full border border-ocean-900/15 text-[12px] whitespace-nowrap flex items-center gap-1.5" data-od-id="path-2-5-1-1-2-1">
+          <span class="font-mono">D2</span><span class="text-muted">Jum</span>
+        </button>
+        <button class="px-4 py-2 rounded-full border border-ocean-900/15 text-[12px] whitespace-nowrap flex items-center gap-1.5" data-od-id="path-2-5-1-1-2-2">
+          <span class="font-mono">D3</span><span class="text-muted">Sab</span>
+        </button>
+        <button class="px-4 py-2 rounded-full border border-ocean-900/15 text-[12px] whitespace-nowrap flex items-center gap-1.5" data-od-id="path-2-5-1-1-2-3">
+          <span class="font-mono">D4</span><span class="text-muted">Min</span>
+        </button>
+        <button class="px-4 py-2 rounded-full border border-ocean-900/15 text-[12px] whitespace-nowrap flex items-center gap-1.5" data-od-id="path-2-5-1-1-2-4">
+          <span class="font-mono">D5</span><span class="text-muted">Sen</span>
+        </button>
+      </div>
+
+      <div class="px-6 mt-3">
+        <div class="kicker text-coral-700">hari 1 · kamis 12 maret</div>
+        <h2 class="font-display text-[28px] leading-tight" data-od-id="path-2-5-1-1-3-1">Tiba di Bali, <span class="italic">menetap di Ubud</span>.</h2>
+        <div class="flex items-center gap-3 mt-2 text-[12px] font-mono text-muted">
+          <span>5 aktivitas</span><span>·</span><span>14.20 — 21.30</span>
+        </div>
+      </div>
+
+      <!-- timeline -->
+      <div class="px-6 mt-4 overflow-y-auto scroll-hide" style="max-height:340px;padding-bottom:24px">
+        <ol class="space-y-3">
+          <li class="day-line pl-7 relative">
+            <span class="absolute left-[5px] top-1.5 w-3 h-3 rounded-full bg-coral-500 border-2 border-paper"></span>
+            <div class="rounded-xl bg-paper border border-ocean-900/10 p-3.5 shadow-soft">
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="font-mono text-[12px] text-coral-700">14.20</span>
+                <div class="flex items-center gap-2 text-muted">
+                  <button data-od-id="path-2-5-1-1-4-0-0-1-0-1-0"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM14 6l4 4"></path></svg></button>
+                  <button data-od-id="path-2-5-1-1-4-0-0-1-0-1-1"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg></button>
+                </div>
+              </div>
+              <div class="font-medium text-[15px] mt-1">Mendarat di DPS</div>
+              <div class="text-[12px] text-muted mt-0.5">I Gusti Ngurah Rai · Garuda GA 411</div>
+              <button class="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-ocean-50 border border-ocean-200 text-[11px] font-medium text-ocean-900" data-od-id="path-2-5-1-1-4-0-0-1-3">
+                <svg class="ico w-3 h-3 text-coral-600" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"></circle><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12Z"></path></svg>
+                Lihat di peta
+              </button>
+            </div>
+          </li>
+          <li class="day-line pl-7 relative">
+            <span class="absolute left-[5px] top-1.5 w-3 h-3 rounded-full bg-ocean-300 border-2 border-paper"></span>
+            <div class="rounded-xl bg-paper border border-ocean-900/10 p-3.5 shadow-soft">
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="font-mono text-[12px] text-coral-700">15.10</span>
+                <div class="flex items-center gap-2 text-muted">
+                  <button data-od-id="path-2-5-1-1-4-0-1-1-0-1-0"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM14 6l4 4"></path></svg></button>
+                  <button data-od-id="path-2-5-1-1-4-0-1-1-0-1-1"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg></button>
+                </div>
+              </div>
+              <div class="font-medium text-[15px] mt-1">Bali Coffee Roastery</div>
+              <div class="text-[12px] text-muted mt-0.5">Sanur · sambil nunggu macet reda</div>
+              <button class="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-ocean-50 border border-ocean-200 text-[11px] font-medium text-ocean-900" data-od-id="path-2-5-1-1-4-0-1-1-3">
+                <svg class="ico w-3 h-3 text-coral-600" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"></circle><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12Z"></path></svg>
+                Lihat di peta
+              </button>
+            </div>
+          </li>
+          <li class="day-line pl-7 relative">
+            <span class="absolute left-[5px] top-1.5 w-3 h-3 rounded-full bg-ocean-300 border-2 border-paper"></span>
+            <div class="rounded-xl bg-paper border border-ocean-900/10 p-3.5 shadow-soft">
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="font-mono text-[12px] text-coral-700">17.00</span>
+                <div class="flex items-center gap-2 text-muted">
+                  <button data-od-id="path-2-5-1-1-4-0-2-1-0-1-0"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM14 6l4 4"></path></svg></button>
+                  <button data-od-id="path-2-5-1-1-4-0-2-1-0-1-1"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg></button>
+                </div>
+              </div>
+              <div class="font-medium text-[15px] mt-1">Check-in Tanamas Villas</div>
+              <div class="text-[12px] text-muted mt-0.5">Ubud · 2 malam · pool villa</div>
+              <button class="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-ocean-50 border border-ocean-200 text-[11px] font-medium text-ocean-900" data-od-id="path-2-5-1-1-4-0-2-1-3">
+                <svg class="ico w-3 h-3 text-coral-600" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"></circle><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12Z"></path></svg>
+                Lihat di peta
+              </button>
+            </div>
+          </li>
+          <li class="day-line pl-7 relative">
+            <span class="absolute left-[5px] top-1.5 w-3 h-3 rounded-full bg-ocean-300 border-2 border-paper"></span>
+            <div class="rounded-xl bg-paper border border-ocean-900/10 p-3.5 shadow-soft">
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="font-mono text-[12px] text-coral-700">19.30</span>
+                <div class="flex items-center gap-2 text-muted">
+                  <button data-od-id="path-2-5-1-1-4-0-3-1-0-1-0"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM14 6l4 4"></path></svg></button>
+                  <button data-od-id="path-2-5-1-1-4-0-3-1-0-1-1"><svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg></button>
+                </div>
+              </div>
+              <div class="font-medium text-[15px] mt-1">Locavore To Go</div>
+              <div class="text-[12px] text-muted mt-0.5">Tasting 5-course · reservasi 19.30</div>
+              <div class="mt-2 inline-flex items-center gap-1 text-[11px] text-muted italic">
+                <svg class="ico w-3 h-3" viewBox="0 0 24 24"><path d="M12 8v5l3 2"></path><circle cx="12" cy="12" r="9"></circle></svg>
+                Lokasi diketik manual
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- bottom action bar — replaces nav -->
+      <nav class="absolute bottom-0 inset-x-0 bg-paper/95 backdrop-blur border-t border-ocean-900/10 px-4 pt-3 pb-6" data-od-id="path-2-5-1-1-5">
+        <div class="flex items-center gap-2" data-od-id="path-2-5-1-1-5-0">
+          <button class="flex-1 py-3 rounded-full bg-ocean-900 text-paper text-[13px] font-medium tracking-tight flex items-center justify-center gap-2" data-od-id="path-2-5-1-1-5-0-0">
+            <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+            Tambah aktivitas
+          </button>
+          <button class="px-4 py-3 rounded-full border border-ocean-900/20 text-ocean-900 text-[13px] font-medium tracking-tight flex items-center justify-center gap-1.5" data-od-id="path-2-5-1-1-5-0-1">
+            <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 3h6v6M10 14 20 4M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"></path></svg>
+            Bagikan PDF
+          </button>
+        </div>
+      </nav>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+</section>
+<!-- ====================== 07 · ADD ACTIVITY (Form) ====================== -->
+<section data-od-id="path-2-6">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-6-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-6-0-0">07 · Add Activity <span class="italic text-coral-600">— activity form</span></h2>
+    <p class="text-[13px] text-muted">Time, name, location with map/manual toggle, description, notes.</p>
+  </div>
+  <div class="device" data-od-id="path-2-6-1">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-6-1-1-1">
+        <button class="text-[13px] font-mono text-muted" data-od-id="path-2-6-1-1-1-0">Batal</button>
+        <div class="text-center" data-od-id="path-2-6-1-1-1-1">
+          <div class="kicker text-coral-700">hari 1 · kam 12 mar</div>
+          <div class="font-display text-[17px] -mt-0.5">Aktivitas baru</div>
+        </div>
+        <button class="px-3.5 h-9 rounded-full bg-ocean-900 text-paper text-[12px] font-medium" data-od-id="path-2-6-1-1-1-2">Simpan</button>
+      </header>
+
+      <div class="px-6 mt-1 overflow-y-auto scroll-hide" style="max-height:680px;padding-bottom:30px">
+        <!-- time picker (24h, format HH.mm) -->
+        <div class="kicker text-muted mb-2">jam mulai · format 24h</div>
+        <div class="rounded-2xl bg-paper border border-ocean-900/12 shadow-soft p-3 flex items-center justify-center gap-1 select-none">
+          <div class="relative w-16 h-28 overflow-hidden text-center">
+            <div class="absolute inset-y-0 left-0 right-0 grid place-items-center">
+              <div class="font-display text-[12px] text-muted/60 absolute top-2">04</div>
+              <div class="font-display text-[20px] text-muted absolute top-6">05</div>
+              <div class="font-display text-[36px] tracking-tight text-ocean-900 leading-none">06</div>
+              <div class="font-display text-[20px] text-muted absolute bottom-6">07</div>
+              <div class="font-display text-[12px] text-muted/60 absolute bottom-2">08</div>
+            </div>
+            <div class="absolute inset-x-0 top-0 h-7 bg-gradient-to-b from-paper to-transparent pointer-events-none"></div>
+            <div class="absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-paper to-transparent pointer-events-none"></div>
+          </div>
+          <span class="font-display text-[36px] text-coral-600 leading-none -mt-2">.</span>
+          <div class="relative w-16 h-28 overflow-hidden text-center">
+            <div class="absolute inset-y-0 left-0 right-0 grid place-items-center">
+              <div class="font-display text-[12px] text-muted/60 absolute top-2">28</div>
+              <div class="font-display text-[20px] text-muted absolute top-6">29</div>
+              <div class="font-display text-[36px] tracking-tight text-ocean-900 leading-none">30</div>
+              <div class="font-display text-[20px] text-muted absolute bottom-6">31</div>
+              <div class="font-display text-[12px] text-muted/60 absolute bottom-2">32</div>
+            </div>
+            <div class="absolute inset-x-0 top-0 h-7 bg-gradient-to-b from-paper to-transparent pointer-events-none"></div>
+            <div class="absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-paper to-transparent pointer-events-none"></div>
+          </div>
+        </div>
+        <div class="mt-2 flex justify-center gap-1.5">
+          <span class="px-2.5 py-1 rounded-full bg-ocean-100 text-ocean-900 text-[11px] font-mono">06.00</span>
+          <span class="px-2.5 py-1 rounded-full border border-ocean-900/15 text-[11px] font-mono text-muted">08.00</span>
+          <span class="px-2.5 py-1 rounded-full border border-ocean-900/15 text-[11px] font-mono text-muted">12.00</span>
+          <span class="px-2.5 py-1 rounded-full border border-ocean-900/15 text-[11px] font-mono text-muted">19.30</span>
+        </div>
+
+        <!-- name -->
+        <label class="block mt-5">
+          <span class="kicker text-muted">nama aktivitas</span>
+          <div class="mt-1.5 px-4 py-3.5 rounded-xl bg-paper border border-ocean-900/15 flex items-center gap-2">
+            <span class="text-[15px] text-ocean-900 flex-1">Sunrise di Penanjakan Viewpoint</span>
+            <span class="font-mono text-[10px] text-muted">28/60</span>
+          </div>
+        </label>
+
+        <!-- location with mode toggle -->
+        <div class="mt-3">
+          <div class="flex items-baseline justify-between">
+            <span class="kicker text-muted">lokasi</span>
+            <span class="kicker text-coral-700">peta dipilih</span>
+          </div>
+
+          <!-- segmented toggle: peta | ketik -->
+          <div class="mt-1.5 grid grid-cols-2 p-1 rounded-full bg-ocean-50 border border-ocean-200">
+            <button class="py-2 rounded-full bg-ocean-900 text-paper text-[12px] font-medium flex items-center justify-center gap-1.5" data-od-id="path-2-6-1-1-2-4-1-0">
+              <svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"></circle><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12Z"></path></svg>
+              Pilih dari peta
+            </button>
+            <button class="py-2 rounded-full text-ocean-700 text-[12px] font-medium flex items-center justify-center gap-1.5" data-od-id="path-2-6-1-1-2-4-1-1">
+              <svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16z"></path></svg>
+              Ketik manual
+            </button>
+          </div>
+
+          <!-- selected place via map (active mode) -->
+          <div class="mt-2 rounded-xl bg-paper border border-ocean-900/15 overflow-hidden">
+            <div class="px-4 py-3 flex items-center gap-2 border-b border-ocean-900/8">
+              <svg class="ico w-4 h-4 text-coral-600" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"></circle><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12Z"></path></svg>
+              <div class="flex-1 min-w-0">
+                <div class="text-[14px] text-ocean-900 truncate">Penanjakan 1 Viewpoint</div>
+                <div class="text-[11px] font-mono text-muted truncate">-7.9216, 112.9533 · 2.770 m dpl</div>
+              </div>
+              <button class="kicker text-coral-700 shrink-0" data-od-id="path-2-6-1-1-2-4-2-0-2">ubah</button>
+            </div>
+            <!-- suggestion (Places autocomplete) -->
+            <div class="px-4 py-2.5 flex items-start gap-3 hover:bg-sand-100">
+              <svg class="ico w-4 h-4 mt-1 text-muted shrink-0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.5-4.5"></path></svg>
+              <div class="flex-1 min-w-0">
+                <div class="text-[13px] text-ocean-900">Bukit Cinta · alternatif sunrise</div>
+                <div class="text-[11px] text-muted truncate">Ngadisari · lebih sepi pagi hari</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- hint: switch to manual when place isn't on the map -->
+          <p class="mt-2 text-[11px] text-muted leading-snug">
+            Tempat belum terdaftar di peta? Geser ke <span class="italic text-ocean-900">Ketik manual</span> untuk menulis nama lokasi sendiri.
+          </p>
+        </div>
+
+        <!-- description -->
+        <label class="block mt-3">
+          <span class="kicker text-muted">deskripsi</span>
+          <div class="mt-1.5 px-4 py-3 rounded-xl bg-paper border border-ocean-900/15">
+            <p class="text-[14px] leading-relaxed text-ocean-900">
+              Jeep 4×4 dari hotel jam 03.30. Sampai viewpoint sekitar 04.30, matahari terbit pukul <span class="font-mono text-coral-700">05.42</span>. Bawa jaket tebal — di puncak bisa 8 °C.
+            </p>
+          </div>
+        </label>
+
+        <!-- notes -->
+        <label class="block mt-3">
+          <span class="kicker text-muted">catatan (opsional)</span>
+          <div class="mt-1.5 px-4 py-3 rounded-xl bg-sand-100 border border-sand-300">
+            <div class="flex items-start gap-2">
+              <svg class="ico w-4 h-4 mt-0.5 text-sand-700 shrink-0" viewBox="0 0 24 24"><path d="M12 6v6l3 2"></path><circle cx="12" cy="12" r="9"></circle></svg>
+              <p class="text-[13px] text-ocean-900">Pemesanan jeep lewat villa, sudah termasuk untuk 4 orang.</p>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== 08 · ACTIVITY PHOTO PAGE ====================== -->
+<section data-od-id="path-2-7">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-7-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-7-0-0">08 · Activity Photo Page</h2>
+    <p class="text-[13px] text-muted">Per-activity photo journal: camera, gallery picker, grid, tap to fullscreen, long-press to delete.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10" data-od-id="path-2-7-1">
+
+  <!-- grid -->
+  <div>
+  <div class="kicker text-muted mb-3">Gallery · 6 photos</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-7-1-0-1-1-1">
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-7-1-0-1-1-1-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="kicker text-muted" data-od-id="path-2-7-1-0-1-1-1-1">jurnal aktivitas</div>
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-7-1-0-1-1-1-2">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 12h16M12 4l8 8-8 8"></path></svg>
+        </button>
+      </header>
+
+      <div class="px-6">
+        <div class="kicker text-coral-700">06.00 · hari 1</div>
+        <h1 class="font-display text-[28px] leading-tight" data-od-id="path-2-7-1-0-1-1-2-1">Sunrise di <span class="italic">Penanjakan</span></h1>
+        <div class="flex items-center gap-3 mt-1.5 text-[12px] font-mono text-muted">
+          <span>Bromo · Jawa Timur</span><span>·</span><span>6 foto · 1 video</span>
+        </div>
+      </div>
+
+      <!-- grid 3 col -->
+      <div class="px-6 mt-4 grid grid-cols-3 gap-1.5">
+        <div class="aspect-square rounded-md photo-bromo shadow-inset relative overflow-hidden">
+          <span class="absolute bottom-1 left-1.5 kicker text-paper/90">05.42</span>
+        </div>
+        <div class="aspect-square rounded-md photo-bromo shadow-inset"></div>
+        <div class="aspect-square rounded-md photo-terrace shadow-inset relative">
+          <div class="absolute inset-0 grid place-items-center">
+            <div class="w-7 h-7 rounded-full bg-ocean-900/70 grid place-items-center backdrop-blur">
+              <svg class="ico w-3 h-3 text-paper" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z" fill="currentColor"></path></svg>
+            </div>
+          </div>
+          <span class="absolute bottom-1 right-1.5 kicker text-paper/90 font-mono">0:14</span>
+        </div>
+        <div class="aspect-square rounded-md photo-jimbaran shadow-inset"></div>
+        <div class="aspect-square rounded-md photo-komodo shadow-inset"></div>
+        <div class="aspect-square rounded-md photo-bromo shadow-inset relative">
+          <!-- selected for delete (long-pressed) -->
+          <div class="absolute inset-0 ring-2 ring-coral-500 rounded-md"></div>
+          <span class="absolute top-1 right-1 w-5 h-5 rounded-full bg-coral-500 grid place-items-center">
+            <svg class="ico w-3 h-3 text-paper" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- caption -->
+      <div class="mx-6 mt-4 rounded-xl bg-paper border border-ocean-900/10 p-4">
+        <div class="kicker text-coral-700 mb-1">catatan kamu</div>
+        <p class="font-display italic text-[18px] leading-snug text-ocean-900">
+          Dingin sekali, tapi langit mulai jingga jam 5.20 — jeep berhenti, semua orang diam.
+        </p>
+      </div>
+
+      <!-- bottom bar -->
+      <div class="absolute bottom-[36px] inset-x-6 flex items-center gap-2.5">
+        <button class="w-12 h-12 rounded-full bg-paper border border-ocean-900/15 grid place-items-center" data-od-id="path-2-7-1-0-1-1-5-0">
+          <svg class="ico w-5 h-5" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"></rect><circle cx="12" cy="13" r="3.5"></circle><path d="M8 6l1.5-2h5L16 6"></path></svg>
+        </button>
+        <button class="flex-1 h-12 rounded-full bg-ocean-900 text-paper text-[14px] font-medium tracking-tight flex items-center justify-center gap-2" data-od-id="path-2-7-1-0-1-1-5-1">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"></path></svg>
+          Tambah dari galeri
+        </button>
+        <button class="w-12 h-12 rounded-full bg-coral-500 text-paper grid place-items-center" data-od-id="path-2-7-1-0-1-1-5-2">
+          <svg class="ico w-5 h-5" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg>
+        </button>
+      </div>
+
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- empty + fullscreen -->
+  <div>
+  <div class="kicker text-muted mb-3">Empty state · before the trip</div>
+  <div class="device mb-6">
+    <div class="dyn-island"></div>
+    <div class="screen paper-tex text-ocean-900">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+      <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-7-1-1-1-1-1">
+        <button class="w-10 h-10 rounded-full border border-ocean-900/15 grid place-items-center bg-paper" data-od-id="path-2-7-1-1-1-1-1-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="kicker text-muted" data-od-id="path-2-7-1-1-1-1-1-1">jurnal aktivitas</div>
+        <div class="w-10" data-od-id="path-2-7-1-1-1-1-1-2"></div>
+      </header>
+      <div class="px-6">
+        <div class="kicker text-coral-700">15.00 · hari 2</div>
+        <h1 class="font-display text-[26px] leading-tight" data-od-id="path-2-7-1-1-1-1-2-1">Sate Klatak <span class="italic">Pak Pong</span></h1>
+        <div class="flex items-center gap-3 mt-1.5 text-[12px] font-mono text-muted">
+          <span>Yogyakarta</span><span>·</span><span>belum ada foto</span>
+        </div>
+      </div>
+      <div class="mx-6 mt-6 aspect-square rounded-3xl border border-dashed border-ocean-900/22 grid place-items-center grain-soft">
+        <div class="text-center px-6">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" class="mx-auto">
+            <rect x="6" y="14" width="52" height="40" rx="6" stroke="#0A2540" stroke-width="1.3"></rect>
+            <circle cx="32" cy="36" r="10" stroke="#D4684A" stroke-width="1.3"></circle>
+            <circle cx="32" cy="36" r="5" stroke="#0A2540" stroke-width="1.3"></circle>
+            <path d="M22 14l3-4h14l3 4" stroke="#0A2540" stroke-width="1.3"></path>
+            <circle cx="49" cy="22" r="1.6" fill="#D4684A"></circle>
+          </svg>
+          <div class="font-display text-[22px] mt-4">Belum ada foto.</div>
+          <p class="text-[13px] text-ocean-700 mt-1 leading-snug max-w-[220px] mx-auto">
+            Saat sampai sini, ambil 1–2 jepretan — biar jurnal trip-mu hidup.
+          </p>
+        </div>
+      </div>
+      <div class="absolute bottom-[36px] inset-x-6 flex gap-2.5">
+        <button class="flex-1 py-3 rounded-full bg-ocean-900 text-paper text-[14px] font-medium flex items-center justify-center gap-2" data-od-id="path-2-7-1-1-1-1-4-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"></rect><circle cx="12" cy="13" r="3.5"></circle></svg>
+          Buka kamera
+        </button>
+        <button class="px-4 py-3 rounded-full border border-ocean-900/20 text-[13px]" data-od-id="path-2-7-1-1-1-1-4-1">Galeri</button>
+      </div>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- Fullscreen viewer (sub-state) -->
+  <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-10" data-od-id="path-2-7-2">
+    <div>
+    <div class="kicker text-muted mb-3">Fullscreen · tap to view</div>
+    <div class="device">
+      <div class="dyn-island"></div>
+      <div class="screen ocean-deep relative">
+        <div class="status-bar dark text-paper"><span class="time">9.41</span>
+          <div class="right">
+            <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+            <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+            <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+          </div>
+        </div>
+        <div class="absolute inset-0 photo-bromo"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-ocean-950/40 via-transparent to-ocean-950/85"></div>
+
+        <div class="absolute top-12 inset-x-4 flex items-center justify-between text-paper">
+          <button class="w-10 h-10 rounded-full bg-paper/15 backdrop-blur grid place-items-center" data-od-id="path-2-7-2-0-1-1-3-0">
+            <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"></path></svg>
+          </button>
+          <div class="text-center">
+            <div class="kicker text-paper/80">3 / 6</div>
+            <div class="font-mono text-[11px] text-paper/60">12 mar · 05.42</div>
+          </div>
+          <button class="w-10 h-10 rounded-full bg-paper/15 backdrop-blur grid place-items-center" data-od-id="path-2-7-2-0-1-1-3-2">
+            <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"></path></svg>
+          </button>
+        </div>
+
+        <div class="absolute bottom-[120px] inset-x-6 text-paper">
+          <div class="font-display italic text-[22px] leading-snug">
+            "Jam 5.20 langit jingga, semua orang diam."
+          </div>
+          <div class="font-mono text-[11px] text-paper/70 mt-2">Penanjakan 1 · 2 770 m dpl · iPhone 14 Pro</div>
+        </div>
+
+        <div class="absolute bottom-[36px] inset-x-6 flex items-center justify-around text-paper">
+          <button class="flex flex-col items-center gap-1" data-od-id="path-2-7-2-0-1-1-5-0">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><path d="M3 12s4-7 9-7 9 7 9 7-4 7-9 7-9-7-9-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span class="text-[10px]">Detail</span>
+          </button>
+          <button class="flex flex-col items-center gap-1" data-od-id="path-2-7-2-0-1-1-5-1">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"></path></svg>
+            <span class="text-[10px]">Bagikan</span>
+          </button>
+          <button class="flex flex-col items-center gap-1 text-coral-300" data-od-id="path-2-7-2-0-1-1-5-2">
+            <svg class="ico w-5 h-5" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg>
+            <span class="text-[10px]">Hapus</span>
+          </button>
+        </div>
+        <div class="home-indicator text-paper"></div>
+      </div>
+    </div>
+    </div>
+
+    <div>
+    <div class="kicker text-muted mb-3">Long-press · selection mode</div>
+    <div class="device">
+      <div class="dyn-island"></div>
+      <div class="screen paper-tex text-ocean-900">
+        <div class="status-bar light"><span class="time">9.41</span>
+          <div class="right">
+            <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+            <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+            <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+          </div>
+        </div>
+        <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-7-2-1-1-1-1">
+          <button class="kicker text-coral-700" data-od-id="path-2-7-2-1-1-1-1-0">Batal</button>
+          <div class="kicker text-muted" data-od-id="path-2-7-2-1-1-1-1-1">3 dipilih</div>
+          <button class="kicker text-ocean-900" data-od-id="path-2-7-2-1-1-1-1-2">Pilih semua</button>
+        </header>
+        <div class="px-6 grid grid-cols-3 gap-1.5">
+          <div class="aspect-square rounded-md photo-bromo shadow-inset relative ring-2 ring-coral-500">
+            <span class="absolute top-1 right-1 w-5 h-5 rounded-full bg-coral-500 grid place-items-center">
+              <svg class="ico w-3 h-3 text-paper" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+            </span>
+          </div>
+          <div class="aspect-square rounded-md photo-bromo shadow-inset relative ring-2 ring-coral-500">
+            <span class="absolute top-1 right-1 w-5 h-5 rounded-full bg-coral-500 grid place-items-center">
+              <svg class="ico w-3 h-3 text-paper" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+            </span>
+          </div>
+          <div class="aspect-square rounded-md photo-terrace shadow-inset relative opacity-60"></div>
+          <div class="aspect-square rounded-md photo-jimbaran shadow-inset opacity-60"></div>
+          <div class="aspect-square rounded-md photo-komodo shadow-inset opacity-60"></div>
+          <div class="aspect-square rounded-md photo-bromo shadow-inset relative ring-2 ring-coral-500">
+            <span class="absolute top-1 right-1 w-5 h-5 rounded-full bg-coral-500 grid place-items-center">
+              <svg class="ico w-3 h-3 text-paper" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+            </span>
+          </div>
+        </div>
+        <div class="absolute bottom-[36px] inset-x-6 rounded-full bg-ocean-900 text-paper flex items-center justify-around py-3.5">
+          <button class="flex items-center gap-2 text-[13px]" data-od-id="path-2-7-2-1-1-1-3-0">
+            <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"></path></svg>
+            Bagikan
+          </button>
+          <span class="w-px h-5 bg-paper/20"></span>
+          <button class="flex items-center gap-2 text-[13px] text-coral-300" data-od-id="path-2-7-2-1-1-1-3-2">
+            <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg>
+            Hapus 3
+          </button>
+        </div>
+        <div class="home-indicator text-ocean-900"></div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== 09 · MAP PICKER ====================== -->
+<section data-od-id="path-2-8">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-8-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-8-0-0">09 · Map Picker</h2>
+    <p class="text-[13px] text-muted">Sheet inside the activity form — search, drop pin, confirm. Returns to step 07.</p>
+  </div>
+  <div class="device" data-od-id="path-2-8-1">
+    <div class="dyn-island"></div>
+    <div class="screen relative">
+      <div class="status-bar light text-ocean-900"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <!-- map canvas -->
+      <div class="absolute inset-0 topo">
+        <!-- water + coastlines -->
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 390 844" fill="none" preserveAspectRatio="none">
+          <path d="M-10 280 Q 60 250 120 270 T 280 260 T 410 290 L 410 -10 L -10 -10 Z" fill="#C7D5E0" opacity=".6"></path>
+          <path d="M-10 600 Q 80 580 160 600 T 320 590 T 410 620 L 410 854 L -10 854 Z" fill="#DEE6EF" opacity=".7"></path>
+          <path d="M-10 280 Q 60 250 120 270 T 280 260 T 410 290" stroke="#3A5878" stroke-width="0.7" opacity=".4"></path>
+          <path d="M40 380 Q 110 370 170 380 T 320 388" stroke="#3A5878" stroke-width="0.5" opacity=".25"></path>
+          <!-- contour lines -->
+          <ellipse cx="190" cy="470" rx="120" ry="90" stroke="#A78854" stroke-width=".5" opacity=".35"></ellipse>
+          <ellipse cx="190" cy="470" rx="86" ry="60" stroke="#A78854" stroke-width=".5" opacity=".35"></ellipse>
+          <ellipse cx="190" cy="470" rx="50" ry="32" stroke="#A78854" stroke-width=".5" opacity=".35"></ellipse>
+          <!-- roads -->
+          <path d="M0 720 Q 90 600 200 540 T 380 380" stroke="#0A2540" stroke-width="1" opacity=".25" stroke-dasharray="3 4"></path>
+          <path d="M20 460 L 360 510" stroke="#D4684A" stroke-width="1" opacity=".5"></path>
+          <!-- labels -->
+          <text x="220" y="190" font-family="Instrument Serif" font-style="italic" font-size="16" fill="#1B3A5F" opacity=".75">Pasir Berbisik</text>
+          <text x="60" y="450" font-family="DM Mono" font-size="9" fill="#0A2540" opacity=".5" letter-spacing="2">VIEWPOINT</text>
+          <text x="240" y="660" font-family="Instrument Serif" font-style="italic" font-size="14" fill="#1B3A5F" opacity=".65">Cemara Lawang</text>
+        </svg>
+
+        <!-- POI dots -->
+        <span class="absolute w-2.5 h-2.5 rounded-full bg-ocean-900" style="left:25%;top:53%"></span>
+        <span class="absolute w-2.5 h-2.5 rounded-full bg-ocean-900" style="left:65%;top:78%"></span>
+        <span class="absolute w-2.5 h-2.5 rounded-full bg-ocean-900" style="left:78%;top:50%"></span>
+
+        <!-- selected pin centered -->
+        <div class="absolute" style="left:50%;top:54%;transform:translate(-50%,-100%)">
+          <svg width="44" height="56" viewBox="0 0 44 56" fill="none">
+            <path d="M22 54 C 8 38 4 28 4 20 a18 18 0 0 1 36 0 c 0 8-4 18-18 34Z" fill="#0A2540"></path>
+            <circle cx="22" cy="20" r="6" fill="#FAF6EF"></circle>
+            <circle cx="22" cy="20" r="2.5" fill="#D4684A"></circle>
+          </svg>
+          <div class="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-1 rounded-full bg-ocean-900/30 blur-sm"></div>
+        </div>
+      </div>
+
+      <!-- top search + back -->
+      <div class="absolute top-12 inset-x-4 flex items-center gap-2.5">
+        <button class="w-10 h-10 rounded-full bg-paper border border-ocean-900/12 shadow-card grid place-items-center" data-od-id="path-2-8-1-1-2-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="flex-1 flex items-center gap-2 px-4 h-10 rounded-full bg-paper border border-ocean-900/12 shadow-card">
+          <svg class="ico w-4 h-4 text-muted" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.5-4.5"></path></svg>
+          <input class="bg-transparent text-[14px] flex-1 outline-none placeholder:text-muted" value="Penanjakan, Tosari">
+          <button class="kicker text-coral-700" data-od-id="path-2-8-1-1-2-1-2">×</button>
+        </div>
+      </div>
+
+      <!-- floating recenter button -->
+      <button class="absolute right-4 top-[460px] w-10 h-10 rounded-full bg-paper border border-ocean-900/12 shadow-card grid place-items-center" data-od-id="path-2-8-1-1-3">
+        <svg class="ico w-4 h-4 text-ocean-700" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+      </button>
+
+      <!-- bottom sheet -->
+      <div class="absolute bottom-0 inset-x-0 rounded-t-3xl bg-paper border-t border-ocean-900/8 shadow-[0_-12px_30px_-12px_rgba(10,37,64,0.15)]">
+        <div class="mx-auto my-2.5 w-10 h-1 rounded-full bg-ocean-900/15"></div>
+        <div class="px-6 pb-7">
+          <div class="kicker text-coral-700">titik dipilih</div>
+          <div class="flex items-start justify-between gap-3 mt-1">
+            <div>
+              <h3 class="font-display text-[22px] leading-tight" data-od-id="path-2-8-1-1-4-1-1-0-0">Penanjakan 1 Viewpoint</h3>
+              <div class="text-[12px] text-muted font-mono mt-0.5">−7.9303°, 112.9558° · 2 770 m dpl</div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-ocean-100 text-ocean-900 text-[11px] font-mono">★ 4.7</span>
+          </div>
+
+          <div class="flex items-center gap-3 mt-3 text-[12px] text-ocean-700">
+            <span class="flex items-center gap-1">
+              <svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+              45 mnt
+            </span>
+            <span class="flex items-center gap-1">
+              <svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24"><path d="M3 6h18M5 6v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6M9 6V3h6v3"></path></svg>
+              14 km
+            </span>
+            <span class="flex items-center gap-1 text-coral-700">
+              <svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M5 12H2M22 12h-3"></path></svg>
+              suhu 8 °C
+            </span>
+          </div>
+
+          <div class="mt-4 flex items-center gap-2.5">
+            <button class="flex-1 py-3.5 rounded-full border border-ocean-900/20 text-[14px] font-medium" data-od-id="path-2-8-1-1-4-1-3-0">Coba lokasi lain</button>
+            <button class="flex-1 py-3.5 rounded-full bg-ocean-900 text-paper text-[14px] font-medium tracking-tight" data-od-id="path-2-8-1-1-4-1-3-1">Pakai titik ini</button>
+          </div>
+        </div>
+        <div class="home-indicator text-ocean-900"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== 10 · PDF PREVIEW / EXPORT ====================== -->
+<section data-od-id="path-2-9">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-9-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-9-0-0">10 · PDF Preview / Export</h2>
+    <p class="text-[13px] text-muted">Read-only preview of the full itinerary, then Export → system share sheet.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10" data-od-id="path-2-9-1">
+
+  <div>
+  <div class="kicker text-muted mb-3">Preview · ready to share</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen text-ocean-900" style="background:#F2EEE6">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <header class="px-6 pt-2 pb-3 flex items-center justify-between" data-od-id="path-2-9-1-0-1-1-1">
+        <button class="w-10 h-10 rounded-full bg-paper border border-ocean-900/15 grid place-items-center" data-od-id="path-2-9-1-0-1-1-1-0">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"></path></svg>
+        </button>
+        <div class="kicker text-muted" data-od-id="path-2-9-1-0-1-1-1-1">pratinjau pdf</div>
+        <div class="flex items-center gap-1.5" data-od-id="path-2-9-1-0-1-1-1-2">
+          <span class="kicker text-coral-700">A4</span>
+          <span class="kicker text-muted">·</span>
+          <span class="kicker text-muted">5 hal</span>
+        </div>
+      </header>
+
+      <!-- pdf page mock -->
+      <div class="mx-6 mt-2 rounded-md bg-paper shadow-card overflow-hidden" style="aspect-ratio:0.707">
+        <div class="px-5 py-5">
+          <div class="flex items-baseline justify-between">
+            <div>
+              <div class="kicker text-coral-700">itinerary · maya &amp; arif</div>
+              <h1 class="font-display text-[28px] leading-[0.95] mt-1" data-od-id="path-2-9-1-0-1-1-2-0-0-0-1">Bali 5D4N<br><span class="italic">Ubud &amp; Canggu</span></h1>
+            </div>
+            <div class="text-right">
+              <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+                <circle cx="17" cy="17" r="16" stroke="#0A2540" stroke-width="0.7"></circle>
+                <path d="M17 4 19 17 17 30 15 17z" fill="#D4684A"></path>
+                <path d="M4 17 17 19 30 17 17 15z" fill="#0A2540" opacity=".25"></path>
+              </svg>
+              <div class="font-mono text-[8px] text-muted mt-1">est. 2026</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 mt-3 font-mono text-[9px] text-muted">
+            <span>12 — 16 MAR 2026</span><span>·</span><span>5 HARI · 4 MALAM</span><span>·</span><span>18 AKTIVITAS</span>
+          </div>
+
+          <div class="mt-4 border-t border-ocean-900/15 pt-3">
+            <div class="kicker text-coral-700 text-[8px]">hari 1 · kam 12 mar</div>
+            <div class="font-display text-[15px] leading-tight mt-0.5">Tiba &amp; Ubud awal</div>
+            <ol class="mt-2 space-y-1.5">
+              <li class="flex gap-2 text-[10px] leading-snug">
+                <span class="font-mono text-[9px] text-coral-700 w-9">14.20</span>
+                <span class="text-ocean-900">Mendarat DPS · I Gusti Ngurah Rai</span>
+              </li>
+              <li class="flex gap-2 text-[10px] leading-snug">
+                <span class="font-mono text-[9px] text-coral-700 w-9">15.10</span>
+                <span class="text-ocean-900">Kopi sore di Bali Coffee Roastery, Sanur</span>
+              </li>
+              <li class="flex gap-2 text-[10px] leading-snug">
+                <span class="font-mono text-[9px] text-coral-700 w-9">17.00</span>
+                <span class="text-ocean-900">Check-in Tanamas Villas, Ubud</span>
+              </li>
+              <li class="flex gap-2 text-[10px] leading-snug">
+                <span class="font-mono text-[9px] text-coral-700 w-9">19.30</span>
+                <span class="text-ocean-900">Locavore To Go · tasting 5-course</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="mt-3 border-t border-ocean-900/15 pt-3">
+            <div class="kicker text-coral-700 text-[8px]">hari 2 · jum 13 mar</div>
+            <div class="font-display text-[15px] leading-tight mt-0.5">Tegallalang &amp; seniman</div>
+            <ol class="mt-2 space-y-1.5">
+              <li class="flex gap-2 text-[10px] leading-snug">
+                <span class="font-mono text-[9px] text-coral-700 w-9">06.00</span>
+                <span class="text-ocean-900">Sunrise Tegallalang rice terraces</span>
+              </li>
+              <li class="flex gap-2 text-[10px] leading-snug">
+                <span class="font-mono text-[9px] text-coral-700 w-9">09.30</span>
+                <span class="text-ocean-900">Sarapan di Sayuri Healing Food</span>
+              </li>
+              <li class="flex gap-2 text-[10px] leading-snug">
+                <span class="font-mono text-[9px] text-coral-700 w-9">12.00</span>
+                <span class="text-ocean-900">Tegenungan Waterfall · jeep</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="absolute bottom-3 left-5 right-5 flex items-center justify-between font-mono text-[8px] text-muted">
+            <span>iterasi · perjalanan dirancang dengan tangan</span>
+            <span>1 / 5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute bottom-[110px] inset-x-6 flex items-center justify-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-ocean-900"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-ocean-300"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-ocean-300"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-ocean-300"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-ocean-300"></span>
+      </div>
+
+      <div class="absolute bottom-[36px] inset-x-6 flex gap-2.5">
+        <button class="flex-1 py-3.5 rounded-full border border-ocean-900/20 text-[14px] font-medium bg-paper" data-od-id="path-2-9-1-0-1-1-4-0">Cetak</button>
+        <button class="flex-1 py-3.5 rounded-full bg-ocean-900 text-paper text-[14px] font-medium tracking-tight flex items-center justify-center gap-2" data-od-id="path-2-9-1-0-1-1-4-1">
+          <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"></path></svg>
+          Bagikan
+        </button>
+      </div>
+      <div class="home-indicator text-ocean-900"></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Share sheet -->
+  <div>
+  <div class="kicker text-muted mb-3">After tap · system share sheet</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen text-ocean-900 relative" style="background:#F2EEE6">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+      <!-- dimmed pdf behind -->
+      <div class="absolute inset-0 top-12 px-6 opacity-30">
+        <div class="rounded-md bg-paper shadow-card" style="aspect-ratio:.707"></div>
+      </div>
+      <div class="absolute inset-0 bg-ocean-950/55"></div>
+
+      <!-- sheet -->
+      <div class="absolute bottom-0 inset-x-0 rounded-t-3xl bg-paper">
+        <div class="mx-auto my-2.5 w-10 h-1 rounded-full bg-ocean-900/15"></div>
+        <div class="px-6 pt-2 pb-7">
+          <div class="flex items-center gap-3 pb-3 border-b border-ocean-900/8">
+            <div class="w-11 h-14 rounded-md bg-paper border border-ocean-900/15 grid place-items-center">
+              <span class="font-mono text-[8px] text-coral-700">PDF</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-[14px] truncate">Bali-5D4N-Ubud-Canggu.pdf</div>
+              <div class="text-[11px] text-muted font-mono">5 halaman · 412 kB</div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-700/10 text-emerald-700 text-[10px] font-mono">SIAP</span>
+          </div>
+
+          <div class="kicker text-muted mt-4 mb-2">kirim ke</div>
+          <div class="flex gap-3 overflow-x-auto scroll-hide pb-1">
+            <div class="shrink-0 w-14 text-center">
+              <div class="w-14 h-14 rounded-2xl bg-coral-200 grid place-items-center font-display italic text-coral-800 text-[20px]">A</div>
+              <div class="text-[10px] mt-1 text-ocean-900">Arif</div>
+            </div>
+            <div class="shrink-0 w-14 text-center">
+              <div class="w-14 h-14 rounded-2xl bg-sand-300 grid place-items-center font-display italic text-ocean-900 text-[20px]">B</div>
+              <div class="text-[10px] mt-1 text-ocean-900">Bunda</div>
+            </div>
+            <div class="shrink-0 w-14 text-center">
+              <div class="w-14 h-14 rounded-2xl bg-ocean-100 grid place-items-center font-display italic text-ocean-900 text-[20px]">D</div>
+              <div class="text-[10px] mt-1 text-ocean-900">Dimas</div>
+            </div>
+            <div class="shrink-0 w-14 text-center">
+              <div class="w-14 h-14 rounded-2xl bg-ocean-900 grid place-items-center text-paper font-display italic text-[20px]">+</div>
+              <div class="text-[10px] mt-1 text-muted">Lainnya</div>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-4 gap-2 text-center">
+            <button class="rounded-2xl bg-sand-100 py-3" data-od-id="path-2-9-1-1-1-1-3-1-3-0">
+              <div class="w-9 h-9 mx-auto rounded-xl bg-emerald-600 grid place-items-center mb-1">
+                <svg class="ico w-4 h-4 text-paper" viewBox="0 0 24 24"><path d="M3 12c0-5 4-9 9-9 5 0 9 4 9 9 0 1.6-.5 3.1-1.3 4.5L21 21l-4.5-1.3A8.9 8.9 0 0 1 3 12Z"></path></svg>
+              </div>
+              <span class="text-[10px]">WhatsApp</span>
+            </button>
+            <button class="rounded-2xl bg-sand-100 py-3" data-od-id="path-2-9-1-1-1-1-3-1-3-1">
+              <div class="w-9 h-9 mx-auto rounded-xl bg-ocean-700 grid place-items-center mb-1">
+                <svg class="ico w-4 h-4 text-paper" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
+              </div>
+              <span class="text-[10px]">Email</span>
+            </button>
+            <button class="rounded-2xl bg-sand-100 py-3" data-od-id="path-2-9-1-1-1-1-3-1-3-2">
+              <div class="w-9 h-9 mx-auto rounded-xl bg-ocean-900 grid place-items-center mb-1">
+                <svg class="ico w-4 h-4 text-paper" viewBox="0 0 24 24"><path d="M5 20h14v-7M12 4v12M8 8l4-4 4 4"></path></svg>
+              </div>
+              <span class="text-[10px]">AirDrop</span>
+            </button>
+            <button class="rounded-2xl bg-sand-100 py-3" data-od-id="path-2-9-1-1-1-1-3-1-3-3">
+              <div class="w-9 h-9 mx-auto rounded-xl bg-coral-500 grid place-items-center mb-1">
+                <svg class="ico w-4 h-4 text-paper" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"></path></svg>
+              </div>
+              <span class="text-[10px]">Simpan File</span>
+            </button>
+          </div>
+
+          <button class="mt-4 w-full py-3.5 rounded-full border border-ocean-900/15 text-[14px] font-medium" data-od-id="path-2-9-1-1-1-1-3-1-4">Batal</button>
+        </div>
+        <div class="home-indicator text-ocean-900"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+</section>
+
+<!-- ====================== 11 · DELETE CONFIRMATION ====================== -->
+<section data-od-id="path-2-10">
+  <div class="mb-5 flex items-baseline justify-between gap-6" data-od-id="path-2-10-0">
+    <h2 class="font-display text-3xl text-ocean-900" data-od-id="path-2-10-0-0">11 · Delete Confirmation Dialog</h2>
+    <p class="text-[13px] text-muted">Reusable destructive modal — trip, activity, or photo. Coral is reserved for action only.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10" data-od-id="path-2-10-1">
+
+  <!-- delete trip -->
+  <div>
+  <div class="kicker text-muted mb-3">Variant · delete trip</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen text-ocean-900 relative" style="background:#F2EEE6">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <!-- dimmed background list -->
+      <div class="absolute inset-0 paper-tex opacity-45">
+        <div class="px-6 pt-12 space-y-3">
+          <div class="rounded-2xl bg-paper border border-ocean-900/10 h-32"></div>
+          <div class="rounded-2xl bg-paper border border-ocean-900/10 h-32"></div>
+        </div>
+      </div>
+      <div class="absolute inset-0 bg-ocean-950/55"></div>
+
+      <!-- modal -->
+      <div class="absolute inset-x-7 top-1/2 -translate-y-1/2 rounded-3xl bg-paper shadow-card overflow-hidden">
+        <div class="px-6 pt-6 pb-2 text-center">
+          <!-- small illustration -->
+          <div class="w-14 h-14 rounded-2xl bg-coral-500/15 grid place-items-center mx-auto mb-3 border border-coral-500/30">
+            <svg class="ico w-6 h-6 text-coral-700" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg>
+          </div>
+          <h2 class="font-display text-[26px] leading-tight" data-od-id="path-2-10-1-0-1-1-3-0-1">Hapus <span class="italic">Bromo Sunrise 3D2N</span>?</h2>
+          <p class="text-[13px] text-ocean-700 mt-2 leading-snug">
+            9 aktivitas dan 23 foto akan terhapus permanen dari perangkat ini. Tidak bisa dikembalikan.
+          </p>
+
+          <!-- "type to confirm" -->
+          <div class="mt-4 pt-3 border-t border-ocean-900/10">
+            <div class="kicker text-muted mb-1.5">ketik nama trip untuk konfirmasi</div>
+            <div class="px-3.5 py-2.5 rounded-lg bg-paper2 border border-ocean-900/15 flex items-center">
+              <span class="text-[13px] text-ocean-900">Bromo Sunrise</span>
+              <span class="ml-0.5 w-px h-4 bg-ocean-900 animate-pulse"></span>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-ocean-900/8 px-6 py-4 grid grid-cols-2 gap-2.5">
+          <button class="py-3 rounded-full border border-ocean-900/20 text-[14px] font-medium" data-od-id="path-2-10-1-0-1-1-3-1-0">Batal</button>
+          <button class="py-3 rounded-full bg-coral-700 text-paper text-[14px] font-medium" data-od-id="path-2-10-1-0-1-1-3-1-1">Hapus</button>
+        </div>
+      </div>
+
+      <div class="home-indicator text-paper relative z-10"></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- delete photo with swipe -->
+  <div>
+  <div class="kicker text-muted mb-3">Variant · single photo (light)</div>
+  <div class="device">
+    <div class="dyn-island"></div>
+    <div class="screen text-ocean-900 relative" style="background:#F2EEE6">
+      <div class="status-bar light"><span class="time">9.41</span>
+        <div class="right">
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="none"><path d="M1 8c4-4 12-4 16 0M4 11c2-2 8-2 10 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <svg class="w-4 h-3" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="2" width="3" height="8" rx="1"></rect><rect x="5" y="0" width="3" height="10" rx="1"></rect><rect x="10" y="-1" width="3" height="11" rx="1"></rect></svg>
+          <svg class="w-6 h-3" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1"></rect><rect x="3" y="3" width="14" height="6" rx="1.2" fill="currentColor"></rect><rect x="22" y="4" width="1.5" height="4" rx="1" fill="currentColor"></rect></svg>
+        </div>
+      </div>
+
+      <div class="absolute inset-0 paper-tex opacity-40"></div>
+      <div class="absolute inset-0 bg-ocean-950/40"></div>
+
+      <!-- iOS-style action sheet from bottom -->
+      <div class="absolute bottom-0 inset-x-0 p-3 pb-7">
+        <div class="rounded-2xl bg-paper/97 backdrop-blur-md overflow-hidden">
+          <div class="px-4 py-3 text-center">
+            <div class="font-display text-[16px]">Hapus 1 foto?</div>
+            <div class="text-[12px] text-muted mt-0.5">Foto ini akan hilang dari trip Bali · 5D4N.</div>
+          </div>
+          <div class="border-t border-ocean-900/10 px-4 py-3 flex items-center justify-center gap-2 text-coral-700">
+            <svg class="ico w-4 h-4" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"></path></svg>
+            <span class="text-[15px] font-medium">Hapus</span>
+          </div>
+        </div>
+        <button class="mt-2 w-full py-3.5 rounded-2xl bg-paper text-[15px] font-medium" data-od-id="path-2-10-1-1-1-1-3-1">Batal</button>
+        <div class="home-indicator text-ocean-900 mt-2 relative"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="max-w-6xl mx-auto px-8 mt-20 pb-20" data-od-id="path-3">
+  <div class="border-t border-ocean-900/15 pt-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-end" data-od-id="path-3-0">
+    <div class="md:col-span-2">
+      <div class="kicker text-coral-700 mb-2">end of brief</div>
+      <h2 class="font-display text-[44px] leading-[0.95] text-ocean-900" data-od-id="path-3-0-0-1">
+        11 layar, satu <span class="italic">sistem</span>.
+      </h2>
+      <p class="font-display italic text-ocean-700 mt-3 text-[17px] max-w-xl leading-snug">
+        Biru laut dalam, terracotta yang dipakai berhemat, kertas hangat yang merata di tiap halaman — supaya iterasi terasa seperti atlas perjalanan, bukan dashboard.
+      </p>
+    </div>
+    <div class="text-[12px] font-mono text-muted text-right space-y-1">
+      <div>direction · quiet luxury coastal</div>
+      <div>brand blue · #0A2540</div>
+      <div>accent · #D4684A terracotta</div>
+      <div>type · Instrument Serif + DM Sans + DM Mono</div>
+      <div>iterasi · v 2.0 raja-ampat</div>
+    </div>
+  </div>
+</footer>
+
+
+
+<script data-od-snapshot-bridge="">(function(){
+  function copyComputedStyle(source, target){
+    if (!source || !target || source.nodeType !== 1 || target.nodeType !== 1) return;
+    var computed = window.getComputedStyle(source);
+    var style = target.getAttribute('style') || '';
+    for (var i = 0; i < computed.length; i++){
+      var prop = computed[i];
+      style += prop + ':' + computed.getPropertyValue(prop) + ';';
+    }
+    target.setAttribute('style', style);
+  }
+  function syncElementState(source, target){
+    var tag = source.tagName ? source.tagName.toLowerCase() : '';
+    if (tag === 'img' && source.currentSrc) target.setAttribute('src', source.currentSrc);
+    if (tag === 'input' || tag === 'textarea') target.setAttribute('value', source.value || '');
+    if (tag === 'canvas') {
+      try {
+        var img = document.createElement('img');
+        img.setAttribute('src', source.toDataURL('image/png'));
+        img.setAttribute('style', target.getAttribute('style') || '');
+        target.parentNode && target.parentNode.replaceChild(img, target);
+      } catch (_) {}
+    }
+  }
+  function inlineSnapshotStyles(originalRoot, cloneRoot){
+    copyComputedStyle(originalRoot, cloneRoot);
+    syncElementState(originalRoot, cloneRoot);
+    var originals = originalRoot.querySelectorAll('*');
+    var clones = cloneRoot.querySelectorAll('*');
+    var count = Math.min(originals.length, clones.length);
+    for (var i = 0; i < count; i++){
+      copyComputedStyle(originals[i], clones[i]);
+      syncElementState(originals[i], clones[i]);
+    }
+    var scripts = cloneRoot.querySelectorAll('script');
+    for (var s = scripts.length - 1; s >= 0; s--) scripts[s].remove();
+  }
+  function waitForImages(){
+    var imgs = Array.prototype.slice.call(document.images || []);
+    return Promise.all(imgs.map(function(img){
+      if (img.complete) return Promise.resolve();
+      return new Promise(function(resolve){
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', resolve, { once: true });
+      });
+    }));
+  }
+  function renderSnapshot(id){
+    var w = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
+    var h = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
+    var dpr = window.devicePixelRatio || 1;
+    var docW = Math.max(w, document.documentElement.scrollWidth || 0, document.body ? document.body.scrollWidth : 0);
+    var docH = Math.max(h, document.documentElement.scrollHeight || 0, document.body ? document.body.scrollHeight : 0);
+    var clone = document.documentElement.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    inlineSnapshotStyles(document.documentElement, clone);
+    var serializer = new XMLSerializer();
+    var html = serializer.serializeToString(clone);
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+      '<foreignObject x="' + (-window.scrollX || 0) + '" y="' + (-window.scrollY || 0) + '" width="' + docW + '" height="' + docH + '">' +
+      html +
+      '</foreignObject></svg>';
+    var img = new Image();
+    img.onload = function(){
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.floor(w * dpr));
+        canvas.height = Math.max(1, Math.floor(h * dpr));
+        var ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('no 2d context');
+        ctx.scale(dpr, dpr);
+        ctx.drawImage(img, 0, 0, w, h);
+        window.parent.postMessage({ type: 'od:snapshot:result', id: id, dataUrl: canvas.toDataURL('image/png'), w: canvas.width, h: canvas.height }, '*');
+      } catch (err) {
+        window.parent.postMessage({ type: 'od:snapshot:result', id: id, error: String(err && err.message || err) }, '*');
+      }
+    };
+    img.onerror = function(){
+      window.parent.postMessage({ type: 'od:snapshot:result', id: id, error: 'snapshot image failed' }, '*');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  window.addEventListener('message', function(ev){
+    var data = ev && ev.data;
+    if (!data || data.type !== 'od:snapshot' || !data.id) return;
+    waitForImages().then(function(){ renderSnapshot(String(data.id)); });
+  });
+})();</script><script data-od-srcdoc-transport-activation="">(function(){
+  window.addEventListener('message', function(ev){
+    var data = ev && ev.data;
+    if (!data || data.type !== 'od:srcdoc-transport-activate' || typeof data.html !== 'string') return;
+    document.open();
+    document.write(data.html);
+    document.close();
+  });
+})();</script></body></html>
