@@ -10,12 +10,14 @@ class Itinerary {
   String title;
   String dateModified;
   List<Day> days;
+  String? thumbnailPath;
 
   Itinerary(
       {String? id,
       required this.title,
       required this.dateModified,
-      List<Day>? days})
+      List<Day>? days,
+      this.thumbnailPath})
       : id = id ?? const Uuid().v1(),
         days = days ?? [];
 
@@ -25,6 +27,7 @@ class Itinerary {
       "title": title,
       "days": days.map((day) => day.toJson()).toList(),
       "date_modified": dateModified,
+      "thumbnail_path": thumbnailPath,
     };
   }
 
@@ -66,16 +69,22 @@ class Itinerary {
         id: json['id'],
         title: json['title'],
         days: json['days'].map((day) => Day.fromJson(day)).toList().cast<Day>(),
-        dateModified: json['date_modified']);
+        dateModified: json['date_modified'],
+        thumbnailPath: json['thumbnail_path'] as String?);
   }
 
   Itinerary copy(
-          {String? id, String? title, List<Day>? days, String? dateModified}) =>
+          {String? id,
+          String? title,
+          List<Day>? days,
+          String? dateModified,
+          String? thumbnailPath}) =>
       Itinerary(
           id: id ?? this.id,
           title: title ?? this.title,
           days: days ?? this.days.map((e) => e.copy()).toList(),
-          dateModified: dateModified ?? this.dateModified);
+          dateModified: dateModified ?? this.dateModified,
+          thumbnailPath: thumbnailPath ?? this.thumbnailPath);
 
   String toJsonString() => jsonEncode(toJson());
 

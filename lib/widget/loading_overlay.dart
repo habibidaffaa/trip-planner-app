@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:iterasi1/resource/theme.dart';
 import 'package:overlay_loading_progress/overlay_loading_progress.dart';
-// import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class LoadingOverlay {
-  static show(BuildContext context) {
+  static show(BuildContext context, {bool isDark = false}) {
     return OverlayLoadingProgress.start(
       context,
       barrierDismissible: false,
-      // widget: LoadingAnimationWidget.waveDots(
-      //   color: Colors.white,
-      //   size: 70,
-      // ),
-      widget: const CircularProgressIndicator(
-        color: Colors.white,
+      widget: CircularProgressIndicator(
+        color: isDark ? CustomColor.paper : CustomColor.coral500,
       ),
     );
   }

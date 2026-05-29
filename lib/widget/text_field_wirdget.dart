@@ -85,7 +85,6 @@ class TextFieldWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const defaultColor = CustomColor.blackColor;
     final inputBorder = border ?? AppTheme.inputBorder();
 
     return Column(
@@ -99,9 +98,10 @@ class TextFieldWidget extends StatelessWidget {
               children: [
                 Text(
                   label ?? '',
-                  style: TextStyle(
-                    color: labelColor ?? CustomColor.blackColor,
-                    fontWeight: FontWeight.w500,
+                  style: monoStyle.copyWith(
+                    fontSize: 11,
+                    letterSpacing: 0.22 * 11,
+                    color: labelColor ?? CustomColor.muted,
                   ),
                 ),
                 Text(
@@ -151,7 +151,7 @@ class TextFieldWidget extends StatelessWidget {
               },
           textAlign: textAlign ?? TextAlign.start,
           style: TextStyle(
-            color: color ?? defaultColor,
+            color: color ?? CustomColor.ink,
             fontWeight: fontWeight ?? FontWeight.w600,
           ),
           decoration: InputDecoration(
@@ -159,7 +159,7 @@ class TextFieldWidget extends StatelessWidget {
             suffixIcon: suffixIcon,
             prefixIcon: prefixIcon,
             hintText: hintText,
-            hintStyle: hintStyle,
+            hintStyle: hintStyle ?? bodyStyle.copyWith(color: CustomColor.muted, fontSize: 14),
             errorStyle: errorStyle,
             fillColor: fillColor,
             focusedBorder: focusedBorder ?? inputBorder,

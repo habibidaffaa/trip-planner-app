@@ -1,6 +1,77 @@
 import 'package:flutter/material.dart';
 import 'package:iterasi1/resource/theme.dart';
 
+class IterasiConfirmDialog extends StatelessWidget {
+  final String title;
+  final String message;
+  final String confirmLabel;
+  final VoidCallback onConfirm;
+
+  const IterasiConfirmDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.confirmLabel,
+    required this.onConfirm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: CustomColor.paper,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      title: Text(
+        title,
+        style: displayStyle.copyWith(fontSize: 20, color: CustomColor.ocean900),
+      ),
+      content: Text(
+        message,
+        style: bodyStyle.copyWith(fontSize: 14, color: CustomColor.muted),
+      ),
+      actions: [
+        OutlinedButton(
+          onPressed: () => Navigator.of(context).pop(),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(
+              color: CustomColor.ocean900.withValues(alpha: 0.25),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          child: Text(
+            'Batal',
+            style: bodyStyle.copyWith(
+              color: CustomColor.ocean900,
+              fontWeight: medium,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            onConfirm();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: CustomColor.coral500,
+            foregroundColor: CustomColor.paper,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          child: Text(
+            confirmLabel,
+            style: bodyStyle.copyWith(
+              color: CustomColor.paper,
+              fontWeight: semibold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 Future<T?> showTextDialog<T>(
   BuildContext context, {
   required String title,
@@ -46,23 +117,22 @@ class _TextDialogWidgetState extends State<TextDialogWidget> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
-        backgroundColor:
-            CustomColor.backgroundColor, // Background untuk content
+        backgroundColor: CustomColor.paper,
         title: Container(
           padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-          decoration: BoxDecoration(
-            color: CustomColor.primary, // Background untuk title
-            borderRadius: const BorderRadius.only(
+          decoration: const BoxDecoration(
+            color: CustomColor.ocean900,
+            borderRadius: BorderRadius.only(
               topLeft: Radius.circular(12.0),
               topRight: Radius.circular(12.0),
             ),
           ),
           child: Text(
             widget.title,
-            style: primaryTextStyle.copyWith(
+            style: bodyStyle.copyWith(
               fontSize: 16,
               fontWeight: semibold,
-              color: CustomColor.whiteColor, // Warna teks title
+              color: CustomColor.paper,
             ),
           ),
         ),
@@ -84,22 +154,22 @@ class _TextDialogWidgetState extends State<TextDialogWidget> {
               },
               decoration: InputDecoration(
                 filled: true,
-                hintStyle: primaryTextStyle.copyWith(
+                hintStyle: bodyStyle.copyWith(
                   fontSize: 14,
-                  color: CustomColor.subtitleTextColor,
+                  color: CustomColor.muted,
                 ),
                 hintText: 'Masukan Judul Perjalanan Anda',
                 errorText: errorText,
                 fillColor: CustomColor.whiteColor,
                 focusedBorder: OutlineInputBorder(
                   borderSide: const BorderSide(
-                    color: CustomColor.primary,
+                    color: CustomColor.coral500,
                     width: 2,
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
@@ -113,14 +183,14 @@ class _TextDialogWidgetState extends State<TextDialogWidget> {
                   backgroundColor: WidgetStateProperty.resolveWith<Color>(
                     (Set<WidgetState> states) {
                       if (states.contains(WidgetState.disabled)) {
-                        return Colors.grey;
+                        return CustomColor.muted;
                       }
-                      return CustomColor.buttonColor; // Warna tombol default
+                      return CustomColor.coral500;
                     },
                   ),
                   shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                 ),
@@ -129,9 +199,12 @@ class _TextDialogWidgetState extends State<TextDialogWidget> {
                         Navigator.of(context).pop(controller.text);
                       }
                     : null,
-                child: const Text(
+                child: Text(
                   'Selesai',
-                  style: TextStyle(color: CustomColor.surface),
+                  style: bodyStyle.copyWith(
+                    color: CustomColor.paper,
+                    fontWeight: semibold,
+                  ),
                 ),
               ),
             ),

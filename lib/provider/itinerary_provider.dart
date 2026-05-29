@@ -37,6 +37,11 @@ class ItineraryProvider extends ChangeNotifier {
     }
   }
 
+  void setThumbnail(String? path) {
+    _itinerary.thumbnailPath = path;
+    notifyListeners();
+  }
+
   void addDay(Day newDay) {
     try {
       _itinerary.days = [..._itinerary.days, newDay];

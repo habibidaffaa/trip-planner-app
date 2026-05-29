@@ -13,6 +13,7 @@ class ActivityCard extends StatelessWidget {
   final Activity data;
   final int selectedDayIndex;
   final int activityIndex;
+  final bool isFirst;
   final void Function() onDismiss;
   final void Function() onUndo;
   final ScaffoldMessengerState snackbarHandler;
@@ -22,6 +23,7 @@ class ActivityCard extends StatelessWidget {
     required this.data,
     required this.selectedDayIndex,
     required this.activityIndex,
+    this.isFirst = false,
     required this.onDismiss,
     required this.onUndo,
     required this.snackbarHandler,
@@ -30,24 +32,21 @@ class ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future<void> openGoogleMaps(String placeName) async {
-      String query = Uri.encodeComponent(placeName);
-      String googleMapsUrl =
-          "https://www.google.com/maps/search/?api=1&query=$query";
-      final Uri url = Uri.parse(googleMapsUrl);
+      final query = Uri.encodeComponent(placeName);
+      final url = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=$query');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $url';
       }
     }
 
     Future<void> requestGalleryPermission(Activity activity) async {
-      var result = await PhotoManager.requestPermissionExtend();
+      final result = await PhotoManager.requestPermissionExtend();
       if (result.isAuth) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ActivityPhotoPage(
+            builder: (_) => ActivityPhotoPage(
               dayIndex: selectedDayIndex,
               activity: activity,
             ),
@@ -56,14 +55,14 @@ class ActivityCard extends StatelessWidget {
       } else {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Perizinan Ditolak"),
-            content: const Text(
-                "Aplikasi memerlukan izin untuk mengakses galeri."),
+          builder: (_) => AlertDialog(
+            title: const Text('Perizinan Ditolak'),
+            content:
+                const Text('Aplikasi memerlukan izin untuk mengakses galeri.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text("OK"),
+                child: const Text('OK'),
               ),
             ],
           ),
@@ -74,105 +73,136 @@ class ActivityCard extends StatelessWidget {
     void showActivityDetailDialog() {
       showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            backgroundColor: CustomColor.whiteColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+        builder: (context) => AlertDialog(
+          backgroundColor: CustomColor.paper,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          titlePadding: EdgeInsets.zero,
+          contentPadding: EdgeInsets.zero,
+          title: Container(
+            alignment: Alignment.center,
+            height: 100,
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: CustomColor.ocean900,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
             ),
-            titlePadding: EdgeInsets.zero,
-            contentPadding: EdgeInsets.zero,
-            title: Container(
-              alignment: Alignment.center,
-              height: 100,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: CustomColor.boardroomNavy,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'DETAIL AKTIVITAS',
+                  style: monoStyle.copyWith(
+                    fontSize: 11,
+                    letterSpacing: 0.22 * 11,
+                    color: CustomColor.sand300,
+                  ),
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'DETAIL AKTIVITAS',
-                    style: primaryTextStyle.copyWith(
-                      fontSize: 13,
-                      fontWeight: semibold,
-                      letterSpacing: 1.0,
-                      color: CustomColor.lilacAccent,
-                    ),
+                const SizedBox(height: 4),
+                Text(
+                  data.activityName,
+                  style: displayStyle.copyWith(
+                    fontSize: 18,
+                    color: CustomColor.paper,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data.activityName,
-                    style: headingTextStyle.copyWith(
-                      fontSize: 18,
-                      fontWeight: semibold,
-                      color: CustomColor.whiteColor,
-                      letterSpacing: -0.36,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _DetailRow(
-                            icon: Icons.place_outlined,
-                            label: 'Lokasi',
-                            value: data.lokasi,
-                          ),
-                          const SizedBox(height: 16),
-                          _DetailRow(
-                            icon: Icons.schedule_outlined,
-                            label: 'Waktu',
-                            value:
-                                '${data.startActivityTime} – ${data.endActivityTime}',
-                          ),
-                          const SizedBox(height: 16),
-                          _DetailRow(
-                            icon: Icons.notes_outlined,
-                            label: 'Keterangan',
-                            value: data.keterangan,
-                            singleLine: false,
-                          ),
-                          const SizedBox(height: 8),
-                        ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _DetailRow(
+                          icon: Icons.place_outlined,
+                          label: 'Lokasi',
+                          value: data.lokasi,
+                        ),
+                        const SizedBox(height: 16),
+                        _DetailRow(
+                          icon: Icons.schedule_outlined,
+                          label: 'Waktu',
+                          value:
+                              '${data.startActivityTime} – ${data.endActivityTime}',
+                        ),
+                        const SizedBox(height: 16),
+                        _DetailRow(
+                          icon: Icons.notes_outlined,
+                          label: 'Keterangan',
+                          value: data.keterangan,
+                          singleLine: false,
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+                  decoration: BoxDecoration(
+                    color: CustomColor.paper,
+                    border: Border(
+                      top: BorderSide(
+                        color: CustomColor.ocean900.withValues(alpha: 0.10),
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
-                    decoration: BoxDecoration(
-                      color: CustomColor.softOffWhite,
-                      border: Border(
-                        top: BorderSide(color: CustomColor.lightCoolGray),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                              requestGalleryPermission(data);
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.perm_media_outlined,
+                                      color: CustomColor.ocean900, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Galeri',
+                                    style: bodyStyle.copyWith(
+                                      fontWeight: semibold,
+                                      fontSize: 14,
+                                      color: CustomColor.ocean900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (!data.isCustomLocation) ...[
+                            Container(
+                              width: 1,
+                              height: 24,
+                              color: CustomColor.ocean900
+                                  .withValues(alpha: 0.10),
+                            ),
                             InkWell(
                               onTap: () {
                                 Navigator.pop(context);
-                                requestGalleryPermission(data);
+                                openGoogleMaps(data.lokasi);
                               },
                               borderRadius: BorderRadius.circular(8),
                               child: Padding(
@@ -180,275 +210,255 @@ class ActivityCard extends StatelessWidget {
                                     horizontal: 16, vertical: 8),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.perm_media_outlined,
-                                        color: CustomColor.boardroomNavy,
-                                        size: 18),
+                                    Icon(Icons.map_outlined,
+                                        color: CustomColor.ocean900, size: 18),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Galeri',
-                                      style: primaryTextStyle.copyWith(
+                                      'Map',
+                                      style: bodyStyle.copyWith(
                                         fontWeight: semibold,
                                         fontSize: 14,
-                                        color: CustomColor.boardroomNavy,
+                                        color: CustomColor.ocean900,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                            if (!data.isCustomLocation) ...[
-                              Container(
-                                width: 1,
-                                height: 24,
-                                color: CustomColor.lightCoolGray,
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  openGoogleMaps(data.lokasi);
-                                },
-                                borderRadius: BorderRadius.circular(8),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.map_outlined,
-                                          color: CustomColor.boardroomNavy,
-                                          size: 18),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Map',
-                                        style: primaryTextStyle.copyWith(
-                                          fontWeight: semibold,
-                                          fontSize: 14,
-                                          color: CustomColor.boardroomNavy,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
-                        ),
-                        const SizedBox(height: 12),
-                        InkWell(
-                          customBorder: const StadiumBorder(),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return AddActivities(
-                                    initialActivity: data,
-                                    onSubmit: (newActivity) {
-                                      context
-                                          .read<ItineraryProvider>()
-                                          .updateActivity(
-                                            updatedDayIndex: selectedDayIndex,
-                                            updatedActivityIndex: activityIndex,
-                                            newActivity: newActivity,
-                                          );
-                                    },
-                                  );
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      InkWell(
+                        customBorder: const StadiumBorder(),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => AddActivities(
+                                initialActivity: data,
+                                onSubmit: (newActivity) {
+                                  context.read<ItineraryProvider>().updateActivity(
+                                        updatedDayIndex: selectedDayIndex,
+                                        updatedActivityIndex: activityIndex,
+                                        newActivity: newActivity,
+                                      );
                                 },
                               ),
-                            );
-                          },
-                          child: Container(
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              color: CustomColor.brandElectric,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(100)),
                             ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Edit Aktivitas',
-                              style: primaryTextStyle.copyWith(
-                                fontWeight: semibold,
-                                fontSize: 15,
-                                color: CustomColor.whiteColor,
-                              ),
+                          );
+                        },
+                        child: Container(
+                          height: 48,
+                          decoration: const BoxDecoration(
+                            color: CustomColor.coral500,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(100)),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Edit Aktivitas',
+                            style: bodyStyle.copyWith(
+                              fontWeight: semibold,
+                              fontSize: 15,
+                              color: CustomColor.paper,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            actions: const [],
-          );
-        },
+          ),
+          actions: const [],
+        ),
       );
     }
 
-    return Stack(
-      children: [
-        InkWell(
-          onTap: showActivityDetailDialog,
-          child: Container(
-            decoration: AppTheme.softCardDecoration(
-              borderRadius: BorderRadius.circular(16),
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Timeline column: dot + line
+          SizedBox(
+            width: 24,
+            child: Column(
+              children: [
+                _TimelineDot(isFirst: isFirst),
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      width: 1.5,
+                      color:
+                          CustomColor.ocean900.withValues(alpha: 0.15),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+          ),
+          const SizedBox(width: 12),
+          // Card body
+          Expanded(
+            child: GestureDetector(
+              onTap: showActivityDetailDialog,
+              onLongPress: () {
+                snackbarHandler.removeCurrentSnackBar();
+                onDismiss();
+                snackbarHandler.showSnackBar(
+                  SnackBar(
+                    content: const Text('Item dihapus!'),
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      onPressed: () {
+                        onUndo();
+                        snackbarHandler.removeCurrentSnackBar();
+                      },
+                    ),
+                  ),
+                );
+              },
               child: Container(
-                color: CustomColor.whiteColor,
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: CustomColor.paper,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: CustomColor.ocean900.withValues(alpha: 0.10),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: CustomColor.shadowSoft,
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Location row
                     Row(
                       children: [
-                        const Icon(
-                          Icons.place_outlined,
-                          color: CustomColor.inputBorderGray,
-                          size: 14,
+                        Text(
+                          data.startActivityTime,
+                          style: monoStyle.copyWith(
+                            fontSize: 12,
+                            color: CustomColor.coral700,
+                          ),
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            data.lokasi,
-                            style: primaryTextStyle.copyWith(
-                              fontSize: 13,
-                              fontWeight: medium,
-                              color: CustomColor.subtitleTextColor,
+                        const Spacer(),
+                        InkWell(
+                          onTap: () {
+                            snackbarHandler.removeCurrentSnackBar();
+                            onDismiss();
+                            snackbarHandler.showSnackBar(
+                              SnackBar(
+                                content: const Text('Item dihapus!'),
+                                action: SnackBarAction(
+                                  label: 'Undo',
+                                  onPressed: () {
+                                    onUndo();
+                                    snackbarHandler.removeCurrentSnackBar();
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(100),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: Icon(
+                              Icons.delete_outline,
+                              size: 16,
+                              color: CustomColor.muted,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    // Activity name
+                    const SizedBox(height: 4),
                     Text(
                       data.activityName,
-                      style: headingTextStyle.copyWith(
-                        fontSize: 18,
-                        fontWeight: semibold,
-                        color: CustomColor.boardroomNavy,
-                        letterSpacing: -0.36,
+                      style: bodyStyle.copyWith(
+                        fontWeight: medium,
+                        fontSize: 15,
+                        color: CustomColor.ocean900,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 12),
-                    // Time row
-                    Row(
-                      children: [
-                        _TimeChip(label: 'MULAI', time: data.startActivityTime),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 1,
-                          height: 32,
-                          color: CustomColor.lightCoolGray,
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
+                    const SizedBox(height: 2),
+                    Text(
+                      data.lokasi,
+                      style: monoStyle.copyWith(
+                        fontSize: 12,
+                        color: CustomColor.muted,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (!data.isCustomLocation) ...[
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () => openGoogleMaps(data.lokasi),
+                        child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: CustomColor.lightCoolGray,
-                            borderRadius: BorderRadius.circular(16),
+                            color: CustomColor.ocean50,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: CustomColor.ocean900
+                                  .withValues(alpha: 0.15),
+                            ),
                           ),
                           child: Text(
-                            '${AppHelper.calculateDurationInMinutes(data.startActivityTime, data.endActivityTime)} min',
-                            style: primaryTextStyle.copyWith(
-                              fontWeight: semibold,
-                              color: CustomColor.boardroomNavy,
+                            'Lihat di peta',
+                            style: monoStyle.copyWith(
                               fontSize: 11,
+                              color: CustomColor.ocean700,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 1,
-                          height: 32,
-                          color: CustomColor.lightCoolGray,
-                        ),
-                        const SizedBox(width: 8),
-                        _TimeChip(
-                            label: 'SELESAI', time: data.endActivityTime),
-                      ],
+                      ),
+                    ],
+                    const SizedBox(height: 4),
+                    Text(
+                      '${AppHelper.calculateDurationInMinutes(data.startActivityTime, data.endActivityTime)} min  ·  ${data.endActivityTime}',
+                      style: monoStyle.copyWith(
+                        fontSize: 11,
+                        color: CustomColor.muted,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
           ),
-        ),
-        // Delete icon
-        Positioned(
-          top: 8,
-          right: 8,
-          child: InkWell(
-            onTap: () {
-              snackbarHandler.removeCurrentSnackBar();
-              onDismiss();
-              snackbarHandler.showSnackBar(
-                SnackBar(
-                  content: const Text("Item dihapus!"),
-                  action: SnackBarAction(
-                    label: "Undo",
-                    onPressed: () {
-                      onUndo();
-                      snackbarHandler.removeCurrentSnackBar();
-                    },
-                  ),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(100),
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: const Icon(
-                Icons.delete_outline,
-                size: 16,
-                color: CustomColor.inputBorderGray,
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _TimeChip extends StatelessWidget {
-  final String label;
-  final String time;
-
-  const _TimeChip({required this.label, required this.time});
+class _TimelineDot extends StatelessWidget {
+  final bool isFirst;
+  const _TimelineDot({required this.isFirst});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: primaryTextStyle.copyWith(
-            fontWeight: semibold,
-            fontSize: 10,
-            color: CustomColor.brandElectric,
-            letterSpacing: 0.5,
-          ),
-        ),
-        Text(
-          time,
-          style: primaryTextStyle.copyWith(
-            fontWeight: medium,
-            fontSize: 14,
-            color: CustomColor.pitchBlack,
-          ),
-        ),
-      ],
+    return Container(
+      width: 12,
+      height: 12,
+      margin: const EdgeInsets.only(top: 16),
+      decoration: BoxDecoration(
+        color: isFirst ? CustomColor.coral500 : CustomColor.ocean300,
+        shape: BoxShape.circle,
+        border: Border.all(color: CustomColor.paper, width: 2),
+      ),
     );
   }
 }
@@ -473,15 +483,14 @@ class _DetailRow extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, color: CustomColor.brandElectric, size: 14),
+            Icon(icon, color: CustomColor.coral500, size: 14),
             const SizedBox(width: 6),
             Text(
               label,
-              style: primaryTextStyle.copyWith(
+              style: monoStyle.copyWith(
                 fontSize: 11,
-                fontWeight: semibold,
-                color: CustomColor.brandElectric,
-                letterSpacing: 0.5,
+                letterSpacing: 0.22 * 11,
+                color: CustomColor.coral500,
               ),
             ),
           ],
@@ -489,10 +498,10 @@ class _DetailRow extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: primaryTextStyle.copyWith(
+          style: bodyStyle.copyWith(
             fontSize: 14,
             fontWeight: regular,
-            color: CustomColor.pitchBlack,
+            color: CustomColor.ocean900,
           ),
           maxLines: singleLine ? 1 : null,
           overflow: singleLine ? TextOverflow.ellipsis : null,

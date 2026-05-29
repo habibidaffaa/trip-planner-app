@@ -111,54 +111,59 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Lokasi",
-              style: TextStyle(
-                color: CustomColor.blackColor,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    "Gunakan lokasi manual",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: CustomColor.subtitleTextColor,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                    child: Transform.scale(
-                      scale: 0.7, // kecilin (0.7, 0.8, dll)
-                      child: Switch.adaptive(
-                        value: isCustomLocation,
-                        onChanged: (value) {
-                          setState(() {
-                            isCustomLocation = value;
-                            widget.controller.clear();
-                            widget.onLocationChanged(
-                                '', value); // kosongkan saat ganti mode
-                          });
-                        },
-                        activeColor: CustomColor.primaryColor700,
-                        inactiveTrackColor: CustomColor.disabledColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        Text(
+          'Lokasi',
+          style: monoStyle.copyWith(
+            fontSize: 11,
+            letterSpacing: 0.22 * 11,
+            color: CustomColor.muted,
+          ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
+        // Segmented toggle
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: CustomColor.ocean50,
+            border: Border.all(color: CustomColor.ocean200),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _SegmentBtn(
+                  label: 'Pilih dari peta',
+                  selected: !isCustomLocation,
+                  onTap: () {
+                    if (isCustomLocation) {
+                      setState(() {
+                        isCustomLocation = false;
+                        widget.controller.clear();
+                        widget.onLocationChanged('', false);
+                      });
+                    }
+                  },
+                ),
+              ),
+              Expanded(
+                child: _SegmentBtn(
+                  label: 'Ketik manual',
+                  selected: isCustomLocation,
+                  onTap: () {
+                    if (!isCustomLocation) {
+                      setState(() {
+                        isCustomLocation = true;
+                        widget.controller.clear();
+                        widget.onLocationChanged('', true);
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
         isCustomLocation ? _buildManualField() : _buildAutocompleteField(),
       ],
     );
@@ -211,6 +216,44 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
           ),
         );
       },
+    );
+  }
+}
+
+class _SegmentBtn extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SegmentBtn({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding:
+            const EdgeInsets.symmetric(vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? CustomColor.ocean900 : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: bodyStyle.copyWith(
+              fontSize: 12,
+              fontWeight: medium,
+              color: selected ? CustomColor.paper : CustomColor.ocean700,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
