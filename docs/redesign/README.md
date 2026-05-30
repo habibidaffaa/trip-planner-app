@@ -1,6 +1,6 @@
 # Redesign Backlog — Quiet Luxury Coastal
 
-> **Status keseluruhan**: 🔴 Belum dimulai  
+> **Status keseluruhan**: 🟡 In Progress — P1–P4 + Revision 1 selesai, P5 berikutnya  
 > **Confidence target**: ≥97%  
 > **Design source**: `trip-planner-design.html` (11 screens)
 
@@ -24,11 +24,14 @@
 | P2 | [phase-2-model.md](phase-2-model.md) | ✅ Selesai | 7/7 |
 | P3 | [phase-3-widgets.md](phase-3-widgets.md) | ✅ Selesai | 13/13 |
 | P4 | [phase-4-screens.md](phase-4-screens.md) | ✅ Selesai | 20/20 |
+| **R1** | **[revision-1-post-phase4.md](revision-1-post-phase4.md)** | **✅ Selesai** | **6/6 revisi** |
 | P5 | [phase-5-cleanup.md](phase-5-cleanup.md) | 🔴 Belum | 0/8 |
 | P6 | [phase-6-docs.md](phase-6-docs.md) | 🔴 Belum | 0/4 |
 | P7 | [phase-7-verify.md](phase-7-verify.md) | 🔴 Belum | 0/12 |
 
-**Total tasks**: 72
+> **Urutan eksekusi**: R1 harus selesai sebelum P5 (R6 di R1 pull-forward task AndroidManifest dari P5)
+
+**Total tasks**: 78 (72 original + 6 revisi)
 
 ---
 

@@ -18,7 +18,6 @@ import 'package:iterasi1/widget/iterasi_text.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path/path.dart' as path_lib;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class ActivityPhotoPage extends StatefulWidget {
@@ -43,20 +42,6 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
 
   late ItineraryProvider itineraryProvider =
       Provider.of<ItineraryProvider>(context, listen: false);
-
-  Future<void> requestPermission() async {
-    const permission = Permission.manageExternalStorage;
-    if (await permission.isDenied) {
-      final result = await permission.request();
-      if (result.isGranted) {
-        log('Permission granted');
-      } else if (result.isDenied) {
-        log('Permission denied');
-      } else if (await permission.isPermanentlyDenied) {
-        log('Permission permanently denied');
-      }
-    }
-  }
 
   String _buildFileName(String sourcePath) {
     final String extension = path_lib.extension(sourcePath).toLowerCase();
@@ -108,7 +93,9 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
         log('Image added to activity images: ${savedImage.path}');
         itineraryProvider.addPhotoActivity(
             activity: widget.activity, pathImage: savedImage.path);
-        await controller.loadImage();
+        // Refresh from cache only — running a full gallery sync here would
+        // re-import the just-saved camera photo and show it twice.
+        controller.loadCachedImagesOnly();
         log('Image added to local image list: ${savedImage.path}');
       } else {
         log('Image already exists in activity images: ${savedImage.path}');
@@ -132,7 +119,7 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
         log('Image added to activity images: ${savedImage.path}');
         itineraryProvider.addPhotoActivity(
             activity: widget.activity, pathImage: savedImage.path);
-        await controller.loadImage();
+        controller.loadCachedImagesOnly();
         log('Image added to local image list: ${savedImage.path}');
       } else {
         log('Image already exists in activity images: ${savedImage.path}');
@@ -152,7 +139,8 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     controller.activity = widget.activity;
     controller.activityDate =
         itineraryProvider.itinerary.days[widget.dayIndex].date;
-    requestPermission();
+    // Permission is handled by photo_manager/image_picker on demand — no
+    // manageExternalStorage request here (it caused gallery access to fail).
     cleanUpImages();
     controller.image.value =
         controller.convertPathsToFiles(widget.activity.images!);
@@ -192,20 +180,28 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
 
           showDialog(
             context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                elevation: 0,
-                backgroundColor: Colors.transparent,
-                contentPadding: EdgeInsets.zero,
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
+            barrierDismissible: true,
+            barrierColor: Colors.black.withOpacity(0.85),
+            builder: (BuildContext dialogContext) {
+              return Material(
+                color: Colors.transparent,
+                child: Stack(
                   children: [
+                    // Full-screen layer: tapping anywhere outside the photo
+                    // closes the viewer.
+                    Positioned.fill(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => Navigator.of(dialogContext).pop(),
+                      ),
+                    ),
                     Center(
-                      child: SizedBox(
-                        width: dialogWidth,
-                        height: dialogHeight,
-                        child: Ink(
-                          color: Colors.transparent,
+                      child: GestureDetector(
+                        // Absorb taps on the photo so it doesn't dismiss.
+                        onTap: () {},
+                        child: SizedBox(
+                          width: dialogWidth,
+                          height: dialogHeight,
                           child: image,
                         ),
                       ),
@@ -261,14 +257,8 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.ios_share_outlined,
-                      color: CustomColor.ocean900,
-                      size: 20,
-                    ),
-                    onPressed: () {},
-                  ),
+                  // Balances the back button so the kicker stays centered.
+                  const SizedBox(width: 40),
                 ],
               ),
             ),
@@ -316,8 +306,8 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                             child: SizedBox(
                               width: 50,
                               height: 50,
-                              child: LoadingAnimationWidget.discreteCircle(
-                                color: CustomColor.paper,
+                              child: LoadingAnimationWidget.threeArchedCircle(
+                                color: CustomColor.coral500,
                                 size: 200,
                               ),
                             ),
@@ -332,19 +322,40 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                         children: [
                           const SizedBox(height: 80),
                           Center(
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.photo_library_outlined,
-                                  size: 48,
-                                  color: CustomColor.muted.withOpacity(0.5),
-                                ),
-                                const SizedBox(height: 12),
-                                IterasiBody(
-                                  'Belum ada foto',
-                                  color: CustomColor.muted,
-                                ),
-                              ],
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          CustomColor.sand300.withOpacity(0.4),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.photo_camera_outlined,
+                                      size: 30,
+                                      color: CustomColor.coral500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  IterasiDisplay(
+                                    'Belum ada foto.',
+                                    style: const TextStyle(fontSize: 22),
+                                    color: CustomColor.ocean900,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  IterasiBody(
+                                    'Saat sampai sini, ambil 1–2 jepretan — biar jurnal trip-mu hidup.',
+                                    color: CustomColor.ocean700,
+                                    maxLines: 3,
+                                    style: const TextStyle(height: 1.5),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -416,8 +427,7 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                       onPressed: () async => await _saveGalleryImage(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: CustomColor.ocean900,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(100),
                         ),

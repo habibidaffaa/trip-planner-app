@@ -123,8 +123,11 @@ class _AddDaysState extends State<AddDays> {
   }
 
   Future<void> requestGalleryPermission(Activity activity) async {
-    var result = await PhotoManager.requestPermissionExtend();
-    if (result.isAuth) {
+    final result = await PhotoManager.requestPermissionExtend();
+    if (!mounted) return;
+
+    // Full or limited access — both let the user attach photos.
+    if (result.isAuth || result == PermissionState.limited) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -134,22 +137,54 @@ class _AddDaysState extends State<AddDays> {
           ),
         ),
       );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Perizinan Ditolak"),
-          content:
-              const Text("Aplikasi memerlukan izin untuk mengakses galeri."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
-        ),
-      );
+      return;
     }
+
+    // Denied — offer a shortcut to the system settings.
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: CustomColor.paper,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        title: const IterasiDisplay(
+          'Izin galeri diperlukan',
+          style: TextStyle(fontSize: 18),
+          color: CustomColor.ocean900,
+        ),
+        content: IterasiBody(
+          'Trip Planner membutuhkan akses ke galeri untuk melampirkan foto aktivitas. Buka pengaturan untuk mengizinkan.',
+          color: CustomColor.muted,
+          style: const TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Batal',
+              style: bodyStyle.copyWith(color: CustomColor.muted),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              PhotoManager.openSetting();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: CustomColor.ocean900,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+            child: Text(
+              'Buka Pengaturan',
+              style: bodyStyle.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _editThumbnail() async {
@@ -336,8 +371,9 @@ class _AddDaysState extends State<AddDays> {
                                   const SizedBox(width: 6),
                             ),
                           ),
-                          Align(
-                            alignment: Alignment.centerRight,
+                          Positioned(
+                            right: 12,
+                            top: 8,
                             child: InkWell(
                               onTap: () {
                                 log(itineraryProvider.itinerary.days
@@ -356,9 +392,11 @@ class _AddDaysState extends State<AddDays> {
                                   ),
                                 );
                               },
+                              borderRadius: BorderRadius.circular(100),
                               child: Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                padding: const EdgeInsets.all(6),
+                                width: 36,
+                                height: 36,
+                                alignment: Alignment.center,
                                 decoration: const BoxDecoration(
                                   color: CustomColor.coral500,
                                   shape: BoxShape.circle,
@@ -503,6 +541,7 @@ class _AddDaysState extends State<AddDays> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: CustomColor.ocean900,
+                              minimumSize: const Size(double.infinity, 50),
                               padding:
                                   const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
@@ -539,6 +578,7 @@ class _AddDaysState extends State<AddDays> {
                             side: BorderSide(
                               color: CustomColor.ocean900.withOpacity(0.25),
                             ),
+                            minimumSize: const Size(0, 50),
                             padding: const EdgeInsets.symmetric(
                                 vertical: 14, horizontal: 16),
                             shape: RoundedRectangleBorder(
@@ -781,7 +821,9 @@ class _DayChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? CustomColor.ocean900 : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
@@ -791,29 +833,29 @@ class _DayChip extends StatelessWidget {
                   color: CustomColor.ocean900.withOpacity(0.15),
                 ),
         ),
-        child: RichText(
-          text: TextSpan(
-            style: monoStyle.copyWith(fontSize: 12),
-            children: [
-              TextSpan(
-                text: 'D${index + 1} ',
-                style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : CustomColor.ocean900,
-                  fontWeight: FontWeight.bold,
-                ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'D${index + 1}',
+              style: monoStyle.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : CustomColor.ocean900,
               ),
-              TextSpan(
-                text: dayAbbr,
-                style: TextStyle(
-                  color: isSelected
-                      ? Colors.white.withOpacity(0.85)
-                      : CustomColor.ocean700,
-                ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              dayAbbr,
+              style: bodyStyle.copyWith(
+                fontSize: 12,
+                color: isSelected
+                    ? Colors.white.withOpacity(0.85)
+                    : CustomColor.ocean700,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

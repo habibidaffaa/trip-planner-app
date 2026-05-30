@@ -77,8 +77,7 @@ class _SelectDateState extends State<SelectDate> {
     itineraryProvider = Provider.of(context, listen: true);
     databaseProvider = Provider.of(context, listen: true);
 
-    final nights =
-        selectedDates.length > 1 ? selectedDates.length - 1 : 0;
+    final nights = selectedDates.length > 1 ? selectedDates.length - 1 : 0;
     final isRangeOverThree = selectedDates.length > 3;
 
     return LoaderOverlay(
@@ -90,7 +89,8 @@ class _SelectDateState extends State<SelectDate> {
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -188,23 +188,20 @@ class _SelectDateState extends State<SelectDate> {
                     initialDisplayDate: widget.initialDates.isNotEmpty
                         ? widget.initialDates.first
                         : null,
-                    initialSelectedRange:
-                        widget.initialDates.length >= 2 &&
-                                widget.initialDates.first.isAfter(
-                                    DateTime.now()
-                                        .subtract(const Duration(days: 1))) &&
-                                widget.initialDates.first
-                                    .isBefore(widget.initialDates.last)
-                            ? PickerDateRange(
-                                widget.initialDates.first,
-                                widget.initialDates.last,
-                              )
-                            : null,
+                    initialSelectedRange: widget.initialDates.length >= 2 &&
+                            widget.initialDates.first.isAfter(DateTime.now()
+                                .subtract(const Duration(days: 1))) &&
+                            widget.initialDates.first
+                                .isBefore(widget.initialDates.last)
+                        ? PickerDateRange(
+                            widget.initialDates.first,
+                            widget.initialDates.last,
+                          )
+                        : null,
                     selectionColor: CustomColor.ocean900,
                     startRangeSelectionColor: CustomColor.ocean900,
                     endRangeSelectionColor: CustomColor.ocean900,
-                    rangeSelectionColor:
-                        CustomColor.sand300.withOpacity(0.4),
+                    rangeSelectionColor: CustomColor.sand300.withOpacity(0.4),
                     backgroundColor: CustomColor.paper,
                     todayHighlightColor: CustomColor.coral500,
                     selectionMode: DateRangePickerSelectionMode.range,
@@ -249,8 +246,8 @@ class _SelectDateState extends State<SelectDate> {
                     ),
                     monthCellStyle: DateRangePickerMonthCellStyle(
                       textStyle: bodyStyle.copyWith(fontSize: 13),
-                      todayTextStyle: bodyStyle.copyWith(
-                          color: CustomColor.coral500),
+                      todayTextStyle:
+                          bodyStyle.copyWith(color: CustomColor.coral500),
                     ),
                   ),
                 ),
@@ -265,8 +262,7 @@ class _SelectDateState extends State<SelectDate> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IterasiKicker('berangkat',
-                              color: CustomColor.muted),
+                          IterasiKicker('berangkat', color: CustomColor.muted),
                           Text(
                             DateFormat('d MMM', 'id_ID')
                                 .format(selectedDates.first),
@@ -317,8 +313,8 @@ class _SelectDateState extends State<SelectDate> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: CustomColor.warnAmber.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -361,8 +357,7 @@ class _SelectDateState extends State<SelectDate> {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 14),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(100),
+                                      borderRadius: BorderRadius.circular(100),
                                     ),
                                   ),
                                   child: Text(
@@ -391,8 +386,7 @@ class _SelectDateState extends State<SelectDate> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              FormSuggestion(
+                                          builder: (context) => FormSuggestion(
                                             selectedDays: selectedDates,
                                           ),
                                         ),
@@ -402,7 +396,10 @@ class _SelectDateState extends State<SelectDate> {
                                           .showSnackBar(
                                         const SnackBar(
                                             content: Text(
-                                                "Tidak dapat menampilkan rekomendasi lebih dari 3 hari!")),
+                                                "Tidak dapat menampilkan rekomendasi lebih dari 3 hari!",
+                                                style: TextStyle(
+                                                  fontWeight: medium,
+                                                ))),
                                       );
                                     }
                                   },
@@ -411,8 +408,7 @@ class _SelectDateState extends State<SelectDate> {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 14),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(100),
+                                      borderRadius: BorderRadius.circular(100),
                                     ),
                                     elevation: 0,
                                   ),
@@ -435,8 +431,7 @@ class _SelectDateState extends State<SelectDate> {
                           onPressed: onSimpanDate,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: CustomColor.ocean900,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(100),
                             ),

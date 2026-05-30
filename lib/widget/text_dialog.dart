@@ -24,50 +24,69 @@ class IterasiConfirmDialog extends StatelessWidget {
         title,
         style: displayStyle.copyWith(fontSize: 20, color: CustomColor.ocean900),
       ),
-      content: Text(
-        message,
-        style: bodyStyle.copyWith(fontSize: 14, color: CustomColor.muted),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            message,
+            style: bodyStyle.copyWith(fontSize: 14, color: CustomColor.muted),
+          ),
+          const SizedBox(height: 20),
+          // Buttons kept side by side (equal width) so they never stack.
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 46),
+                    side: BorderSide(
+                      color: CustomColor.ocean900.withValues(alpha: 0.25),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  child: Text(
+                    'Batal',
+                    style: bodyStyle.copyWith(
+                      color: CustomColor.ocean900,
+                      fontWeight: medium,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onConfirm();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: CustomColor.coral500,
+                    foregroundColor: CustomColor.paper,
+                    minimumSize: const Size(0, 46),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  child: Text(
+                    confirmLabel,
+                    style: bodyStyle.copyWith(
+                      color: CustomColor.paper,
+                      fontWeight: semibold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      actions: [
-        OutlinedButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(
-              color: CustomColor.ocean900.withValues(alpha: 0.25),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          child: Text(
-            'Batal',
-            style: bodyStyle.copyWith(
-              color: CustomColor.ocean900,
-              fontWeight: medium,
-            ),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-            onConfirm();
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: CustomColor.coral500,
-            foregroundColor: CustomColor.paper,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          child: Text(
-            confirmLabel,
-            style: bodyStyle.copyWith(
-              color: CustomColor.paper,
-              fontWeight: semibold,
-            ),
-          ),
-        ),
-      ],
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
     );
   }
 }

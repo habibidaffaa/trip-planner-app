@@ -52,14 +52,15 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 const SizedBox(height: 32),
                 RichText(
+                  textAlign: TextAlign.center,
                   text: TextSpan(
                     style: displayStyle.copyWith(
-                      fontSize: 88,
+                      fontSize: 64,
                       color: CustomColor.paper,
-                      height: 0.85,
+                      height: 0.9,
                     ),
                     children: const [
-                      TextSpan(text: 'iterasi'),
+                      TextSpan(text: 'Trip\nPlanner'),
                       TextSpan(
                         text: '.',
                         style: TextStyle(

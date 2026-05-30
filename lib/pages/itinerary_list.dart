@@ -67,8 +67,7 @@ class _ItineraryListState extends State<ItineraryList> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IterasiKicker('selamat pagi',
-                      color: CustomColor.coral700),
+                  IterasiKicker('selamat pagi', color: CustomColor.coral700),
                   const SizedBox(height: 4),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -83,7 +82,7 @@ class _ItineraryListState extends State<ItineraryList> {
                             children: [
                               const TextSpan(text: 'Trip '),
                               TextSpan(
-                                text: 'kamu',
+                                text: 'Planner',
                                 style: displayStyle.copyWith(
                                   fontSize: 32,
                                   fontStyle: FontStyle.italic,
@@ -146,8 +145,8 @@ class _ItineraryListState extends State<ItineraryList> {
                     minWidth: 44,
                     minHeight: 44,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 14, horizontal: 16),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(999),
                     borderSide: BorderSide(
@@ -176,7 +175,8 @@ class _ItineraryListState extends State<ItineraryList> {
                   } else if (snapshot.hasData) {
                     final itineraries = snapshot.data!;
                     if (itineraries.isEmpty) {
-                      return _EmptyState(onTap: () => getItineraryTitle(context));
+                      return _EmptyState(
+                          onTap: () => getItineraryTitle(context));
                     }
                     return ListView.separated(
                       physics: const BouncingScrollPhysics(),
@@ -262,25 +262,36 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: CustomColor.sand300.withOpacity(0.4),
-                shape: BoxShape.circle,
+            // Dashed-border container holding the hand-drawn illustration.
+            CustomPaint(
+              painter: _DashedBorderPainter(
+                color: CustomColor.ocean900.withOpacity(0.20),
+                radius: 24,
+                dashLength: 6,
+                gapLength: 5,
+                strokeWidth: 1.5,
               ),
-              child: const Icon(
-                Icons.map_outlined,
-                size: 36,
-                color: CustomColor.coral500,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                decoration: BoxDecoration(
+                  color: CustomColor.sand300.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                alignment: Alignment.center,
+                child: const SizedBox(
+                  width: 220,
+                  height: 150,
+                  child: _EmptyIllustration(),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             IterasiDisplay(
               'Mulai dari mana?',
               style: const TextStyle(fontSize: 28),
@@ -288,9 +299,9 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             IterasiBody(
-              'Pilih tanggal dulu, lalu susun aktivitasmu hari per hari.',
+              'Pilih tanggal dulu — lalu susun hari demi hari sendiri, atau biarkan AI menyiapkan dua rancangan untuk kamu pilih.',
               color: CustomColor.ocean700,
-              maxLines: 3,
+              maxLines: 4,
               style: const TextStyle(height: 1.5),
             ),
             const SizedBox(height: 24),
@@ -320,4 +331,196 @@ class _EmptyState extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Hand-drawn empty-state illustration: ocean horizon, a rotated ticket stub,
+/// a coral paper plane, and a mini compass — mirrors HTML screen 02.
+class _EmptyIllustration extends StatelessWidget {
+  const _EmptyIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(220, 150),
+      painter: _EmptyIllustrationPainter(),
+    );
+  }
+}
+
+class _EmptyIllustrationPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    _drawHorizon(canvas, size);
+    _drawTicket(canvas);
+    _drawPaperPlane(canvas);
+    _drawCompass(canvas);
+  }
+
+  void _drawHorizon(Canvas canvas, Size size) {
+    final horizon1 = Paint()
+      ..color = CustomColor.ocean300.withOpacity(0.70)
+      ..strokeWidth = 1;
+    final horizon2 = Paint()
+      ..color = CustomColor.sand500.withOpacity(0.50)
+      ..strokeWidth = 1;
+    canvas.drawLine(const Offset(8, 96), Offset(size.width - 8, 96), horizon1);
+    canvas.drawLine(
+        const Offset(8, 104), Offset(size.width - 8, 104), horizon2);
+  }
+
+  void _drawTicket(Canvas canvas) {
+    canvas.save();
+    canvas.translate(46, 66);
+    canvas.rotate(-6 * 3.1415926535 / 180);
+
+    final body = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(0, 0, 120, 50),
+      const Radius.circular(6),
+    );
+    canvas.drawRRect(body, Paint()..color = Colors.white);
+    canvas.drawRRect(
+      body,
+      Paint()
+        ..color = CustomColor.ocean900
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+
+    // Vertical dashed divider at x = 78.
+    final dash = Paint()
+      ..color = CustomColor.ocean900.withOpacity(0.4)
+      ..strokeWidth = 1;
+    for (double dy = 6; dy < 44; dy += 6) {
+      canvas.drawLine(Offset(78, dy), Offset(78, dy + 3), dash);
+    }
+
+    _paintText(
+        canvas,
+        'CGK → DPS',
+        const Offset(10, 8),
+        monoStyle.copyWith(
+            fontSize: 9, letterSpacing: 2, color: CustomColor.ocean900));
+    _paintText(
+        canvas,
+        'Bali',
+        const Offset(10, 22),
+        displayStyle.copyWith(
+            fontSize: 16,
+            fontStyle: FontStyle.italic,
+            color: CustomColor.ocean900));
+    _paintText(canvas, '14C', const Offset(86, 10),
+        monoStyle.copyWith(fontSize: 9, color: CustomColor.ocean900));
+    _paintText(canvas, '06.45', const Offset(86, 28),
+        monoStyle.copyWith(fontSize: 9, color: CustomColor.coral500));
+
+    canvas.restore();
+  }
+
+  void _drawPaperPlane(Canvas canvas) {
+    canvas.save();
+    canvas.translate(26, 8);
+
+    final body = Path()
+      ..moveTo(0, 30)
+      ..lineTo(80, 0)
+      ..lineTo(56, 38)
+      ..lineTo(36, 28)
+      ..close();
+    canvas.drawPath(body, Paint()..color = CustomColor.coral500);
+
+    final shadow = Path()
+      ..moveTo(36, 28)
+      ..lineTo(56, 38)
+      ..lineTo(42, 48)
+      ..close();
+    canvas.drawPath(shadow, Paint()..color = CustomColor.coral700);
+
+    canvas.restore();
+  }
+
+  void _drawCompass(Canvas canvas) {
+    canvas.save();
+    canvas.translate(186, 26);
+
+    canvas.drawCircle(
+      Offset.zero,
+      14,
+      Paint()
+        ..color = CustomColor.ocean900
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+
+    final needle = Path()
+      ..moveTo(0, -10)
+      ..lineTo(2, 0)
+      ..lineTo(0, 10)
+      ..lineTo(-2, 0)
+      ..close();
+    canvas.drawPath(needle, Paint()..color = CustomColor.ocean900);
+
+    canvas.restore();
+  }
+
+  void _paintText(Canvas canvas, String text, Offset offset, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(canvas, offset);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Paints a rounded-rectangle border with a dashed stroke.
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  final double dashLength;
+  final double gapLength;
+  final double strokeWidth;
+
+  _DashedBorderPainter({
+    required this.color,
+    required this.radius,
+    required this.dashLength,
+    required this.gapLength,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    final path = Path()..addRRect(rrect);
+
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final next = distance + dashLength;
+        canvas.drawPath(
+          metric.extractPath(distance, next.clamp(0, metric.length)),
+          paint,
+        );
+        distance = next + gapLength;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.radius != radius ||
+      oldDelegate.dashLength != dashLength ||
+      oldDelegate.gapLength != gapLength ||
+      oldDelegate.strokeWidth != strokeWidth;
 }

@@ -8,6 +8,7 @@ import 'package:iterasi1/pages/add_activities/suggestion_page.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_env.dart';
+import 'package:iterasi1/widget/iterasi_chip.dart';
 import 'package:iterasi1/widget/iterasi_text.dart';
 import 'package:provider/provider.dart';
 
@@ -25,8 +26,31 @@ class FormSuggestion extends StatefulWidget {
 class FormSuggestionState extends State<FormSuggestion> {
   final TextEditingController _departureController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+
+  final List<String> _vibeOptions = const [
+    'Romantis',
+    'Kuliner',
+    'Petualangan',
+    'Keluarga',
+    'Pantai',
+    'Wellness',
+    'Budaya',
+    'Solo',
+  ];
+  final Set<String> _selectedVibes = {};
 
   final String _googleMapsApiKey = AppEnv.gmapsApiKey;
+
+  void _toggleVibe(String vibe) {
+    setState(() {
+      if (_selectedVibes.contains(vibe)) {
+        _selectedVibes.remove(vibe);
+      } else if (_selectedVibes.length < 2) {
+        _selectedVibes.add(vibe);
+      }
+    });
+  }
 
   Future<List<Map<String, dynamic>>> _getSuggestions(String query) async {
     if (query.isEmpty) return [];
@@ -54,6 +78,7 @@ class FormSuggestionState extends State<FormSuggestion> {
   void dispose() {
     _departureController.dispose();
     _destinationController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -136,7 +161,7 @@ class FormSuggestionState extends State<FormSuggestion> {
                   ),
                   const SizedBox(height: 6),
                   IterasiBody(
-                    'Iterasi akan menyusun dua rancangan untuk kamu pilih.',
+                    'Trip Planner akan menyusun dua rancangan untuk kamu pilih.',
                     color: CustomColor.ocean700,
                   ),
                 ],
@@ -151,8 +176,7 @@ class FormSuggestionState extends State<FormSuggestion> {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                 children: [
-                  IterasiKicker('LOKASI BERANGKAT',
-                      color: CustomColor.muted),
+                  IterasiKicker('LOKASI BERANGKAT', color: CustomColor.muted),
                   const SizedBox(height: 8),
                   _buildAutocompleteField(
                       _departureController, 'Masukkan kota asal',
@@ -163,6 +187,20 @@ class FormSuggestionState extends State<FormSuggestion> {
                   _buildAutocompleteField(
                       _destinationController, 'Masukkan kota tujuan',
                       icon: Icons.flag_outlined),
+                  const SizedBox(height: 20),
+                  IterasiKicker('VIBE PERJALANAN', color: CustomColor.muted),
+                  const SizedBox(height: 8),
+                  _buildVibeChips(),
+                  const SizedBox(height: 6),
+                  const IterasiMono(
+                    'Pilih maks. 2 vibe',
+                    style: TextStyle(fontSize: 10),
+                    color: CustomColor.muted,
+                  ),
+                  const SizedBox(height: 20),
+                  IterasiKicker('CATATAN TAMBAHAN', color: CustomColor.muted),
+                  const SizedBox(height: 8),
+                  _buildNotesField(),
                   const SizedBox(height: 32),
                   _buildSubmitButton(),
                 ],
@@ -218,8 +256,7 @@ class FormSuggestionState extends State<FormSuggestion> {
               prefixIcon: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                child: Icon(icon,
-                    size: 18, color: CustomColor.coral600),
+                child: Icon(icon, size: 18, color: CustomColor.coral600),
               ),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
@@ -256,6 +293,86 @@ class FormSuggestionState extends State<FormSuggestion> {
     );
   }
 
+  void _showOutsideIndonesiaDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: CustomColor.paper,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        title: const IterasiDisplay(
+          'Destinasi di luar Indonesia',
+          style: TextStyle(fontSize: 20),
+          color: CustomColor.ocean900,
+        ),
+        content: IterasiBody(
+          'Trip Planner saat ini hanya mendukung destinasi wisata di Indonesia. Pilih kota tujuan yang ada di Indonesia.',
+          color: CustomColor.muted,
+          style: const TextStyle(fontSize: 14),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: CustomColor.ocean900,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            child: Text(
+              'Mengerti',
+              style: bodyStyle.copyWith(
+                color: CustomColor.paper,
+                fontWeight: semibold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVibeChips() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _vibeOptions.map((vibe) {
+        final isSelected = _selectedVibes.contains(vibe);
+        return GestureDetector(
+          onTap: () => _toggleVibe(vibe),
+          child: isSelected
+              ? IterasiChip.coral(label: vibe)
+              : IterasiChip.outline(label: vibe),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildNotesField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: CustomColor.sand100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: CustomColor.sand300),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: TextField(
+        controller: _notesController,
+        maxLines: 4,
+        style: bodyStyle.copyWith(fontSize: 14, color: CustomColor.ocean900),
+        decoration: InputDecoration.collapsed(
+          hintText:
+              'Preferensi khusus, pantangan, atau hal yang ingin kamu hindari...',
+          hintStyle: bodyStyle.copyWith(
+            color: CustomColor.muted,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSubmitButton() {
     final isFormValid = _departureController.text.isNotEmpty &&
         _destinationController.text.isNotEmpty;
@@ -273,6 +390,8 @@ class FormSuggestionState extends State<FormSuggestion> {
                         departure: _departureController.text,
                         destination: _destinationController.text,
                         dates: widget.selectedDays,
+                        vibes: _selectedVibes.toList(),
+                        notes: _notesController.text,
                       );
                   LoadingOverlay.hide();
                   if (mounted) {
@@ -286,15 +405,20 @@ class FormSuggestionState extends State<FormSuggestion> {
                   }
                 } catch (err) {
                   LoadingOverlay.hide();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(err.toString())),
-                  );
+                  if (!mounted) return;
+                  if (err.toString().contains('OUTSIDE_INDONESIA')) {
+                    _showOutsideIndonesiaDialog();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(err.toString())),
+                    );
+                  }
                 }
               }
             : null,
         icon: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
         label: Text(
-          'Generate dua itinerary',
+          'Generate itinerary',
           style: bodyStyle.copyWith(
             color: Colors.white,
             fontWeight: semibold,

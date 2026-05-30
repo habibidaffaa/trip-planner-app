@@ -12,22 +12,41 @@ class ItineraryService {
     required String departure,
     required String destination,
     required List<String> dates,
+    List<String> vibes = const [],
+    String notes = '',
   }) async {
     final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ${AppEnv.gptKey}',
     };
 
+    final String vibeLine = vibes.isNotEmpty
+        ? 'Vibe perjalanan yang diinginkan: ${vibes.join(', ')}.'
+        : '';
+    final String notesLine =
+        notes.trim().isNotEmpty ? 'Catatan dari pengguna: "${notes.trim()}"' : '';
+    final String vibeRule = vibes.isNotEmpty
+        ? '- Sesuaikan pilihan tempat dan aktivitas dengan vibe: ${vibes.join(', ')}.'
+        : '';
+
     String content =
-        """Buatkan itinerary untuk liburan pada tanggal ${dates.toString()} dari kota $departure ke kota $destination.
-        Untuk outputnya harus memperhatikan aturan berikut:
-        - wajib menggunakan bahasa indonesia
-        - tanggal pada field date harus dalam format 'DD/MM/YYYY'
-        - PENTING: Setiap tanggal hanya boleh muncul SATU KALI dalam array itinerary. Jika ada aktivitas di tanggal yang sama, gabungkan semua aktivitas tersebut dalam satu entry date.
-        - Untuk aktivitas di tempat wisata, sertakan `latitude` dan `longitude` (contoh: Kebun Binatang Surabaya 7.2962, 112.7366)
-        - Untuk aktivitas seperti check-in hotel atau perjalanan, isi `latitude` dan `longitude` dengan `null`
-        - Untuk `lokasi` pada aktivitas wajib menggunakan alamat lengkap nama tempat tersebut dengan format (nama tempat, kota)
-        - activities berisikan title, location, start_time ('HH.mm'), end_time ('HH.mm') dan description
+        """Buatkan itinerary wisata dalam Indonesia pada tanggal ${dates.toString()} dari $departure ke $destination.
+
+        $vibeLine
+        $notesLine
+
+        ATURAN WAJIB:
+        - Jika $destination BUKAN lokasi di Indonesia, jangan buat itinerary. Kembalikan JSON dengan field "error": "OUTSIDE_INDONESIA", "message": "<penjelasan singkat>", dan "itinerary": [] (array kosong).
+        - Jika lokasi valid di Indonesia, kembalikan itinerary lengkap dengan "error": null dan "message": null.
+        - Bahasa wajib Bahasa Indonesia.
+        - Tanggal pada field date harus format 'DD/MM/YYYY'.
+        - PENTING: Setiap tanggal hanya boleh muncul SATU KALI dalam array itinerary. Gabungkan aktivitas di tanggal yang sama.
+        - Untuk tempat wisata: sertakan latitude & longitude yang akurat (contoh: Kebun Binatang Surabaya 7.2962, 112.7366).
+        - Untuk hotel/perjalanan/transit: isi latitude & longitude dengan null.
+        - Kolom lokasi wajib format: "Nama Tempat, Kota" (contoh: "Tegallalang Rice Terraces, Ubud").
+        $vibeRule
+        - activities berisikan title, location, start_time ('HH.mm'), end_time ('HH.mm') dan description.
+        - Buat aktivitas yang bervariasi dan realistis (perjalanan antar kota, makan, wisata, istirahat).
         """;
 
     final body = jsonEncode({
@@ -47,6 +66,12 @@ class ItineraryService {
           "schema": {
             "type": "object",
             "properties": {
+              "error": {
+                "type": ["string", "null"]
+              },
+              "message": {
+                "type": ["string", "null"]
+              },
               "itinerary": {
                 "type": "array",
                 "items": {
@@ -88,7 +113,7 @@ class ItineraryService {
                 }
               }
             },
-            "required": ["itinerary"],
+            "required": ["error", "message", "itinerary"],
             "additionalProperties": false
           }
         }
@@ -112,6 +137,11 @@ class ItineraryService {
         // log(jsonResponse['choices'][0]['message']['content']);
         final content =
             jsonDecode(jsonResponse['choices'][0]['message']['content']);
+        if (content['error'] != null &&
+            content['error'].toString() == 'OUTSIDE_INDONESIA') {
+          throw Exception(
+              'OUTSIDE_INDONESIA: ${content['message'] ?? 'Destinasi di luar Indonesia'}');
+        }
         return Itinerary.fromJsonGPT(content);
       } else {
         throw Exception("Failed to fetch itinerary: ${response.body}");

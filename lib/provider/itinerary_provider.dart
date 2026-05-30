@@ -354,31 +354,33 @@ class ItineraryProvider extends ChangeNotifier {
     required String departure,
     required String destination,
     required List<DateTime> dates,
+    List<String> vibes = const [],
+    String notes = '',
   }) async {
     _isLoading = false;
     notifyListeners();
 
     try {
+      final formattedDates = dates.map((e) => formatDateToDDMMYYYY(e)).toList();
       Itinerary itinerary1 = await _itineraryService.fetchItinerary(
           departure: departure,
           destination: destination,
-          dates: dates
-              .map(
-                (e) => formatDateToDDMMYYYY(e),
-              )
-              .toList());
+          dates: formattedDates,
+          vibes: vibes,
+          notes: notes);
       Itinerary itinerary2 = await _itineraryService.fetchItinerary(
           departure: departure,
           destination: destination,
-          dates: dates
-              .map(
-                (e) => formatDateToDDMMYYYY(e),
-              )
-              .toList());
+          dates: formattedDates,
+          vibes: vibes,
+          notes: notes);
       return [itinerary1, itinerary2];
     } catch (e) {
       log(e.toString());
-      throw 'Somethign went wrong, try again later';
+      if (e.toString().contains('OUTSIDE_INDONESIA')) {
+        rethrow;
+      }
+      throw 'Something went wrong, try again later';
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iterasi1/model/activity.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
+import 'package:iterasi1/widget/text_dialog.dart';
 import 'package:path/path.dart' as path_lib;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -107,6 +108,16 @@ class PhotoController extends GetxController {
         return;
       }
 
+      // Skip the app's own album: photos captured via the in-app camera are
+      // already added manually, and saved to "Pictures/Trip Planner". Scanning
+      // that bucket would re-import them as AUTO_ copies → duplicate photos.
+      final scanAlbums = albums
+          .where((album) => album.name.toLowerCase().trim() != 'trip planner')
+          .toList();
+      if (scanAlbums.isEmpty) {
+        return;
+      }
+
       final appDir = await getApplicationDocumentsDirectory();
 
       final existing = Set<String>.from(activity.images ?? const <String>[]);
@@ -117,7 +128,7 @@ class PhotoController extends GetxController {
       final lastScanEpochMs = activity.lastGalleryScanEpochMs ?? 0;
       int newestScanEpochMs = lastScanEpochMs;
 
-      for (final album in albums) {
+      for (final album in scanAlbums) {
         final assets = await album.getAssetListPaged(page: 0, size: 1200);
 
         for (final asset in assets) {
@@ -248,169 +259,28 @@ class PhotoController extends GetxController {
 
   Future<void> showDeleteConfirmationDialog(
       BuildContext context, File image) async {
-    bool? shouldDelete = await showDialog<bool>(
+    showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white, // Ubah warna latar belakang
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0), // Ubah bentuk border
-          ),
-          title: const Text(
-            'Konfirmasi Hapus Foto',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'poppins_bold',
-              color: Color(0xFFC58940), // Ubah warna teks judul
-              fontWeight: FontWeight.bold, // Teks judul menjadi tebal
-            ),
-          ),
-          content: const Text(
-            'Apa kamu yakin ingin menghapus foto ini?',
-            textAlign: TextAlign.center,
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green, // Ubah warna latar belakang
-                      borderRadius:
-                          BorderRadius.circular(8), // Ubah bentuk border
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 24), // Atur padding
-                    child: const Text(
-                      'Batal',
-                      textAlign: TextAlign.center, // Pusatkan teks dalam tombol
-                      style: TextStyle(
-                        fontFamily: 'poppins_bold',
-                        color: Colors.white, // Ubah warna teks
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20), // Spasi antar tombol
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red, // Ubah warna latar belakang
-                      borderRadius:
-                          BorderRadius.circular(8), // Ubah bentuk border
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 24), // Atur padding
-                    child: const Text(
-                      'Hapus',
-                      textAlign: TextAlign.center, // Pusatkan teks dalam tombol
-                      style: TextStyle(
-                        fontFamily: 'poppins_bold',
-                        color: Colors.white, // Ubah warna teks
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+      builder: (_) => IterasiConfirmDialog(
+        title: 'Hapus foto?',
+        message:
+            'Foto ini akan dipindahkan ke sampah. Kamu masih bisa memulihkannya nanti.',
+        confirmLabel: 'Hapus',
+        onConfirm: () => deletePhoto(image),
+      ),
     );
-
-    if (shouldDelete == true) {
-      deletePhoto(image);
-    }
   }
 
   Future<void> showReturnConfirmationDialog(
       BuildContext context, File image) async {
-    bool? shouldDelete = await showDialog<bool>(
+    showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white, // Ubah warna latar belakang
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0), // Ubah bentuk border
-          ),
-          title: const Text(
-            'Pulihkan Foto',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'poppins_bold',
-              color: Color(0xFFC58940), // Ubah warna teks judul
-              fontWeight: FontWeight.bold, // Teks judul menjadi tebal
-            ),
-          ),
-          content: const Text(
-            'Apa kamu yakin ingin mengembalikan foto ini?',
-            textAlign: TextAlign.center,
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green, // Ubah warna latar belakang
-                      borderRadius:
-                          BorderRadius.circular(8), // Ubah bentuk border
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 24), // Atur padding
-                    child: const Text(
-                      'Batal',
-                      textAlign: TextAlign.center, // Pusatkan teks dalam tombol
-                      style: TextStyle(
-                        fontFamily: 'poppins_bold',
-                        color: Colors.white, // Ubah warna teks
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20), // Spasi antar tombol
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red, // Ubah warna latar belakang
-                      borderRadius:
-                          BorderRadius.circular(8), // Ubah bentuk border
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 24), // Atur padding
-                    child: const Text(
-                      'Pulihkan',
-                      textAlign: TextAlign.center, // Pusatkan teks dalam tombol
-                      style: TextStyle(
-                        fontFamily: 'poppins_bold',
-                        color: Colors.white, // Ubah warna teks
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+      builder: (_) => IterasiConfirmDialog(
+        title: 'Pulihkan foto?',
+        message: 'Foto ini akan dikembalikan ke jurnal aktivitas.',
+        confirmLabel: 'Pulihkan',
+        onConfirm: () => returnPhoto(image),
+      ),
     );
-
-    if (shouldDelete == true) {
-      returnPhoto(image);
-    }
   }
 }

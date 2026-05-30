@@ -5,6 +5,7 @@ import 'package:iterasi1/pages/add_activities/add_activities.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_helper.dart';
+import 'package:iterasi1/widget/text_dialog.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -68,6 +69,20 @@ class ActivityCard extends StatelessWidget {
           ),
         );
       }
+    }
+
+    void confirmDeleteActivity() {
+      snackbarHandler.removeCurrentSnackBar();
+      showDialog(
+        context: context,
+        builder: (_) => IterasiConfirmDialog(
+          title: 'Hapus aktivitas?',
+          message:
+              'Aktivitas "${data.activityName}" akan dihapus dari hari ini.',
+          confirmLabel: 'Hapus',
+          onConfirm: onDismiss,
+        ),
+      );
     }
 
     void showActivityDetailDialog() {
@@ -304,22 +319,7 @@ class ActivityCard extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: showActivityDetailDialog,
-              onLongPress: () {
-                snackbarHandler.removeCurrentSnackBar();
-                onDismiss();
-                snackbarHandler.showSnackBar(
-                  SnackBar(
-                    content: const Text('Item dihapus!'),
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      onPressed: () {
-                        onUndo();
-                        snackbarHandler.removeCurrentSnackBar();
-                      },
-                    ),
-                  ),
-                );
-              },
+              onLongPress: confirmDeleteActivity,
               child: Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(14),
@@ -351,22 +351,7 @@ class ActivityCard extends StatelessWidget {
                         ),
                         const Spacer(),
                         InkWell(
-                          onTap: () {
-                            snackbarHandler.removeCurrentSnackBar();
-                            onDismiss();
-                            snackbarHandler.showSnackBar(
-                              SnackBar(
-                                content: const Text('Item dihapus!'),
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  onPressed: () {
-                                    onUndo();
-                                    snackbarHandler.removeCurrentSnackBar();
-                                  },
-                                ),
-                              ),
-                            );
-                          },
+                          onTap: confirmDeleteActivity,
                           borderRadius: BorderRadius.circular(100),
                           child: Padding(
                             padding: const EdgeInsets.all(2),
