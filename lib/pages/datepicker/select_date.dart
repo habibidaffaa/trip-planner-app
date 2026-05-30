@@ -371,7 +371,7 @@ class _SelectDateState extends State<SelectDate> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: ElevatedButton(
+                                child: OutlinedButton(
                                   onPressed: () {
                                     if (selectedDates.isEmpty) {
                                       ScaffoldMessenger.of(context)
@@ -403,7 +403,7 @@ class _SelectDateState extends State<SelectDate> {
                                       );
                                     }
                                   },
-                                  style: ElevatedButton.styleFrom(
+                                  style: OutlinedButton.styleFrom(
                                     backgroundColor: CustomColor.ocean900,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 14),

@@ -44,6 +44,15 @@ class _ItineraryListState extends State<ItineraryList> {
     FocusScope.of(context).unfocus();
   }
 
+  /// Greeting that follows Indonesian time-of-day conventions.
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour >= 4 && hour < 11) return 'selamat pagi';
+    if (hour >= 11 && hour < 15) return 'selamat siang';
+    if (hour >= 15 && hour < 18) return 'selamat sore';
+    return 'selamat malam';
+  }
+
   @override
   Widget build(BuildContext context) {
     final dbProvider = context.watch<DatabaseProvider>();
@@ -67,7 +76,7 @@ class _ItineraryListState extends State<ItineraryList> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IterasiKicker('selamat pagi', color: CustomColor.coral700),
+                  IterasiKicker(_greeting, color: CustomColor.coral700),
                   const SizedBox(height: 4),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -203,17 +212,28 @@ class _ItineraryListState extends State<ItineraryList> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => getItineraryTitle(context),
-          backgroundColor: CustomColor.ocean900,
-          icon: const Icon(Icons.add, color: Colors.white),
-          label: Text(
-            'Trip baru',
-            style: bodyStyle.copyWith(
-              color: Colors.white,
-              fontWeight: medium,
-            ),
-          ),
+        floatingActionButton: FutureBuilder<List<Itinerary>>(
+          future: dbProvider.itineraryDatas,
+          builder: (context, snapshot) {
+            // Hide the FAB while the list is empty — the empty state already
+            // surfaces a "Buat itinerary pertama" button.
+            final hasItineraries = snapshot.data?.isNotEmpty ?? false;
+            if (!hasItineraries) {
+              return const SizedBox.shrink();
+            }
+            return FloatingActionButton.extended(
+              onPressed: () => getItineraryTitle(context),
+              backgroundColor: CustomColor.ocean900,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: Text(
+                'Trip baru',
+                style: bodyStyle.copyWith(
+                  color: Colors.white,
+                  fontWeight: medium,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

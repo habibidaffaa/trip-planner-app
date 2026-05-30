@@ -189,8 +189,7 @@ class _AddDaysState extends State<AddDays> {
 
   Future<void> _editThumbnail() async {
     final picker = ImagePicker();
-    final XFile? picked =
-        await picker.pickImage(source: ImageSource.gallery);
+    final XFile? picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null && mounted) {
       final id = itineraryProvider.itinerary.id?.toString() ??
           DateTime.now().millisecondsSinceEpoch.toString();
@@ -294,20 +293,20 @@ class _AddDaysState extends State<AddDays> {
                           ),
                           const SizedBox(width: 8),
                           // Thumbnail edit button
-                          IconButton(
-                            icon: const Icon(
-                              Icons.camera_alt_outlined,
-                              size: 18,
-                              color: CustomColor.muted,
-                            ),
-                            onPressed: _editThumbnail,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 32,
-                              minHeight: 32,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
+                          // IconButton(
+                          //   icon: const Icon(
+                          //     Icons.camera_alt_outlined,
+                          //     size: 18,
+                          //     color: CustomColor.muted,
+                          //   ),
+                          //   onPressed: _editThumbnail,
+                          //   padding: EdgeInsets.zero,
+                          //   constraints: const BoxConstraints(
+                          //     minWidth: 32,
+                          //     minHeight: 32,
+                          //   ),
+                          // ),
+                          // const SizedBox(width: 4),
                           // Save pill
                           GestureDetector(
                             onTap: () {
@@ -421,8 +420,7 @@ class _AddDaysState extends State<AddDays> {
                     // Big day header
                     if (itineraryProvider.itinerary.days.isNotEmpty)
                       Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -449,9 +447,7 @@ class _AddDaysState extends State<AddDays> {
                         child: FutureBuilder<List<Activity>>(
                           future: itineraryProvider.getSortedActivity(
                               itineraryProvider
-                                  .itinerary
-                                  .days[selectedDayIndex]
-                                  .activities),
+                                  .itinerary.days[selectedDayIndex].activities),
                           builder: (context, snapshot) {
                             final data = snapshot.data;
                             if (data != null) {
@@ -459,14 +455,13 @@ class _AddDaysState extends State<AddDays> {
                                 return _EmptyDayState();
                               }
                               return ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(
-                                    16, 8, 16, 0),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 8, 16, 0),
                                 scrollDirection: Axis.vertical,
                                 physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
                                 itemBuilder: (context, index) {
-                                  final currentActivity =
-                                      data[index].copy();
+                                  final currentActivity = data[index].copy();
                                   return ActivityCard(
                                     snackbarHandler: snackbarHandler,
                                     data: data[index],
@@ -542,8 +537,7 @@ class _AddDaysState extends State<AddDays> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: CustomColor.ocean900,
                               minimumSize: const Size(double.infinity, 50),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(100),
                               ),

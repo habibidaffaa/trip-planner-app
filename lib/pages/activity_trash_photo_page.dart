@@ -7,6 +7,7 @@ import 'package:iterasi1/model/activity.dart';
 import 'package:iterasi1/pages/activity_photo_controller.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/widget/iterasi_text.dart';
+import 'package:iterasi1/widget/text_dialog.dart';
 
 class ActivityTrashPhotoPage extends StatefulWidget {
   final Activity activity;
@@ -29,88 +30,20 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
       .toList();
 
   Future<void> _confirmRestorePhoto(File file) async {
-    final shouldRestore = await showDialog<bool>(
+    showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          title: Text(
-            'Pulihkan Foto',
-            textAlign: TextAlign.center,
-            style: displayStyle.copyWith(
-              color: CustomColor.warnAmber,
-              fontSize: 18,
-            ),
-          ),
-          content: IterasiBody(
-            'Apa kamu yakin ingin mengembalikan foto ini?',
-            color: CustomColor.ocean700,
-          ),
-          contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: CustomColor.ocean900.withOpacity(0.25),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                      ),
-                      child: Text(
-                        'Batal',
-                        style: bodyStyle.copyWith(
-                          color: CustomColor.ocean900,
-                          fontWeight: medium,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: CustomColor.success,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Pulihkan',
-                        style: bodyStyle.copyWith(
-                          color: Colors.white,
-                          fontWeight: medium,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
+      builder: (_) => IterasiConfirmDialog(
+        title: 'Pulihkan foto?',
+        message: 'Foto ini akan dikembalikan ke jurnal aktivitas.',
+        confirmLabel: 'Pulihkan',
+        onConfirm: () async {
+          await controller.returnPhoto(file);
+          if (mounted) {
+            setState(() {});
+          }
+        },
+      ),
     );
-
-    if (shouldRestore == true) {
-      await controller.returnPhoto(file);
-      if (mounted) {
-        setState(() {});
-      }
-    }
   }
 
   void _showImageDialog(File imageFile) {
@@ -195,7 +128,7 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -209,14 +142,6 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
                         ),
                       ],
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.restore_outlined,
-                      color: CustomColor.ocean900,
-                    ),
-                    tooltip: 'Long-press foto untuk pulihkan',
-                    onPressed: null,
                   ),
                 ],
               ),
@@ -243,8 +168,7 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
                                   Icon(
                                     Icons.delete_outline,
                                     size: 48,
-                                    color:
-                                        CustomColor.muted.withOpacity(0.5),
+                                    color: CustomColor.muted.withOpacity(0.5),
                                   ),
                                   const SizedBox(height: 12),
                                   IterasiBody(
@@ -262,8 +186,7 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
                               final file = item as File;
                               return GestureDetector(
                                 onTap: () => _showImageDialog(file),
-                                onLongPress: () =>
-                                    _confirmRestorePhoto(file),
+                                onLongPress: () => _confirmRestorePhoto(file),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(8.0),
                                   child: Image.file(
