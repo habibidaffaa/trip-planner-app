@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IterasiMono(
-                  'est. 2026 · jakarta',
+                  'est. 2024 · indonesia',
                   style: const TextStyle(fontSize: 10, letterSpacing: 2.4),
                   color: CustomColor.coral300,
                 ),
@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> {
             right: 0,
             child: Center(
               child: IterasiMono(
-                'v 2.0 · raja ampat build',
+                'v 2.0 · pens build',
                 style: const TextStyle(fontSize: 10),
                 color: CustomColor.paper.withOpacity(0.4),
               ),

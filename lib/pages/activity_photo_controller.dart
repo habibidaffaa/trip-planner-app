@@ -19,9 +19,52 @@ class PhotoController extends GetxController {
   late ItineraryProvider itineraryProvider =
       Provider.of<ItineraryProvider>(Get.context!, listen: false);
 
+  // Multi-select state.
+  RxBool isSelectionMode = false.obs;
+  RxList<File> selectedPhotos = <File>[].obs;
+
   @override
   void onInit() {
     super.onInit();
+  }
+
+  bool isSelected(File file) =>
+      selectedPhotos.any((selected) => selected.path == file.path);
+
+  void enterSelection(File file) {
+    selectedPhotos.assignAll([file]);
+    isSelectionMode.value = true;
+  }
+
+  void toggleSelection(File file) {
+    if (isSelected(file)) {
+      selectedPhotos.removeWhere((selected) => selected.path == file.path);
+      if (selectedPhotos.isEmpty) {
+        exitSelection();
+      }
+    } else {
+      selectedPhotos.add(file);
+    }
+  }
+
+  void selectAll() {
+    selectedPhotos.assignAll(image);
+  }
+
+  void exitSelection() {
+    selectedPhotos.clear();
+    isSelectionMode.value = false;
+  }
+
+  Future<void> deleteSelected() async {
+    for (final file in List<File>.from(selectedPhotos)) {
+      itineraryProvider.removePhotoActivity(
+        activity: activity,
+        pathImage: file.path,
+      );
+    }
+    exitSelection();
+    loadCachedImagesOnly();
   }
 
   Future<void> loadImage() async {

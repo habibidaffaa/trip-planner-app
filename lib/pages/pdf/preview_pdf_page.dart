@@ -55,73 +55,73 @@ class PdfPreviewPage extends StatelessWidget {
       body: PdfPreview(
         build: (context) => makePdf(itinerary),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: CustomColor.paper,
-          border: Border(
-            top: BorderSide(
-              color: CustomColor.ocean900.withOpacity(0.10),
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: CustomColor.ocean900.withOpacity(0.25),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-                icon: const Icon(
-                  Icons.print_outlined,
-                  size: 18,
-                  color: CustomColor.ocean900,
-                ),
-                label: Text(
-                  'Cetak',
-                  style: bodyStyle.copyWith(
-                    color: CustomColor.ocean900,
-                    fontWeight: medium,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: CustomColor.ocean900,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  elevation: 0,
-                ),
-                icon: const Icon(
-                  Icons.share_outlined,
-                  size: 18,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  'Bagikan',
-                  style: bodyStyle.copyWith(
-                    color: Colors.white,
-                    fontWeight: medium,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      //   decoration: BoxDecoration(
+      //     color: CustomColor.paper,
+      //     border: Border(
+      //       top: BorderSide(
+      //         color: CustomColor.ocean900.withOpacity(0.10),
+      //       ),
+      //     ),
+      //   ),
+      //   child: Row(
+      //     children: [
+      //       Expanded(
+      //         child: OutlinedButton.icon(
+      //           onPressed: () {},
+      //           style: OutlinedButton.styleFrom(
+      //             side: BorderSide(
+      //               color: CustomColor.ocean900.withOpacity(0.25),
+      //             ),
+      //             padding: const EdgeInsets.symmetric(vertical: 14),
+      //             shape: RoundedRectangleBorder(
+      //               borderRadius: BorderRadius.circular(100),
+      //             ),
+      //           ),
+      //           icon: const Icon(
+      //             Icons.print_outlined,
+      //             size: 18,
+      //             color: CustomColor.ocean900,
+      //           ),
+      //           label: Text(
+      //             'Cetak',
+      //             style: bodyStyle.copyWith(
+      //               color: CustomColor.ocean900,
+      //               fontWeight: medium,
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //       const SizedBox(width: 12),
+      //       Expanded(
+      //         child: ElevatedButton.icon(
+      //           onPressed: () {},
+      //           style: ElevatedButton.styleFrom(
+      //             backgroundColor: CustomColor.ocean900,
+      //             padding: const EdgeInsets.symmetric(vertical: 14),
+      //             shape: RoundedRectangleBorder(
+      //               borderRadius: BorderRadius.circular(100),
+      //             ),
+      //             elevation: 0,
+      //           ),
+      //           icon: const Icon(
+      //             Icons.share_outlined,
+      //             size: 18,
+      //             color: Colors.white,
+      //           ),
+      //           label: Text(
+      //             'Bagikan',
+      //             style: bodyStyle.copyWith(
+      //               color: Colors.white,
+      //               fontWeight: medium,
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
     );
   }
 }

@@ -15,10 +15,12 @@ import 'package:iterasi1/pages/activity_trash_photo_page.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/widget/iterasi_text.dart';
+import 'package:iterasi1/widget/text_dialog.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path/path.dart' as path_lib;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ActivityPhotoPage extends StatefulWidget {
   final Activity activity;
@@ -220,46 +222,61 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
   Widget build(BuildContext context) {
     final photoCount = widget.activity.images?.length ?? 0;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (controller.isSelectionMode.value) {
+          controller.exitSelection();
+        } else {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: CustomColor.paper,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Custom header
+            // Custom header — swaps to a selection header while selecting.
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: CustomColor.ocean900.withOpacity(0.25),
-                        ),
+              child: Obx(
+                () => controller.isSelectionMode.value
+                    ? _buildSelectionHeader()
+                    : Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color:
+                                      CustomColor.ocean900.withOpacity(0.25),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                color: CustomColor.ocean900,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                          const Expanded(
+                            child: Center(
+                              child: IterasiKicker(
+                                'jurnal aktivitas',
+                                color: CustomColor.muted,
+                              ),
+                            ),
+                          ),
+                          // Balances the back button so the kicker stays centered.
+                          const SizedBox(width: 40),
+                        ],
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: CustomColor.ocean900,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: IterasiKicker(
-                        'jurnal aktivitas',
-                        color: CustomColor.muted,
-                      ),
-                    ),
-                  ),
-                  // Balances the back button so the kicker stays centered.
-                  const SizedBox(width: 40),
-                ],
               ),
             ),
 
@@ -370,15 +387,59 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                         itemBuilder: (item) {
                           final file = item as File;
                           return GestureDetector(
-                            onTap: () => _showImageDialog(file),
-                            onLongPress: () {
-                              controller.showDeleteConfirmationDialog(
-                                  context, file);
+                            onTap: () {
+                              if (controller.isSelectionMode.value) {
+                                controller.toggleSelection(file);
+                              } else {
+                                _showImageDialog(file);
+                              }
                             },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.file(file, fit: BoxFit.cover),
-                            ),
+                            onLongPress: () {
+                              if (!controller.isSelectionMode.value) {
+                                controller.enterSelection(file);
+                              }
+                            },
+                            child: Obx(() {
+                              final selected = controller.isSelected(file);
+                              return Stack(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      border: selected
+                                          ? Border.all(
+                                              color: CustomColor.coral500,
+                                              width: 3,
+                                            )
+                                          : null,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: Image.file(file,
+                                          fit: BoxFit.cover),
+                                    ),
+                                  ),
+                                  if (selected)
+                                    Positioned(
+                                      top: 6,
+                                      right: 6,
+                                      child: Container(
+                                        width: 22,
+                                        height: 22,
+                                        decoration: const BoxDecoration(
+                                          color: CustomColor.coral500,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.check,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            }),
                           );
                         },
                       ),
@@ -388,7 +449,7 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
               ),
             ),
 
-            // Bottom action bar
+            // Bottom action bar — swaps to selection actions while selecting.
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -399,86 +460,225 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                   ),
                 ),
               ),
-              child: Row(
-                children: [
-                  // Camera
-                  GestureDetector(
-                    onTap: () async => await _saveCameraImage(),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: CustomColor.ocean900.withOpacity(0.25),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: CustomColor.ocean900,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Gallery pill
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () async => await _saveGalleryImage(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: CustomColor.ocean900,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        elevation: 0,
-                      ),
-                      icon: const Icon(
-                        Icons.photo_library_outlined,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      label: Text(
-                        'Tambah dari galeri',
-                        style: bodyStyle.copyWith(
-                          color: Colors.white,
-                          fontWeight: medium,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Trash
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ActivityTrashPhotoPage(
-                            activity: widget.activity,
+              child: Obx(
+                () => controller.isSelectionMode.value
+                    ? _buildSelectionActionBar()
+                    : Row(
+                        children: [
+                          // Camera
+                          GestureDetector(
+                            onTap: () async => await _saveCameraImage(),
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color:
+                                      CustomColor.ocean900.withOpacity(0.25),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt_outlined,
+                                color: CustomColor.ocean900,
+                                size: 20,
+                              ),
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: const BoxDecoration(
-                        color: CustomColor.coral500,
-                        shape: BoxShape.circle,
+                          const SizedBox(width: 10),
+                          // Gallery pill
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async => await _saveGalleryImage(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: CustomColor.ocean900,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                elevation: 0,
+                              ),
+                              icon: const Icon(
+                                Icons.photo_library_outlined,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              label: Text(
+                                'Tambah dari galeri',
+                                style: bodyStyle.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: medium,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // Trash
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ActivityTrashPhotoPage(
+                                    activity: widget.activity,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: const BoxDecoration(
+                                color: CustomColor.coral500,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.white,
-                        size: 20,
+              ),
+            ),
+          ],
+        ),
+      ),
+      ),
+    );
+  }
+
+  Widget _buildSelectionHeader() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => controller.exitSelection(),
+          behavior: HitTestBehavior.opaque,
+          child: const IterasiKicker(
+            'batal',
+            color: CustomColor.coral700,
+          ),
+        ),
+        Expanded(
+          child: Center(
+            child: Obx(
+              () => IterasiKicker(
+                '${controller.selectedPhotos.length} dipilih',
+                color: CustomColor.muted,
+              ),
+            ),
+          ),
+        ),
+        GestureDetector(
+          onTap: () => controller.selectAll(),
+          behavior: HitTestBehavior.opaque,
+          child: const IterasiKicker(
+            'pilih semua',
+            color: CustomColor.ocean900,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSelectionActionBar() {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: CustomColor.ocean900,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        children: [
+          // Share
+          Expanded(
+            child: InkWell(
+              onTap: _shareSelected,
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(100),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.ios_share_outlined,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Bagikan',
+                    style: bodyStyle.copyWith(
+                      color: Colors.white,
+                      fontWeight: medium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 24,
+            color: Colors.white.withOpacity(0.18),
+          ),
+          // Delete
+          Expanded(
+            child: InkWell(
+              onTap: _confirmDeleteSelected,
+              borderRadius: const BorderRadius.horizontal(
+                right: Radius.circular(100),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.delete_outline,
+                    color: CustomColor.coral500,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Obx(
+                    () => Text(
+                      'Hapus ${controller.selectedPhotos.length}',
+                      style: bodyStyle.copyWith(
+                        color: CustomColor.coral500,
+                        fontWeight: medium,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _shareSelected() async {
+    final files = controller.selectedPhotos
+        .map((file) => XFile(file.path))
+        .toList();
+    if (files.isEmpty) return;
+    await Share.shareXFiles(files);
+    controller.exitSelection();
+  }
+
+  void _confirmDeleteSelected() {
+    final count = controller.selectedPhotos.length;
+    if (count == 0) return;
+    showDialog(
+      context: context,
+      builder: (_) => IterasiConfirmDialog(
+        title: 'Hapus $count foto?',
+        message:
+            '$count foto akan dipindahkan ke sampah. Kamu masih bisa memulihkannya nanti.',
+        confirmLabel: 'Hapus',
+        onConfirm: () => controller.deleteSelected(),
       ),
     );
   }
