@@ -356,24 +356,41 @@ class ItineraryProvider extends ChangeNotifier {
     required List<DateTime> dates,
     List<String> vibes = const [],
     String notes = '',
+    String pace = '',
+    String companions = '',
   }) async {
     _isLoading = false;
     notifyListeners();
 
     try {
-      final formattedDates = dates.map((e) => formatDateToDDMMYYYY(e)).toList();
+      // AI hanya menyusun 3 hari pertama. Jika trip > 3 hari, ini hanya
+      // sebagian dari perjalanan yang lebih panjang, jadi hari terakhir tidak
+      // boleh pulang ke kota asal (returnToOrigin = false). Hari ke-4+ kosong
+      // ditambahkan saat user memilih versi di SuggestionPage.
+      final sortedDates = [...dates]..sort();
+      final bool isPartialTrip = sortedDates.length > 3;
+      final tripDates =
+          isPartialTrip ? sortedDates.take(3).toList() : sortedDates;
+      final formattedDates =
+          tripDates.map((e) => formatDateToDDMMYYYY(e)).toList();
       Itinerary itinerary1 = await _itineraryService.fetchItinerary(
           departure: departure,
           destination: destination,
           dates: formattedDates,
           vibes: vibes,
-          notes: notes);
+          notes: notes,
+          pace: pace,
+          companions: companions,
+          returnToOrigin: !isPartialTrip);
       Itinerary itinerary2 = await _itineraryService.fetchItinerary(
           departure: departure,
           destination: destination,
           dates: formattedDates,
           vibes: vibes,
-          notes: notes);
+          notes: notes,
+          pace: pace,
+          companions: companions,
+          returnToOrigin: !isPartialTrip);
       return [itinerary1, itinerary2];
     } catch (e) {
       log(e.toString());

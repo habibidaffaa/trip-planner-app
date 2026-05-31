@@ -328,7 +328,7 @@ class _SelectDateState extends State<SelectDate> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: IterasiBody(
-                            'Pilih AI? Trip-mu akan dipotong ke 3 hari pertama (${_rangeLabel}).',
+                            'AI hanya menyusun 3 hari pertama (${_rangeLabel}). Sisanya kamu isi sendiri.',
                             style: const TextStyle(fontSize: 12),
                             color: CustomColor.ocean700,
                           ),
@@ -382,26 +382,14 @@ class _SelectDateState extends State<SelectDate> {
                                       );
                                       return;
                                     }
-                                    if (selectedDates.length <= 3) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => FormSuggestion(
-                                            selectedDays: selectedDates,
-                                          ),
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => FormSuggestion(
+                                          selectedDays: selectedDates,
                                         ),
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                "Tidak dapat menampilkan rekomendasi lebih dari 3 hari!",
-                                                style: TextStyle(
-                                                  fontWeight: medium,
-                                                ))),
-                                      );
-                                    }
+                                      ),
+                                    );
                                   },
                                   style: OutlinedButton.styleFrom(
                                     backgroundColor: CustomColor.ocean900,

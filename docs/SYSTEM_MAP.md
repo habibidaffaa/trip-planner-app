@@ -37,7 +37,6 @@ lib/
   provider/         ← state management (ChangeNotifier)
   pages/            ← screens + sub-widgets per fitur
   widget/           ← shared/reusable widgets
-  navigation/       ← navbar
   resource/         ← tema & design tokens
   utilities/        ← helper, formatter, env
 ```
@@ -65,16 +64,23 @@ ItineraryList [FAB tap]
 
 ### Flow B — Rekomendasi Itinerary via AI
 ```
-SelectDate [tombol "Rekomendasi Itinerary By AI"]
-  → FormSuggestion [input kota asal & tujuan]
+SelectDate [tombol "Minta AI menyusun" — tanpa batas jumlah hari]
+  → FormSuggestion [kota asal & tujuan + preferensi opsional:
+       tipe trip (maks 2), gaya perjalanan/pace, pergi dengan siapa, catatan]
     → Google Places API [autocomplete TypeAhead]
-  → ItineraryProvider.generateItineraryByAi()
-    → ItineraryService.fetchItinerary()
+  → ItineraryProvider.generateItineraryByAi(vibes, pace, companions, notes)
+      AI hanya menyusun 3 HARI PERTAMA:
+        isPartialTrip = jumlah hari > 3
+        tripDates     = isPartialTrip ? 3 tanggal pertama : semua tanggal
+        returnToOrigin = !isPartialTrip   (≤3 hari → pulang ke kota asal;
+                         >3 hari → tetap di kota tujuan, tidak pulang)
+    → ItineraryService.fetchItinerary(returnToOrigin) ×2 versi
       → OpenAI GPT-4o API [structured JSON output]
     → Itinerary.fromJsonGPT() → List<Itinerary>
-  → SuggestionPage [tampilkan 2 rekomendasi via TabBar]
-  → ItineraryProvider.addDay() per hari yang dipilih
-  → AddDays [lanjut edit manual]
+  → SuggestionPage [tampilkan 2 rekomendasi via TabBar — hanya 3 hari AI]
+  → ItineraryProvider.addDay() per hari AI
+    + Day.from() untuk tanggal ke-4+ sebagai hari KOSONG (jika trip > 3 hari)
+  → AddDays [3 hari terisi + hari 4+ kosong, lanjut edit manual]
 ```
 
 ### Flow C — Manajemen Foto Aktivitas
@@ -113,11 +119,9 @@ trip-planner-app/
 │   ├── model/
 │   │   ├── activity.dart
 │   │   ├── alert_save_dialog_result.dart
+│   │   ├── create_itinerary_result.dart
 │   │   ├── day.dart
 │   │   └── itinerary.dart
-│   ├── navigation/
-│   │   ├── bottom_navbar.dart
-│   │   └── side_navbar.dart
 │   ├── pages/
 │   │   ├── activity_photo_controller.dart
 │   │   ├── activity_photo_page.dart
@@ -125,8 +129,7 @@ trip-planner-app/
 │   │   ├── add_activities/
 │   │   │   ├── add_activities.dart
 │   │   │   ├── form_suggestion.dart
-│   │   │   ├── suggestion_itinerary.dart   ← versi lama (legacy)
-│   │   │   └── suggestion_page.dart        ← versi aktif
+│   │   │   └── suggestion_page.dart
 │   │   ├── add_days/
 │   │   │   ├── add_days.dart
 │   │   │   ├── app_bar_itinerary_title.dart
@@ -137,8 +140,7 @@ trip-planner-app/
 │   │   ├── pdf/
 │   │   │   ├── make_pdf.dart
 │   │   │   └── preview_pdf_page.dart
-│   │   ├── splash_screen.dart
-│   │   └── user_review_page.dart
+│   │   └── splash_screen.dart
 │   ├── provider/
 │   │   ├── database_provider.dart
 │   │   └── itinerary_provider.dart
@@ -150,12 +152,14 @@ trip-planner-app/
 │   │   ├── app_env.dart
 │   │   ├── app_helper.dart
 │   │   ├── date_time_formatter.dart
+│   │   ├── thumbnail_storage.dart
 │   │   └── utils.dart
 │   └── widget/
 │       ├── activity_card.dart
 │       ├── custom_buttom_sheet.dart
+│       ├── iterasi_chip.dart
+│       ├── iterasi_text.dart
 │       ├── itinerary_card.dart
-│       ├── itinerary_tile.dart
 │       ├── loading_overlay.dart
 │       ├── location_autocomplete_field.dart
 │       ├── maps_text_field.dart
@@ -200,13 +204,9 @@ trip-planner-app/
 | `lib/pages/datepicker/select_date.dart` | `SelectDate` | `onSimpanDate()` | Pilih rentang tanggal; arahkan ke AI atau manual |
 | `lib/pages/add_activities/form_suggestion.dart` | `FormSuggestion` | — | Form input kota asal-tujuan untuk trigger AI |
 | `lib/pages/add_activities/suggestion_page.dart` | `SuggestionPage` | `_buildItineraryContent()` | Tampilkan 2 rekomendasi AI dalam TabBar, pilih satu |
-| `lib/pages/add_activities/suggestion_itinerary.dart` | `SuggestionItinerary` | — | **Legacy** — versi lama SuggestionPage, tidak aktif di flow utama |
-| `lib/pages/activity_photo_page.dart` | `ActivityPhotoPage` | `_saveCameraImage()`, `_saveGalleryImage()` | Galeri foto per aktivitas: ambil kamera/galeri, masonry view |
+| `lib/pages/activity_photo_page.dart` | `ActivityPhotoPage` | `_saveCameraImage()`, `_saveGalleryImage()` | Galeri foto per aktivitas: ambil kamera/galeri, multi-select share/hapus, masonry view |
 | `lib/pages/activity_trash_photo_page.dart` | `ActivityTrashPhotoPage` | — | Tampilkan foto yang ditandai dihapus, bisa dipulihkan |
 | `lib/pages/pdf/preview_pdf_page.dart` | `PdfPreviewPage` | — | Preview dan share PDF itinerary |
-| `lib/pages/user_review_page.dart` | `UserReviewPage` | — | Halaman ulasan pengguna (tidak terintegrasi di nav utama) |
-| `lib/navigation/bottom_navbar.dart` | `BottomNavbar` | — | Floating pill navbar (3 tab: Home, Paket Wisata, Itinerary) |
-| `lib/navigation/side_navbar.dart` | `SideNavbar` | — | Side drawer (belum diintegrasikan secara aktif) |
 
 ### State Management Layer
 
@@ -231,6 +231,7 @@ trip-planner-app/
 | `lib/model/day.dart` | `Day` | `fromJson()`, `fromJsonGPT()`, `getDatetime()`, `copy()` | Model satu hari: tanggal (DD/MM/YYYY), List\<Activity\> |
 | `lib/model/activity.dart` | `Activity` | `fromJson()`, `fromJsonGPT()`, `copy()`, `startDateTime`, `endDateTime` | Model aktivitas: nama, lokasi, waktu, foto, koordinat |
 | `lib/model/alert_save_dialog_result.dart` | `AlertSaveDialogResult` | enum: `cancel`, `saveWithoutQuit`, `saveAndQuit` | Enum hasil dialog konfirmasi simpan |
+| `lib/model/create_itinerary_result.dart` | `CreateItineraryResult` | `title`, `thumbnailPath` | Hasil bottom sheet "buat itinerary baru": judul + path thumbnail |
 
 ### Core / Utilities
 
@@ -240,6 +241,7 @@ trip-planner-app/
 | `lib/utilities/app_env.dart` | `AppEnv` | Load `.env` via flutter_dotenv, expose `gptKey`, `gmapsApiKey` |
 | `lib/utilities/app_helper.dart` | `AppHelper` | Format tanggal ke "DD MMM YYYY", hitung durasi menit |
 | `lib/utilities/date_time_formatter.dart` | `DateTimeFormatter` | Konversi `DateTime` → string format "DD-MM-YYYY" |
+| `lib/utilities/thumbnail_storage.dart` | `persistThumbnail()` (top-level) | Salin file thumbnail ke `<appDocs>/thumbnails/<itineraryId>.jpg`, kembalikan path |
 
 ---
 
@@ -313,8 +315,8 @@ ActivityPhotoPage
 |---|---|---|
 | `SplashScreen` (1,5 dtk) | `ItineraryList` | `pushReplacementNamed` |
 | `ItineraryList` (FAB) | `SelectDate(isNewItinerary: true)` | Setelah input judul di bottom sheet |
-| `SelectDate` (≤3 hari) | `FormSuggestion` | Tombol "Rekomendasi AI" |
-| `SelectDate` (semua) | `AddDays` | Tombol "Buat Rencana Sendiri" |
+| `SelectDate` (tanggal terpilih) | `FormSuggestion` | Tombol "Minta AI menyusun" — tanpa batas jumlah hari; AI hanya menyusun 3 hari pertama |
+| `SelectDate` (semua) | `AddDays` | Tombol "Susun sendiri" |
 | `FormSuggestion` | `SuggestionPage` | Setelah AI response berhasil |
 | `SuggestionPage` (pilih) | `AddDays` | Setelah user pilih rekomendasi |
 | `AddDays` | `AddActivities` | Tombol "Tambah Aktivitas" |
@@ -394,6 +396,8 @@ MultiProvider(providers: [
 - **Mode:** Structured Output (`json_schema` dengan `strict: true`)
 - **Output Schema:** `{ itinerary: [{ date, activities: [{ title, location, start_time, end_time, description, latitude, longitude }] }] }`
 - **Auth:** Bearer token dari `AppEnv.gptKey`
+- **Aturan pulang (`returnToOrigin`):** parameter `fetchItinerary(returnToOrigin)` menyisipkan aturan prompt — `true` → hari terakhir wajib pulang ke kota asal; `false` → hari terakhir tetap di kota tujuan (untuk trip >3 hari yang hanya digenerate 3 hari pertama).
+- **Input preferensi opsional:** `fetchItinerary` menerima `vibes` (tipe trip, maks 2), `pace` (gaya perjalanan: Santai/Balanced/Padat, dengan panduan kepadatan jadwal), `companions` (pergi dengan siapa), dan `notes`. Tiap input hanya disisipkan ke prompt jika diisi.
 - **File:** `lib/service/itinerary_service.dart`
 
 ### Google Maps / Places API
@@ -414,6 +418,7 @@ MultiProvider(providers: [
 | `permission_handler ^11.3.1` | Minta izin `manageExternalStorage`, galeri |
 | `native_exif ^0.6.0` | Baca metadata EXIF foto (tersedia, belum digunakan aktif) |
 | `printing ^5.10.1` | Preview dan share PDF |
+| `share_plus ^7.2.2` | Bagikan foto (multi-select di `ActivityPhotoPage`) & berkas dari `add_days.dart` via share sheet OS |
 
 ---
 
@@ -455,7 +460,7 @@ flutter_icons:
 | R2 | **Logika parsing AI di dalam Provider** — `parseJsonToItinerary()`, `splitItineraryToDays()`, `generateItineraryByAi()` ada di `ItineraryProvider`, bukan di service/repository | `itinerary_provider.dart:233–396` | Provider terlalu besar (god object) |
 | R3 | **Mutation state langsung** — `insertNewActivity()` memodifikasi `List<Activity>` yang dikirim langsung, bukan via `copyWith` | `itinerary_provider.dart:109` | Perubahan bisa terjadi tanpa `notifyListeners()` jika lupa |
 | R4 | **`ItineraryProvider.isDataChanged`** menggunakan `toJsonString()` comparison — O(n) setiap build cycle | `itinerary_provider.dart:19` | Potensi jank di itinerary besar |
-| R5 | **Dua versi halaman rekomendasi** — `suggestion_page.dart` (aktif) dan `suggestion_itinerary.dart` (legacy, tidak di-route tapi masih ada) | `lib/pages/add_activities/` | Kebingungan maintainer |
+| R5 | *(resolved)* Versi legacy `suggestion_itinerary.dart` sudah dihapus; tinggal `suggestion_page.dart` sebagai satu-satunya halaman rekomendasi | — | — |
 | R6 | **`print()` di production code** — beberapa lokasi masih pakai `print()` bukan `dart:developer log()` | `database_service.dart`, `itinerary_provider.dart` | Noise di log, tidak bisa difilter |
 
 ### Risks Generated Code / Assets

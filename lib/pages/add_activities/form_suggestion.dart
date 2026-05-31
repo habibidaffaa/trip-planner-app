@@ -28,17 +28,30 @@ class FormSuggestionState extends State<FormSuggestion> {
   final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
-  final List<String> _vibeOptions = const [
-    'Romantis',
-    'Kuliner',
-    'Petualangan',
-    'Keluarga',
-    'Pantai',
-    'Wellness',
-    'Budaya',
-    'Solo',
-  ];
+  // Trip type — label bersih (dikirim ke prompt) → emoji (tampilan chip).
+  final Map<String, String> _vibeOptions = const {
+    'Healing': '🌿',
+    'Adventure': '⛰️',
+    'Santai': '😌',
+    'Kuliner': '🍜',
+    'Romantic': '💕',
+    'Explore hidden gem': '🗺️',
+    'Nightlife': '🌃',
+    'Family trip': '👨‍👩‍👧',
+  };
   final Set<String> _selectedVibes = {};
+
+  final List<String> _paceOptions = const ['Santai', 'Balanced', 'Padat'];
+  String? _selectedPace;
+
+  final List<String> _companionOptions = const [
+    'Solo',
+    'Couple',
+    'Teman',
+    'Keluarga',
+    'Anak kecil',
+  ];
+  String? _selectedCompanion;
 
   final String _googleMapsApiKey = AppEnv.gmapsApiKey;
 
@@ -188,14 +201,30 @@ class FormSuggestionState extends State<FormSuggestion> {
                       _destinationController, 'Masukkan kota tujuan',
                       icon: Icons.flag_outlined),
                   const SizedBox(height: 20),
-                  IterasiKicker('VIBE PERJALANAN', color: CustomColor.muted),
+                  IterasiKicker('TRIP SEPERTI APA?', color: CustomColor.muted),
                   const SizedBox(height: 8),
                   _buildVibeChips(),
                   const SizedBox(height: 6),
                   const IterasiMono(
-                    'Pilih maks. 2 vibe',
+                    'Pilih maks. 2',
                     style: TextStyle(fontSize: 10),
                     color: CustomColor.muted,
+                  ),
+                  const SizedBox(height: 20),
+                  IterasiKicker('GAYA PERJALANAN', color: CustomColor.muted),
+                  const SizedBox(height: 8),
+                  _buildSingleSelectChips(
+                    _paceOptions,
+                    _selectedPace,
+                    (value) => setState(() => _selectedPace = value),
+                  ),
+                  const SizedBox(height: 20),
+                  IterasiKicker('PERGI DENGAN SIAPA', color: CustomColor.muted),
+                  const SizedBox(height: 8),
+                  _buildSingleSelectChips(
+                    _companionOptions,
+                    _selectedCompanion,
+                    (value) => setState(() => _selectedCompanion = value),
                   ),
                   const SizedBox(height: 20),
                   IterasiKicker('CATATAN TAMBAHAN', color: CustomColor.muted),
@@ -337,13 +366,35 @@ class FormSuggestionState extends State<FormSuggestion> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: _vibeOptions.map((vibe) {
-        final isSelected = _selectedVibes.contains(vibe);
+      children: _vibeOptions.entries.map((entry) {
+        final label = entry.key;
+        final displayLabel = '$label ${entry.value}';
+        final isSelected = _selectedVibes.contains(label);
         return GestureDetector(
-          onTap: () => _toggleVibe(vibe),
+          onTap: () => _toggleVibe(label),
           child: isSelected
-              ? IterasiChip.coral(label: vibe)
-              : IterasiChip.outline(label: vibe),
+              ? IterasiChip.coral(label: displayLabel)
+              : IterasiChip.outline(label: displayLabel),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildSingleSelectChips(
+    List<String> options,
+    String? selected,
+    ValueChanged<String?> onSelect,
+  ) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.map((option) {
+        final isSelected = selected == option;
+        return GestureDetector(
+          onTap: () => onSelect(isSelected ? null : option),
+          child: isSelected
+              ? IterasiChip.coral(label: option)
+              : IterasiChip.outline(label: option),
         );
       }).toList(),
     );
@@ -392,14 +443,18 @@ class FormSuggestionState extends State<FormSuggestion> {
                         dates: widget.selectedDays,
                         vibes: _selectedVibes.toList(),
                         notes: _notesController.text,
+                        pace: _selectedPace ?? '',
+                        companions: _selectedCompanion ?? '',
                       );
                   LoadingOverlay.hide();
                   if (mounted) {
                     Navigator.pop(context);
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) =>
-                            SuggestionPage(itineraries: results),
+                        builder: (context) => SuggestionPage(
+                          itineraries: results,
+                          selectedDays: widget.selectedDays,
+                        ),
                       ),
                     );
                   }

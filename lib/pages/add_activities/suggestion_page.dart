@@ -15,9 +15,11 @@ import 'package:provider/provider.dart';
 
 class SuggestionPage extends StatefulWidget {
   final List<Itinerary> itineraries;
+  final List<DateTime> selectedDays;
   const SuggestionPage({
     super.key,
     required this.itineraries,
+    required this.selectedDays,
   });
 
   @override
@@ -151,6 +153,14 @@ class _SuggestionPageState extends State<SuggestionPage>
                 i++) {
               Day newDay = widget.itineraries[_tabController.index].days[i];
               context.read<ItineraryProvider>().addDay(newDay);
+            }
+            // AI hanya menyusun 3 hari pertama. Untuk trip > 3 hari, tambahkan
+            // hari ke-4 dst sebagai hari kosong agar bisa diisi manual di AddDays.
+            final sortedDates = [...widget.selectedDays]..sort();
+            if (sortedDates.length > 3) {
+              for (final date in sortedDates.sublist(3)) {
+                context.read<ItineraryProvider>().addDay(Day.from(date));
+              }
             }
             Navigator.of(context).push(
               MaterialPageRoute(

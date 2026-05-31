@@ -14,6 +14,9 @@ class ItineraryService {
     required List<String> dates,
     List<String> vibes = const [],
     String notes = '',
+    String pace = '',
+    String companions = '',
+    bool returnToOrigin = true,
   }) async {
     final headers = {
       'Content-Type': 'application/json',
@@ -21,13 +24,27 @@ class ItineraryService {
     };
 
     final String vibeLine = vibes.isNotEmpty
-        ? 'Vibe perjalanan yang diinginkan: ${vibes.join(', ')}.'
+        ? 'Tipe trip yang diinginkan: ${vibes.join(', ')}.'
         : '';
     final String notesLine =
         notes.trim().isNotEmpty ? 'Catatan dari pengguna: "${notes.trim()}"' : '';
     final String vibeRule = vibes.isNotEmpty
-        ? '- Sesuaikan pilihan tempat dan aktivitas dengan vibe: ${vibes.join(', ')}.'
+        ? '- Sesuaikan pilihan tempat dan aktivitas dengan tipe trip: ${vibes.join(', ')}.'
         : '';
+    const Map<String, String> paceGuidance = {
+      'Santai': 'jadwal longgar, sedikit aktivitas per hari, banyak waktu santai/istirahat',
+      'Balanced': 'jumlah aktivitas seimbang, tidak terlalu padat maupun terlalu kosong',
+      'Padat': 'jadwal padat, banyak aktivitas dalam sehari, manfaatkan waktu secara maksimal',
+    };
+    final String paceRule = pace.isNotEmpty
+        ? '- Gaya perjalanan: $pace${paceGuidance[pace] != null ? ' (${paceGuidance[pace]})' : ''}.'
+        : '';
+    final String companionRule = companions.isNotEmpty
+        ? '- Perjalanan ini bersama: $companions. Sesuaikan pilihan aktivitas agar cocok (mis. ramah anak untuk "Anak kecil", suasana romantis untuk "Couple").'
+        : '';
+    final String returnRule = returnToOrigin
+        ? '- Hari terakhir WAJIB diakhiri dengan aktivitas perjalanan pulang/kembali ke kota asal ($departure).'
+        : '- Ini hanya 3 hari pertama dari perjalanan yang lebih panjang. JANGAN buat aktivitas pulang/kembali ke kota asal; hari terakhir harus tetap berada di $destination.';
 
     String content =
         """Buatkan itinerary wisata dalam Indonesia pada tanggal ${dates.toString()} dari $departure ke $destination.
@@ -45,6 +62,9 @@ class ItineraryService {
         - Untuk hotel/perjalanan/transit: isi latitude & longitude dengan null.
         - Kolom lokasi wajib format: "Nama Tempat, Kota" (contoh: "Tegallalang Rice Terraces, Ubud").
         $vibeRule
+        $paceRule
+        $companionRule
+        $returnRule
         - activities berisikan title, location, start_time ('HH.mm'), end_time ('HH.mm') dan description.
         - Buat aktivitas yang bervariasi dan realistis (perjalanan antar kota, makan, wisata, istirahat).
         """;
