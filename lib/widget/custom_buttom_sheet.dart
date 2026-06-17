@@ -77,8 +77,7 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
                         height: 100,
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: CustomColor.ocean900
-                                .withValues(alpha: 0.2),
+                            color: CustomColor.ocean900.withOpacity(0.2),
                             style: BorderStyle.solid,
                             width: 1.5,
                           ),

@@ -42,7 +42,7 @@ class IterasiConfirmDialog extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 46),
                     side: BorderSide(
-                      color: CustomColor.ocean900.withValues(alpha: 0.25),
+                      color: CustomColor.ocean900.withOpacity(0.25),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(999),

@@ -31,8 +31,8 @@ class ItineraryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalActivities = itinerary.days
-        .fold<int>(0, (sum, day) => sum + day.activities.length);
+    final totalActivities =
+        itinerary.days.fold<int>(0, (sum, day) => sum + day.activities.length);
     final nDays = itinerary.days.length;
     final nNights = nDays > 1 ? nDays - 1 : 0;
 
@@ -54,7 +54,7 @@ class ItineraryCard extends StatelessWidget {
           color: CustomColor.paper,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: CustomColor.ocean900.withValues(alpha: 0.10),
+            color: CustomColor.ocean900.withOpacity(0.10),
           ),
           boxShadow: [
             BoxShadow(
@@ -250,10 +250,9 @@ class _ThumbnailHeader extends StatelessWidget {
             bottom: 8,
             right: 8,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: CustomColor.paper.withValues(alpha: 0.95),
+                color: CustomColor.paper.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
@@ -394,8 +393,7 @@ class _EditItineraryDialogState extends State<_EditItineraryDialog> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: CustomColor.ocean900
-                                    .withValues(alpha: 0.75),
+                                color: CustomColor.ocean900.withOpacity(0.75),
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
@@ -416,7 +414,7 @@ class _EditItineraryDialogState extends State<_EditItineraryDialog> {
                     height: 100,
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: CustomColor.ocean900.withValues(alpha: 0.2),
+                        color: CustomColor.ocean900.withOpacity(0.2),
                         width: 1.5,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -472,7 +470,7 @@ class _EditItineraryDialogState extends State<_EditItineraryDialog> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 46),
                     side: BorderSide(
-                      color: CustomColor.ocean900.withValues(alpha: 0.25),
+                      color: CustomColor.ocean900.withOpacity(0.25),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(999),

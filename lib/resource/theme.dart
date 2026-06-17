@@ -13,7 +13,7 @@ abstract class CustomColor {
   static const ocean300 = Color(0xFF7A93AC);
   static const ocean200 = Color(0xFFC7D5E0);
   static const ocean100 = Color(0xFFDEE6EF);
-  static const ocean50  = Color(0xFFEFF4F8);
+  static const ocean50 = Color(0xFFEFF4F8);
 
   // Coral scale
   static const coral800 = Color(0xFF8E3F2A);
@@ -33,42 +33,42 @@ abstract class CustomColor {
   static const sand100 = Color(0xFFF5EDDD);
 
   // Paper / Ink / Muted
-  static const paper  = Color(0xFFFAF6EF);
+  static const paper = Color(0xFFFAF6EF);
   static const paper2 = Color(0xFFF2EEE6);
-  static const ink    = Color(0xFF0A2540);
-  static const muted  = Color(0xFF6B7A8F);
+  static const ink = Color(0xFF0A2540);
+  static const muted = Color(0xFF6B7A8F);
 
   // Semantic
-  static const success   = Color(0xFF047857);
+  static const success = Color(0xFF047857);
   static const warnAmber = Color(0xFFD97706);
-  static const danger    = Color(0xFFB2533A);
+  static const danger = Color(0xFFB2533A);
 
   // Shadow tokens
   static const shadowSoft = Color(0x140A2540);
   static const shadowCard = Color(0x1F0A2540);
 
   // Core brand palette — aliased to new tokens
-  static const boardroomNavy   = ocean900;
-  static const brandElectric   = coral500;
-  static const lilacAccent     = sand300;
-  static const feedbackYellow  = warnAmber;
-  static const softOffWhite    = paper;
-  static const pitchBlack      = ocean900;
-  static const mediumGray      = muted;
-  static const lightCoolGray   = ocean100;
+  static const boardroomNavy = ocean900;
+  static const brandElectric = coral500;
+  static const lilacAccent = sand300;
+  static const feedbackYellow = warnAmber;
+  static const softOffWhite = paper;
+  static const pitchBlack = ocean900;
+  static const mediumGray = muted;
+  static const lightCoolGray = ocean100;
   static const inputBorderGray = muted;
-  static const accentOrange    = coral500;
+  static const accentOrange = coral500;
 
   // Semantic aliases
-  static const primary           = brandElectric;
-  static const surface           = softOffWhite;
-  static const buttonColor       = brandElectric;
-  static const dateBackground    = lilacAccent;
-  static const borderColor       = inputBorderGray;
-  static const backgroundColor   = paper;
+  static const primary = brandElectric;
+  static const surface = softOffWhite;
+  static const buttonColor = brandElectric;
+  static const dateBackground = lilacAccent;
+  static const borderColor = inputBorderGray;
+  static const backgroundColor = paper;
 
   // Primary color scale → ocean/coral scale
-  static const primaryColor50  = ocean50;
+  static const primaryColor50 = ocean50;
   static const primaryColor100 = sand300;
   static const primaryColor200 = ocean200;
   static const primaryColor300 = ocean300;
@@ -83,32 +83,31 @@ abstract class CustomColor {
   static const whiteColor = Color(0xFFFFFFFF);
   static const blackColor = pitchBlack;
 
-  static const subtitleTextColor      = muted;
-  static const hintTextColor          = muted;
-  static const warningColor           = danger;
+  static const subtitleTextColor = muted;
+  static const hintTextColor = muted;
+  static const warningColor = danger;
 
-  static const greyBackgroundColor    = paper;
-  static const disabledColor          = ocean200;
-  static const transparentColor       = Colors.transparent;
+  static const greyBackgroundColor = paper;
+  static const disabledColor = ocean200;
+  static const transparentColor = Colors.transparent;
 
-  static const scaffoldBackground     = paper;
-  static const cardBackground         = paper;
-  static const cardBorder             = ocean100;
-  static const dividerColor           = ocean100;
-  static const inputFillColor         = paper;
-  static const inputBorderColor       = muted;
-  static const successColor           = success;
-  static const shadowColor            = shadowSoft;
+  static const scaffoldBackground = paper;
+  static const cardBackground = paper;
+  static const cardBorder = ocean100;
+  static const dividerColor = ocean100;
+  static const inputFillColor = paper;
+  static const inputBorderColor = muted;
+  static const successColor = success;
+  static const shadowColor = shadowSoft;
   static const actionPanelShadowColor = shadowCard;
 }
 
 class AppTheme {
   static const BorderRadius fieldRadius = BorderRadius.all(Radius.circular(12));
   static const BorderRadius largeRadius = BorderRadius.all(Radius.circular(16));
-  static const BorderRadius pillRadius  = BorderRadius.all(Radius.circular(999));
+  static const BorderRadius pillRadius = BorderRadius.all(Radius.circular(999));
 
-  static OutlineInputBorder inputBorder(
-      [Color color = CustomColor.ocean100]) {
+  static OutlineInputBorder inputBorder([Color color = CustomColor.ocean100]) {
     return OutlineInputBorder(
       borderRadius: fieldRadius,
       borderSide: BorderSide(color: color, width: 1),
@@ -261,10 +260,6 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
-      dialogTheme: DialogThemeData(
-        backgroundColor: CustomColor.paper,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      ),
     );
 
     return base.copyWith(
@@ -282,12 +277,13 @@ final TextStyle headingTextStyle = GoogleFonts.instrumentSerif(
   letterSpacing: -0.64,
 );
 
-final TextStyle bodyStyle    = GoogleFonts.dmSans(color: CustomColor.ink);
-final TextStyle displayStyle = GoogleFonts.instrumentSerif(color: CustomColor.ink);
-final TextStyle monoStyle    = GoogleFonts.dmMono(color: CustomColor.muted);
+final TextStyle bodyStyle = GoogleFonts.dmSans(color: CustomColor.ink);
+final TextStyle displayStyle =
+    GoogleFonts.instrumentSerif(color: CustomColor.ink);
+final TextStyle monoStyle = GoogleFonts.dmMono(color: CustomColor.muted);
 
-const FontWeight light    = FontWeight.w300;
-const FontWeight regular  = FontWeight.w400;
-const FontWeight medium   = FontWeight.w500;
+const FontWeight light = FontWeight.w300;
+const FontWeight regular = FontWeight.w400;
+const FontWeight medium = FontWeight.w500;
 const FontWeight semibold = FontWeight.w600;
-const FontWeight bold     = FontWeight.w700;
+const FontWeight bold = FontWeight.w700;

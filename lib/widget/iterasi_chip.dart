@@ -29,7 +29,7 @@ class IterasiChip extends StatelessWidget {
         label: label,
         bg: Colors.transparent,
         fg: CustomColor.ocean900,
-        borderColor: CustomColor.ocean900.withValues(alpha: 0.25),
+        borderColor: CustomColor.ocean900.withOpacity(0.25),
       );
 
   factory IterasiChip.coral({required String label}) => IterasiChip._(

@@ -20,7 +20,7 @@ class RecommendaationActivityCard extends StatelessWidget {
         color: CustomColor.paper,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: CustomColor.ocean900.withValues(alpha: 0.10),
+          color: CustomColor.ocean900.withOpacity(0.10),
         ),
         boxShadow: [
           BoxShadow(

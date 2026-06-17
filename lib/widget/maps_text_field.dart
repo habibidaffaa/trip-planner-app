@@ -17,9 +17,8 @@ class MapsTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = showError
-        ? CustomColor.danger
-        : CustomColor.ocean900.withValues(alpha: 0.20);
+    final borderColor =
+        showError ? CustomColor.danger : CustomColor.ocean900.withOpacity(0.20);
     return TextField(
       controller: controller,
       onChanged: onChanged,

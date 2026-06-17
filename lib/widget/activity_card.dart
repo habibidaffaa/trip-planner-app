@@ -34,8 +34,8 @@ class ActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     Future<void> openGoogleMaps(String placeName) async {
       final query = Uri.encodeComponent(placeName);
-      final url = Uri.parse(
-          'https://www.google.com/maps/search/?api=1&query=$query');
+      final url =
+          Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       }
@@ -172,7 +172,7 @@ class ActivityCard extends StatelessWidget {
                     color: CustomColor.paper,
                     border: Border(
                       top: BorderSide(
-                        color: CustomColor.ocean900.withValues(alpha: 0.10),
+                        color: CustomColor.ocean900.withOpacity(0.10),
                       ),
                     ),
                   ),
@@ -211,8 +211,7 @@ class ActivityCard extends StatelessWidget {
                             Container(
                               width: 1,
                               height: 24,
-                              color: CustomColor.ocean900
-                                  .withValues(alpha: 0.10),
+                              color: CustomColor.ocean900.withOpacity(0.10),
                             ),
                             InkWell(
                               onTap: () {
@@ -247,21 +246,25 @@ class ActivityCard extends StatelessWidget {
                       InkWell(
                         customBorder: const StadiumBorder(),
                         onTap: () {
+                          final provider = context.read<ItineraryProvider>();
                           Navigator.of(context).pop();
-                          Navigator.of(context).push(
+                          Navigator.of(context)
+                              .push<Activity>(
                             MaterialPageRoute(
                               builder: (_) => AddActivities(
                                 initialActivity: data,
-                                onSubmit: (newActivity) {
-                                  context.read<ItineraryProvider>().updateActivity(
-                                        updatedDayIndex: selectedDayIndex,
-                                        updatedActivityIndex: activityIndex,
-                                        newActivity: newActivity,
-                                      );
-                                },
                               ),
                             ),
-                          );
+                          )
+                              .then((newActivity) {
+                            if (newActivity != null) {
+                              provider.updateActivity(
+                                updatedDayIndex: selectedDayIndex,
+                                updatedActivityIndex: activityIndex,
+                                newActivity: newActivity,
+                              );
+                            }
+                          });
                         },
                         child: Container(
                           height: 48,
@@ -306,8 +309,7 @@ class ActivityCard extends StatelessWidget {
                   child: Center(
                     child: Container(
                       width: 1.5,
-                      color:
-                          CustomColor.ocean900.withValues(alpha: 0.15),
+                      color: CustomColor.ocean900.withOpacity(0.15),
                     ),
                   ),
                 ),
@@ -327,7 +329,7 @@ class ActivityCard extends StatelessWidget {
                   color: CustomColor.paper,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: CustomColor.ocean900.withValues(alpha: 0.10),
+                    color: CustomColor.ocean900.withOpacity(0.10),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -396,8 +398,7 @@ class ActivityCard extends StatelessWidget {
                             color: CustomColor.ocean50,
                             borderRadius: BorderRadius.circular(999),
                             border: Border.all(
-                              color: CustomColor.ocean900
-                                  .withValues(alpha: 0.15),
+                              color: CustomColor.ocean900.withOpacity(0.15),
                             ),
                           ),
                           child: Text(
