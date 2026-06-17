@@ -10,10 +10,9 @@ import '../../model/activity.dart';
 
 class AddActivities extends StatefulWidget {
   final Activity? initialActivity;
-  final Function(Activity) onSubmit;
+  final Function(Activity)? onSubmit;
 
-  const AddActivities(
-      {this.initialActivity, required this.onSubmit, super.key});
+  const AddActivities({this.initialActivity, this.onSubmit, super.key});
 
   @override
   _AddActivitiesState createState() => _AddActivitiesState();
@@ -240,6 +239,7 @@ class _AddActivitiesState extends State<AddActivities> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: _TimePickerButton(
@@ -446,10 +446,11 @@ class _TimePickerButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             label,
+            textAlign: TextAlign.center,
             style: bodyStyle.copyWith(
               color: CustomColor.muted,
               fontSize: 12,
@@ -458,6 +459,7 @@ class _TimePickerButton extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${time.hour.toString().padLeft(2, '0')}.${time.minute.toString().padLeft(2, '0')}',
+            textAlign: TextAlign.center,
             style: monoStyle.copyWith(
               fontSize: 22,
               fontWeight: semibold,
