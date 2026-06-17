@@ -89,15 +89,15 @@ class _ItineraryListState extends State<ItineraryList> {
                               color: CustomColor.ocean900,
                             ),
                             children: [
-                              const TextSpan(text: 'Trip '),
-                              TextSpan(
-                                text: 'Planner',
-                                style: displayStyle.copyWith(
-                                  fontSize: 32,
-                                  fontStyle: FontStyle.italic,
-                                  color: CustomColor.ocean900,
-                                ),
-                              ),
+                              const TextSpan(text: 'Trip Planner'),
+                              // TextSpan(
+                              //   text: 'Planner',
+                              //   style: displayStyle.copyWith(
+                              //     fontSize: 32,
+                              //     fontStyle: FontStyle.italic,
+                              //     color: CustomColor.ocean900,
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),
