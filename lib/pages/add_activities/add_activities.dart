@@ -145,17 +145,12 @@ class _AddActivitiesState extends State<AddActivities> {
     log(newActivity.startActivityTime);
     log(newActivity.toJson().toString());
 
-    widget.onSubmit(newActivity);
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(newActivity);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isFormValid = _isEndTimeValid &&
-        _isTitleValid &&
-        (_isCustomLocation
-            ? _isLokasiValid
-            : (_isLokasiValid && _isFromAutocomplete));
+    final isFormValid = _isEndTimeValid && _isTitleValid && _isLokasiValid;
 
     return Scaffold(
       backgroundColor: CustomColor.paper,
@@ -376,7 +371,8 @@ class _AddActivitiesState extends State<AddActivities> {
                   // Keterangan
                   TextFieldWidget(
                     label: 'Keterangan',
-                    hintText: 'Cth. Pastikan semua barang tidak ada yang tertinggal',
+                    hintText:
+                        'Cth. Pastikan semua barang tidak ada yang tertinggal',
                     controller: keteranganController,
                     required: false,
                     keyboardType: TextInputType.multiline,
@@ -391,8 +387,7 @@ class _AddActivitiesState extends State<AddActivities> {
                   const SizedBox(height: 20),
 
                   // Catatan (opsional)
-                  IterasiKicker('CATATAN (OPSIONAL)',
-                      color: CustomColor.muted),
+                  IterasiKicker('CATATAN (OPSIONAL)', color: CustomColor.muted),
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
@@ -411,16 +406,15 @@ class _AddActivitiesState extends State<AddActivities> {
                         hintStyle: bodyStyle.copyWith(
                             color: CustomColor.sand700, fontSize: 14),
                         prefixIcon: const Padding(
-                          padding: EdgeInsets.only(
-                              left: 12, right: 8, top: 14),
+                          padding: EdgeInsets.only(left: 12, right: 8, top: 14),
                           child: Icon(Icons.access_time_outlined,
                               size: 18, color: CustomColor.sand700),
                         ),
                         prefixIconConstraints:
                             const BoxConstraints(minWidth: 40),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.fromLTRB(
-                            0, 12, 16, 12),
+                        contentPadding:
+                            const EdgeInsets.fromLTRB(0, 12, 16, 12),
                       ),
                     ),
                   ),
@@ -467,9 +461,7 @@ class _TimePickerButton extends StatelessWidget {
             style: monoStyle.copyWith(
               fontSize: 22,
               fontWeight: semibold,
-              color: hasError
-                  ? CustomColor.danger
-                  : CustomColor.coral700,
+              color: hasError ? CustomColor.danger : CustomColor.coral700,
             ),
           ),
         ],

@@ -444,53 +444,43 @@ class _AddDaysState extends State<AddDays> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 80),
-                        child: FutureBuilder<List<Activity>>(
-                          future: itineraryProvider.getSortedActivity(
-                              itineraryProvider
-                                  .itinerary.days[selectedDayIndex].activities),
-                          builder: (context, snapshot) {
-                            final data = snapshot.data;
-                            if (data != null) {
-                              if (data.isEmpty) {
-                                return _EmptyDayState();
-                              }
-                              return ListView.separated(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                                scrollDirection: Axis.vertical,
-                                physics: const BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemBuilder: (context, index) {
-                                  final currentActivity = data[index].copy();
-                                  return ActivityCard(
-                                    snackbarHandler: snackbarHandler,
-                                    data: data[index],
-                                    selectedDayIndex: selectedDayIndex,
-                                    activityIndex: index,
-                                    onUndo: () {
-                                      itineraryProvider.insertNewActivity(
-                                          activities: data,
-                                          newActivity: currentActivity);
-                                    },
-                                    onDismiss: () {
-                                      itineraryProvider.removeActivity(
-                                          activities: data,
-                                          removedHashCode:
-                                              data[index].hashCode);
-                                    },
-                                  );
+                        child: () {
+                          final data = List<Activity>.from(itineraryProvider
+                              .itinerary.days[selectedDayIndex].activities)
+                            ..sort((a, b) =>
+                                a.startDateTime.compareTo(b.startDateTime));
+                          if (data.isEmpty) {
+                            return _EmptyDayState();
+                          }
+                          return ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            scrollDirection: Axis.vertical,
+                            physics: const BouncingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              final currentActivity = data[index].copy();
+                              return ActivityCard(
+                                snackbarHandler: snackbarHandler,
+                                data: data[index],
+                                selectedDayIndex: selectedDayIndex,
+                                activityIndex: index,
+                                onUndo: () {
+                                  itineraryProvider.insertNewActivity(
+                                      activities: data,
+                                      newActivity: currentActivity);
                                 },
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(height: 12),
-                                itemCount: data.length,
+                                onDismiss: () {
+                                  itineraryProvider.removeActivity(
+                                      activities: data,
+                                      removedHashCode: data[index].hashCode);
+                                },
                               );
-                            } else {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-                          },
-                        ),
+                            },
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemCount: data.length,
+                          );
+                        }(),
                       ),
                     ),
                   ],
@@ -515,24 +505,22 @@ class _AddDaysState extends State<AddDays> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              Navigator.push(
+                              Navigator.push<Activity>(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) {
-                                    return AddActivities(
-                                      onSubmit: (newActivity) {
-                                        itineraryProvider.insertNewActivity(
-                                            activities: itineraryProvider
-                                                .itinerary
-                                                .days[selectedDayIndex]
-                                                .activities,
-                                            newActivity: newActivity);
-                                        log("${itineraryProvider.itinerary.days[selectedDayIndex].activities.length}");
-                                      },
-                                    );
+                                    return AddActivities();
                                   },
                                 ),
-                              );
+                              ).then((newActivity) {
+                                if (newActivity != null) {
+                                  itineraryProvider.insertNewActivity(
+                                      activities: itineraryProvider.itinerary
+                                          .days[selectedDayIndex].activities,
+                                      newActivity: newActivity);
+                                  log("${itineraryProvider.itinerary.days[selectedDayIndex].activities.length}");
+                                }
+                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: CustomColor.ocean900,
