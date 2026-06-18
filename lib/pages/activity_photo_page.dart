@@ -220,8 +220,6 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final photoCount = widget.activity.images?.length ?? 0;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -298,10 +296,10 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                           fontSize: 22, fontStyle: FontStyle.italic),
                     ),
                     const SizedBox(height: 2),
-                    IterasiMono(
-                      '${widget.activity.lokasi} · $photoCount foto',
-                      color: CustomColor.muted,
-                    ),
+                    Obx(() => IterasiMono(
+                          '${widget.activity.lokasi} · ${controller.image.length} foto',
+                          color: CustomColor.muted,
+                        )),
                   ],
                 ),
               ),
