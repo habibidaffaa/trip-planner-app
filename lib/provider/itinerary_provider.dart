@@ -119,9 +119,23 @@ class ItineraryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeActivity(
-      {required List<Activity> activities, required int removedHashCode}) {
-    activities.removeWhere((element) => element.hashCode == removedHashCode);
+  void removeActivity({
+    required int removedDayIndex,
+    required int removedActivityIndex,
+  }) {
+    _itinerary = itinerary.copy(
+        days: itinerary.days.mapIndexed((dayIndex, day) {
+      if (dayIndex == removedDayIndex) {
+        return day.copy(
+            activities: day.activities
+                .asMap()
+                .entries
+                .where((entry) => entry.key != removedActivityIndex)
+                .map((entry) => entry.value)
+                .toList());
+      }
+      return day;
+    }).toList());
     notifyListeners();
   }
 

@@ -466,9 +466,18 @@ class _AddDaysState extends State<AddDays> {
                                       newActivity: currentActivity);
                                 },
                                 onDismiss: () {
-                                  itineraryProvider.removeActivity(
-                                      activities: data,
-                                      removedHashCode: data[index].hashCode);
+                                  final originalActivities = itineraryProvider
+                                      .itinerary
+                                      .days[selectedDayIndex]
+                                      .activities;
+                                  final originalIndex =
+                                      originalActivities.indexOf(data[index]);
+                                  if (originalIndex != -1) {
+                                    itineraryProvider.removeActivity(
+                                      removedDayIndex: selectedDayIndex,
+                                      removedActivityIndex: originalIndex,
+                                    );
+                                  }
                                 },
                               );
                             },
