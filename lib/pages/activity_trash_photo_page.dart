@@ -35,8 +35,15 @@ class _ActivityTrashPhotoPageState extends State<ActivityTrashPhotoPage> {
       builder: (_) => IterasiConfirmDialog(
         title: 'Pulihkan foto?',
         message: 'Foto ini akan dikembalikan ke jurnal aktivitas.',
-        confirmLabel: 'Pulihkan',
+        confirmLabel: 'Hapus',
         onConfirm: () async {
+          await controller.permanentlyDeletePhoto(file);
+          if (mounted) {
+            setState(() {});
+          }
+        },
+        cancelLabel: 'Pulihkan',
+        onCancel: () async {
           await controller.returnPhoto(file);
           if (mounted) {
             setState(() {});

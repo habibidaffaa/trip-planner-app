@@ -300,6 +300,13 @@ class PhotoController extends GetxController {
     loadImage();
   }
 
+  Future<void> permanentlyDeletePhoto(File image) async {
+    activity.images?.remove(image.path);
+    activity.removedImages?.remove(image.path);
+    itineraryProvider.notifyListeners();
+    loadImage();
+  }
+
   Future<void> showDeleteConfirmationDialog(
       BuildContext context, File image) async {
     showDialog(
