@@ -113,13 +113,9 @@ class _AddDaysState extends State<AddDays> {
               shouldNotify: false,
             );
           }
-          await _safeDeleteFile(removedPath);
         }
       }
     }
-    final removedPaths = itineraryProvider.getAllRemovedPhotoPaths();
-    itineraryProvider.purgeRemovedPhotoReferences(removedPaths,
-        shouldNotify: false);
   }
 
   Future<void> requestGalleryPermission(Activity activity) async {
