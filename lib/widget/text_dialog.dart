@@ -6,6 +6,8 @@ class IterasiConfirmDialog extends StatelessWidget {
   final String message;
   final String confirmLabel;
   final VoidCallback onConfirm;
+  final String cancelLabel;
+  final VoidCallback? onCancel;
 
   const IterasiConfirmDialog({
     super.key,
@@ -13,6 +15,8 @@ class IterasiConfirmDialog extends StatelessWidget {
     required this.message,
     required this.confirmLabel,
     required this.onConfirm,
+    this.cancelLabel = 'Batal',
+    this.onCancel,
   });
 
   @override
@@ -63,7 +67,10 @@ class IterasiConfirmDialog extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onCancel?.call();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: CustomColor.coral500,
                     foregroundColor: CustomColor.paper,
@@ -74,7 +81,7 @@ class IterasiConfirmDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Batal',
+                    cancelLabel,
                     style: bodyStyle.copyWith(
                       color: CustomColor.paper,
                       fontWeight: semibold,
