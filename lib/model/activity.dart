@@ -14,6 +14,8 @@ class Activity {
   bool isCustomLocation;
   List<String>? images; // Nullable List<String>
   List<String>? removedImages; // Nullable List<String>
+  Map<String, int>?
+      removedImagesTimestamp; // Key=path, Value=epoch ms saat dihapus
   List<String>? hiddenPhotoHashes;
   int? lastGalleryScanEpochMs;
 
@@ -31,12 +33,14 @@ class Activity {
     String? latitude,
     String? longtitude,
     List<String>? removedImages,
+    Map<String, int>? removedImagesTimestamp,
     List<String>? images,
     List<String>? hiddenPhotoHashes,
     int? lastGalleryScanEpochMs,
   })  : id = id ?? const Uuid().v4(),
         images = images ?? [],
         removedImages = removedImages ?? [],
+        removedImagesTimestamp = removedImagesTimestamp ?? {},
         hiddenPhotoHashes = hiddenPhotoHashes ?? [],
         lastGalleryScanEpochMs = lastGalleryScanEpochMs;
 
@@ -50,8 +54,9 @@ class Activity {
       'latitude': latitude,
       'longtitude': longtitude,
       'is_custom_location': isCustomLocation,
-      'images': images, // Sertakan data images dalam JSON
-      'removed_images': removedImages, // Sertakan data images dalam JSON
+      'images': images,
+      'removed_images': removedImages,
+      'removed_images_timestamp': removedImagesTimestamp,
       'hidden_photo_hashes': hiddenPhotoHashes,
       'last_gallery_scan_epoch_ms': lastGalleryScanEpochMs,
     };
@@ -66,14 +71,13 @@ class Activity {
         latitude: json['latitude'],
         longtitude: json['longtitude'],
         isCustomLocation: json['is_custom_location'],
-        images: json['images'] != null
-            ? List<String>.from(
-                json['images']) // Ubah List<dynamic> menjadi List<String>
-            : [], // Atur images ke List kosong jika null
+        images: json['images'] != null ? List<String>.from(json['images']) : [],
         removedImages: json['removed_images'] != null
-            ? List<String>.from(json[
-                'removed_images']) // Ubah List<dynamic> menjadi List<String>
-            : [], // Atur images ke List kosong jika null
+            ? List<String>.from(json['removed_images'])
+            : [],
+        removedImagesTimestamp: json['removed_images_timestamp'] != null
+            ? Map<String, int>.from(json['removed_images_timestamp'])
+            : {},
         hiddenPhotoHashes: json['hidden_photo_hashes'] != null
             ? List<String>.from(json['hidden_photo_hashes'])
             : [],
@@ -105,9 +109,9 @@ class Activity {
           latitude == other.latitude &&
           isCustomLocation == other.isCustomLocation &&
           longtitude == other.longtitude &&
-          images == other.images && // Termasuk images dalam operator ==
-          removedImages ==
-              other.removedImages; // Termasuk images dalam operator ==
+          images == other.images &&
+          removedImages == other.removedImages &&
+          removedImagesTimestamp == other.removedImagesTimestamp;
 
   Activity copy({
     String? activityName,
@@ -118,9 +122,9 @@ class Activity {
     bool? isCustomLocation,
     String? latitude,
     String? longtitude,
-    List<String>? images, // Tambahkan parameter images ke dalam metode copy
-    List<String>?
-        removedImages, // Tambahkan parameter images ke dalam metode copy
+    List<String>? images,
+    List<String>? removedImages,
+    Map<String, int>? removedImagesTimestamp,
     List<String>? hiddenPhotoHashes,
     int? lastGalleryScanEpochMs,
   }) =>
@@ -137,6 +141,8 @@ class Activity {
         images: images ?? List<String>.from(this.images ?? []),
         removedImages:
             removedImages ?? List<String>.from(this.removedImages ?? []),
+        removedImagesTimestamp: removedImagesTimestamp ??
+            Map<String, int>.from(this.removedImagesTimestamp ?? {}),
         hiddenPhotoHashes: hiddenPhotoHashes ??
             List<String>.from(this.hiddenPhotoHashes ?? []),
         lastGalleryScanEpochMs:
