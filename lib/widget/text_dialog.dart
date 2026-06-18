@@ -38,7 +38,10 @@ class IterasiConfirmDialog extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onConfirm();
+                  },
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 46),
                     side: BorderSide(
@@ -49,7 +52,7 @@ class IterasiConfirmDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Batal',
+                    confirmLabel,
                     style: bodyStyle.copyWith(
                       color: CustomColor.ocean900,
                       fontWeight: medium,
@@ -60,10 +63,7 @@ class IterasiConfirmDialog extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    onConfirm();
-                  },
+                  onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: CustomColor.coral500,
                     foregroundColor: CustomColor.paper,
@@ -74,7 +74,7 @@ class IterasiConfirmDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    confirmLabel,
+                    'Batal',
                     style: bodyStyle.copyWith(
                       color: CustomColor.paper,
                       fontWeight: semibold,
