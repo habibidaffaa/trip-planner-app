@@ -528,7 +528,9 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                                       activity: widget.activity,
                                     ),
                                   ),
-                                );
+                                ).then((_) {
+                                  controller.loadCachedImagesOnly();
+                                });
                               },
                               child: Container(
                                 width: 48,
