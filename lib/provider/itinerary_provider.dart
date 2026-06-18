@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
@@ -130,6 +131,7 @@ class ItineraryProvider extends ChangeNotifier {
       activity.images!.add(pathImage);
     }
     activity.removedImages?.remove(pathImage);
+    activity.removedImagesTimestamp?.remove(pathImage);
     log("ADD IMAGE $pathImage");
     notifyListeners();
   }
@@ -171,6 +173,9 @@ class ItineraryProvider extends ChangeNotifier {
     if (!(activity.removedImages?.contains(pathImage) ?? false)) {
       activity.removedImages!.add(pathImage);
     }
+    activity.removedImagesTimestamp ??= {};
+    activity.removedImagesTimestamp![pathImage] =
+        DateTime.now().millisecondsSinceEpoch;
     log("ADD TO REMOVED IMAGE $pathImage");
     log("removed images" + activity.removedImages.toString());
     notifyListeners();
@@ -180,7 +185,11 @@ class ItineraryProvider extends ChangeNotifier {
     required Activity activity,
     required String pathImage,
   }) {
+    if (!(activity.images?.contains(pathImage) ?? false)) {
+      activity.images!.add(pathImage);
+    }
     activity.removedImages!.remove(pathImage);
+    activity.removedImagesTimestamp?.remove(pathImage);
     log("RETURN IMAGE $pathImage");
     log("removed images${activity.removedImages}");
     notifyListeners();
@@ -192,6 +201,71 @@ class ItineraryProvider extends ChangeNotifier {
     activity.images = [];
     log("CLEANING");
     notifyListeners();
+  }
+
+  Future<void> permanentlyDeletePhoto({
+    required Activity activity,
+    required String pathImage,
+  }) async {
+    log('Provider.permanentlyDeletePhoto called for: $pathImage');
+    log('Activity images before: ${activity.images}');
+    log('Activity removedImages before: ${activity.removedImages}');
+    try {
+      final file = File(pathImage);
+      if (await file.exists()) {
+        await file.delete();
+        log('File deleted from disk: $pathImage');
+      } else {
+        log('File does not exist: $pathImage');
+      }
+    } catch (e) {
+      log('Failed deleting file: $pathImage, error: $e');
+    }
+    activity.images?.remove(pathImage);
+    activity.removedImages?.remove(pathImage);
+    activity.removedImagesTimestamp?.remove(pathImage);
+    log('Activity images after: ${activity.images}');
+    log('Activity removedImages after: ${activity.removedImages}');
+    notifyListeners();
+  }
+
+  Future<Set<String>> permanentlyDeleteExpiredPhotos() async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    final deletedPaths = <String>{};
+
+    for (final day in _itinerary.days) {
+      for (final activity in day.activities) {
+        final timestamps = activity.removedImagesTimestamp ?? {};
+        final expiredPaths = <String>[];
+
+        for (final entry in timestamps.entries) {
+          if (now - entry.value >= thirtyDaysMs) {
+            expiredPaths.add(entry.key);
+          }
+        }
+
+        for (final path in expiredPaths) {
+          try {
+            final file = File(path);
+            if (await file.exists()) {
+              await file.delete();
+            }
+          } catch (e) {
+            log('Failed deleting expired file: $path, error: $e');
+          }
+          activity.images?.remove(path);
+          activity.removedImages?.remove(path);
+          activity.removedImagesTimestamp?.remove(path);
+          deletedPaths.add(path);
+        }
+      }
+    }
+
+    if (deletedPaths.isNotEmpty) {
+      notifyListeners();
+    }
+    return deletedPaths;
   }
 
   Set<String> getAllRemovedPhotoPaths() {
@@ -216,6 +290,9 @@ class ItineraryProvider extends ChangeNotifier {
       for (final activity in day.activities) {
         activity.images?.removeWhere(removedPaths.contains);
         activity.removedImages?.removeWhere(removedPaths.contains);
+        for (final path in removedPaths) {
+          activity.removedImagesTimestamp?.remove(path);
+        }
       }
     }
 
