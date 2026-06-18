@@ -301,10 +301,110 @@ class PhotoController extends GetxController {
   }
 
   Future<void> permanentlyDeletePhoto(File image) async {
-    activity.images?.remove(image.path);
-    activity.removedImages?.remove(image.path);
-    itineraryProvider.notifyListeners();
-    loadImage();
+    log('Controller.permanentlyDeletePhoto called for: ${image.path}');
+    log('Activity removedImages before: ${activity.removedImages}');
+    await itineraryProvider.permanentlyDeletePhoto(
+      activity: activity,
+      pathImage: image.path,
+    );
+    log('Activity removedImages after: ${activity.removedImages}');
+    _addHiddenHashIfAuto(image.path);
+    loadRemovedImages();
+  }
+
+  Future<void> permanentlyDeleteSelected() async {
+    log('Controller.permanentlyDeleteSelected called');
+    log('selectedPhotos count: ${selectedPhotos.length}');
+    log('selectedTrashPhotos count: ${selectedTrashPhotos.length}');
+    final filesToDelete = List<File>.from(selectedTrashPhotos);
+    log('filesToDelete count: ${filesToDelete.length}');
+    for (final file in filesToDelete) {
+      log('Deleting: ${file.path}');
+      await itineraryProvider.permanentlyDeletePhoto(
+        activity: activity,
+        pathImage: file.path,
+      );
+      _addHiddenHashIfAuto(file.path);
+    }
+    exitTrashSelection();
+    loadRemovedImages();
+  }
+
+  void loadRemovedImages() {
+    final removedPaths = activity.removedImages ?? [];
+    final files = removedPaths
+        .where((path) => path.isNotEmpty)
+        .map((path) => File(path))
+        .where((file) => file.existsSync())
+        .toList();
+    image.value = files;
+  }
+
+  void _addHiddenHashIfAuto(String path) {
+    final fileName = path.split(Platform.pathSeparator).last;
+    if (!fileName.startsWith('AUTO_')) return;
+    final extensionIndex = fileName.lastIndexOf('.');
+    final rawHash = extensionIndex > 5
+        ? fileName.substring(5, extensionIndex)
+        : fileName.substring(5);
+    if (rawHash.isNotEmpty) {
+      itineraryProvider.addHiddenPhotoHashForActivity(
+        activity: activity,
+        hash: itineraryProvider.normalizeHiddenPhotoHash(rawHash),
+      );
+    }
+  }
+
+  int getRemainingDays(String path) {
+    final timestamp = activity.removedImagesTimestamp?[path];
+    if (timestamp == null) return 30;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final elapsed = now - timestamp;
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    final remaining = thirtyDaysMs - elapsed;
+    if (remaining <= 0) return 0;
+    return (remaining / (24 * 60 * 60 * 1000)).ceil();
+  }
+
+  bool isExpired(String path) {
+    return getRemainingDays(path) <= 0;
+  }
+
+  // Trash selection state
+  RxBool isTrashSelectionMode = false.obs;
+  RxList<File> selectedTrashPhotos = <File>[].obs;
+
+  bool isTrashSelected(File file) =>
+      selectedTrashPhotos.any((selected) => selected.path == file.path);
+
+  void enterTrashSelection(File file) {
+    selectedTrashPhotos.assignAll([file]);
+    isTrashSelectionMode.value = true;
+  }
+
+  void toggleTrashSelection(File file) {
+    if (isTrashSelected(file)) {
+      selectedTrashPhotos.removeWhere((selected) => selected.path == file.path);
+      if (selectedTrashPhotos.isEmpty) {
+        exitTrashSelection();
+      }
+    } else {
+      selectedTrashPhotos.add(file);
+    }
+  }
+
+  void selectAllTrash(List<File> trashImages) {
+    selectedTrashPhotos.assignAll(trashImages);
+  }
+
+  void exitTrashSelection() {
+    selectedTrashPhotos.clear();
+    isTrashSelectionMode.value = false;
+  }
+
+  Future<void> deleteExpiredPhotos() async {
+    await itineraryProvider.permanentlyDeleteExpiredPhotos();
+    loadRemovedImages();
   }
 
   Future<void> showDeleteConfirmationDialog(
