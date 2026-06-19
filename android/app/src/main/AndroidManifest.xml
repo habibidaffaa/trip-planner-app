@@ -34,7 +34,7 @@
     </queries>
     
     <application
-        android:label="Trip Planner V2"
+        android:label="Trip Planner"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
