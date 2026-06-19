@@ -146,7 +146,7 @@ class _SelectDateState extends State<SelectDate> {
                             text: 'berangkat',
                             style: displayStyle.copyWith(
                               fontSize: 34,
-                              fontStyle: FontStyle.italic,
+                              // fontStyle: FontStyle.italic,
                               color: CustomColor.ocean900,
                             ),
                           ),
