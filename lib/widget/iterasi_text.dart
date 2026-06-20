@@ -31,6 +31,7 @@ class IterasiBody extends StatelessWidget {
   final TextStyle? style;
   final Color? color;
   final int? maxLines;
+  final TextAlign? textAlign;
 
   const IterasiBody(
     this.text, {
@@ -38,6 +39,7 @@ class IterasiBody extends StatelessWidget {
     this.style,
     this.color,
     this.maxLines,
+    this.textAlign,
   });
 
   @override
@@ -47,6 +49,7 @@ class IterasiBody extends StatelessWidget {
       style: bodyStyle.merge(style).copyWith(color: color),
       maxLines: maxLines,
       overflow: maxLines != null ? TextOverflow.ellipsis : null,
+      textAlign: textAlign,
     );
   }
 }

@@ -3,8 +3,8 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_masonry_view/flutter_masonry_view.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -368,7 +368,10 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
                                       'Saat sampai sini, ambil 1–2 jepretan — biar jurnal trip-mu hidup.',
                                       color: CustomColor.ocean700,
                                       maxLines: 3,
-                                      style: const TextStyle(height: 1.5),
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        height: 1.5,
+                                      ),
                                     ),
                                   ],
                                 ),
