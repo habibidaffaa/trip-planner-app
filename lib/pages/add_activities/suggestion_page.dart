@@ -108,8 +108,8 @@ class _SuggestionPageState extends State<SuggestionPage>
                 ),
                 unselectedLabelStyle: bodyStyle.copyWith(fontSize: 13),
                 tabs: const [
-                  Tab(text: "v 1 · santai"),
-                  Tab(text: "v 2 · padat"),
+                  Tab(text: "Rekomendasi 1"),
+                  Tab(text: "Rekomendasi 2"),
                 ],
               ),
             ),
