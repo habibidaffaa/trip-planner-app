@@ -194,7 +194,9 @@ class _AddActivitiesState extends State<AddActivities> {
                           color: CustomColor.muted,
                         ),
                         IterasiDisplay(
-                          'Aktivitas baru',
+                          widget.initialActivity != null
+                              ? 'Edit Aktivitas'
+                              : 'Aktivitas Baru',
                           style: const TextStyle(fontSize: 17),
                         ),
                       ],
