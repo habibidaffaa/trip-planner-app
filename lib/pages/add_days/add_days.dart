@@ -455,11 +455,15 @@ class _AddDaysState extends State<AddDays> {
                             shrinkWrap: true,
                             itemBuilder: (context, index) {
                               final currentActivity = data[index].copy();
+                              final originalActivities = itineraryProvider
+                                  .itinerary.days[selectedDayIndex].activities;
+                              final originalIndex =
+                                  originalActivities.indexOf(data[index]);
                               return ActivityCard(
                                 snackbarHandler: snackbarHandler,
                                 data: data[index],
                                 selectedDayIndex: selectedDayIndex,
-                                activityIndex: index,
+                                activityIndex: originalIndex,
                                 onUndo: () {
                                   itineraryProvider.insertNewActivity(
                                       activities: data,
