@@ -24,6 +24,7 @@ class _AddActivitiesState extends State<AddActivities> {
   bool _isEndTimeValid = true;
   bool _isTitleValid = true;
   bool _showTitleValidationMessage = false;
+  bool _titleHadContent = false;
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController lokasiController = TextEditingController();
@@ -34,6 +35,8 @@ class _AddActivitiesState extends State<AddActivities> {
   double? latitude;
   double? longitude;
   bool _isLokasiValid = true;
+  bool _showLokasiValidationMessage = false;
+  bool _lokasiHadContent = false;
   bool _isCustomLocation = false;
   bool _isFromAutocomplete = false;
 
@@ -50,6 +53,8 @@ class _AddActivitiesState extends State<AddActivities> {
       _isCustomLocation = widget.initialActivity!.isCustomLocation;
       _isFromAutocomplete = !_isCustomLocation;
       _selectedEndTime = widget.initialActivity!.endTimeOfDay;
+      _titleHadContent = true;
+      _lokasiHadContent = true;
     }
     titleController.addListener(() {
       _validateTitle(showMessage: true);
@@ -63,14 +68,23 @@ class _AddActivitiesState extends State<AddActivities> {
 
   void _validateTitle({bool showMessage = false}) {
     setState(() {
-      _isTitleValid = titleController.text.trim().isNotEmpty;
-      _showTitleValidationMessage = showMessage && !_isTitleValid;
+      final hasContent = titleController.text.trim().isNotEmpty;
+      if (titleController.text.isNotEmpty) {
+        _titleHadContent = true;
+      }
+      _isTitleValid = hasContent;
+      _showTitleValidationMessage = _titleHadContent && !hasContent;
     });
   }
 
   void _validateLocation({bool showMessage = false}) {
     setState(() {
-      _isLokasiValid = lokasiController.text.trim().isNotEmpty;
+      final hasContent = lokasiController.text.trim().isNotEmpty;
+      if (lokasiController.text.isNotEmpty) {
+        _lokasiHadContent = true;
+      }
+      _isLokasiValid = hasContent;
+      _showLokasiValidationMessage = _lokasiHadContent && !hasContent;
     });
   }
 
@@ -124,15 +138,15 @@ class _AddActivitiesState extends State<AddActivities> {
     final locale = MaterialLocalizations.of(context);
     final newActivity = Activity(
       id: widget.initialActivity?.id,
-      activityName: titleController.text,
-      lokasi: lokasiController.text,
+      activityName: titleController.text.trim(),
+      lokasi: lokasiController.text.trim(),
       startActivityTime: locale
           .formatTimeOfDay(_selectedStartTime, alwaysUse24HourFormat: true)
           .replaceAll(':', '.'),
       endActivityTime: locale
           .formatTimeOfDay(_selectedEndTime, alwaysUse24HourFormat: true)
           .replaceAll(':', '.'),
-      keterangan: keteranganController.text,
+      keterangan: keteranganController.text.trim(),
       images: List<String>.from(widget.initialActivity?.images ?? []),
       removedImages:
           List<String>.from(widget.initialActivity?.removedImages ?? []),
@@ -176,7 +190,7 @@ class _AddActivitiesState extends State<AddActivities> {
                     child: Column(
                       children: [
                         IterasiKicker(
-                          'aktivitas baru',
+                          'aktivitas',
                           color: CustomColor.muted,
                         ),
                         IterasiDisplay(
@@ -358,13 +372,30 @@ class _AddActivitiesState extends State<AddActivities> {
                         lokasi = value;
                         _isCustomLocation = isCustom;
                         _isFromAutocomplete = fromAutocomplete;
+                        final hasContent = value.trim().isNotEmpty;
+                        if (value.isNotEmpty) {
+                          _lokasiHadContent = true;
+                        }
                         _isLokasiValid = isCustom
-                            ? value.trim().isNotEmpty
-                            : fromAutocomplete && value.trim().isNotEmpty;
+                            ? hasContent
+                            : fromAutocomplete && hasContent;
+                        _showLokasiValidationMessage =
+                            _lokasiHadContent && !hasContent;
                         log("Lokasi: $value | isCustom: $isCustom | fromAuto: $fromAutocomplete");
                       });
                     },
                   ),
+                  if (_showLokasiValidationMessage)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Lokasi tidak boleh kosong',
+                        style: bodyStyle.copyWith(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
 
                   const SizedBox(height: 20),
 
