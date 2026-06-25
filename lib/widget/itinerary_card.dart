@@ -1,10 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
-
 import 'package:iterasi1/model/itinerary.dart';
 import 'package:iterasi1/pages/add_days/add_days.dart';
 import 'package:iterasi1/provider/database_provider.dart';
@@ -12,6 +12,7 @@ import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_helper.dart';
 import 'package:iterasi1/widget/text_dialog.dart';
+import 'package:provider/provider.dart';
 
 class ItineraryCard extends StatelessWidget {
   final DatabaseProvider dbProvider;
@@ -237,8 +238,8 @@ class _ThumbnailHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasThumb = thumbnailPath != null && File(thumbnailPath!).existsSync();
-    return SizedBox(
-      height: 96,
+    return AspectRatio(
+      aspectRatio: 16 / 9,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -352,10 +353,34 @@ class _EditItineraryDialogState extends State<_EditItineraryDialog> {
   }
 
   Future<void> _pickThumbnail() async {
-    final picker = ImagePicker();
-    final xfile =
-        await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (xfile != null) setState(() => _thumbnailPath = xfile.path);
+    try {
+      final picker = ImagePicker();
+      final xfile =
+          await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (xfile == null) return;
+
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: xfile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Foto',
+            toolbarColor: const Color(0xFF1B3A4B),
+            toolbarWidgetColor: const Color(0xFFF5F0E8),
+            lockAspectRatio: true,
+            hideBottomControls: false,
+            showCropGrid: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop Foto',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+      if (cropped != null) setState(() => _thumbnailPath = cropped.path);
+    } catch (e) {
+      log('Crop error: $e');
+    }
   }
 
   bool get _hasThumb =>
@@ -367,7 +392,7 @@ class _EditItineraryDialogState extends State<_EditItineraryDialog> {
       backgroundColor: CustomColor.paper,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: Text(
-        'Edit trip',
+        'Edit Trip',
         style: displayStyle.copyWith(fontSize: 20, color: CustomColor.ocean900),
       ),
       content: Column(
@@ -381,7 +406,7 @@ class _EditItineraryDialogState extends State<_EditItineraryDialog> {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: AspectRatio(
-                      aspectRatio: 5 / 3,
+                      aspectRatio: 16 / 9,
                       child: Stack(
                         fit: StackFit.expand,
                         children: [

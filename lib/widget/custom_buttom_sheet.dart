@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:iterasi1/model/create_itinerary_result.dart';
 import 'package:iterasi1/resource/theme.dart';
@@ -25,10 +27,34 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
   }
 
   Future<void> _pickThumbnail() async {
-    final picker = ImagePicker();
-    final xfile =
-        await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (xfile != null) setState(() => _thumbnailPath = xfile.path);
+    try {
+      final picker = ImagePicker();
+      final xfile =
+          await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (xfile == null) return;
+
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: xfile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Foto',
+            toolbarColor: const Color(0xFF1B3A4B),
+            toolbarWidgetColor: const Color(0xFFF5F0E8),
+            lockAspectRatio: true,
+            hideBottomControls: false,
+            showCropGrid: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop Foto',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+      if (cropped != null) setState(() => _thumbnailPath = cropped.path);
+    } catch (e) {
+      log('Crop error: $e');
+    }
   }
 
   @override
@@ -104,7 +130,7 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: AspectRatio(
-                          aspectRatio: 5 / 3,
+                          aspectRatio: 16 / 9,
                           child: Image.file(
                             File(_thumbnailPath!),
                             fit: BoxFit.cover,
