@@ -165,7 +165,7 @@ class FormSuggestionState extends State<FormSuggestion> {
                           text: 'tripmu.',
                           style: displayStyle.copyWith(
                             fontSize: 32,
-                            fontStyle: FontStyle.italic,
+                            // fontStyle: FontStyle.italic,
                             color: CustomColor.ocean900,
                           ),
                         ),
