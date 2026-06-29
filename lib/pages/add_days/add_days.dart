@@ -218,6 +218,124 @@ class _AddDaysState extends State<AddDays> {
     return DateFormat('EEE, d MMM', 'id_ID').format(date);
   }
 
+  void _navigateToSelectDate() {
+    log(itineraryProvider.itinerary.days
+        .map((e) => e.getDatetime())
+        .toList()
+        .toString());
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SelectDate(
+          isNewItinerary: false,
+          initialDates: itineraryProvider.itinerary.days
+              .map((e) => e.getDatetime())
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showChangeDateConfirmationDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: CustomColor.paper,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(100)),
+                color: CustomColor.coral500.withOpacity(0.1),
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                size: 36,
+                color: CustomColor.coral500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Ubah Tanggal Perjalanan?',
+              textAlign: TextAlign.center,
+              style: displayStyle.copyWith(
+                color: CustomColor.ocean900,
+                fontSize: 18,
+                fontWeight: semibold,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Apakah kamu ingin mengubah tanggal perjalanan? Rencana yang sudah kamu susun mungkin akan hilang.',
+          style: bodyStyle.copyWith(
+            fontSize: 14,
+            color: CustomColor.muted,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      _navigateToSelectDate();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 46),
+                      side: BorderSide(
+                        color: CustomColor.ocean900.withOpacity(0.25),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    child: Text(
+                      'Lanjut',
+                      style: bodyStyle.copyWith(
+                        color: CustomColor.ocean900,
+                        fontWeight: medium,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: CustomColor.coral500,
+                      foregroundColor: CustomColor.paper,
+                      minimumSize: const Size(0, 46),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    child: Text(
+                      'Batal',
+                      style: bodyStyle.copyWith(
+                        color: CustomColor.paper,
+                        fontWeight: semibold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     snackbarHandler = ScaffoldMessenger.of(context);
@@ -371,21 +489,14 @@ class _AddDaysState extends State<AddDays> {
                             top: 8,
                             child: InkWell(
                               onTap: () {
-                                log(itineraryProvider.itinerary.days
-                                    .map((e) => e.getDatetime())
-                                    .toList()
-                                    .toString());
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => SelectDate(
-                                      isNewItinerary: false,
-                                      initialDates: itineraryProvider
-                                          .itinerary.days
-                                          .map((e) => e.getDatetime())
-                                          .toList(),
-                                    ),
-                                  ),
-                                );
+                                final hasActivities = itineraryProvider
+                                    .itinerary.days
+                                    .any((day) => day.activities.isNotEmpty);
+                                if (hasActivities) {
+                                  _showChangeDateConfirmationDialog();
+                                } else {
+                                  _navigateToSelectDate();
+                                }
                               },
                               borderRadius: BorderRadius.circular(100),
                               child: Container(
