@@ -33,6 +33,7 @@
 *.keystore
 google-services.json
 GoogleService-Info.plist
+key.properties
 
 # OS
 .DS_Store
