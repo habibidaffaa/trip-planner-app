@@ -60,7 +60,7 @@ class _SelectDateState extends State<SelectDate> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pilih Tanggal setelah Hari Ini!")),
+        const SnackBar(content: Text("Pilih Tanggal Terlebih Dahulu!")),
       );
     }
   }
@@ -378,7 +378,7 @@ class _SelectDateState extends State<SelectDate> {
                                           .showSnackBar(
                                         const SnackBar(
                                             content: Text(
-                                                "Pilih Tanggal setelah Hari Ini!")),
+                                                "Pilih Tanggal Terlebih Dahulu!")),
                                       );
                                       return;
                                     }
