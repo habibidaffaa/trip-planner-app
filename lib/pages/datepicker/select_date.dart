@@ -141,16 +141,10 @@ class _SelectDateState extends State<SelectDate> {
                           color: CustomColor.ocean900,
                         ),
                         children: [
-                          const TextSpan(text: 'Kapan kamu '),
-                          TextSpan(
-                            text: 'berangkat',
-                            style: displayStyle.copyWith(
-                              fontSize: 34,
-                              // fontStyle: FontStyle.italic,
-                              color: CustomColor.ocean900,
-                            ),
-                          ),
-                          const TextSpan(text: '?'),
+                          widget.isNewItinerary
+                              ? const TextSpan(text: 'Kapan kamu berangkat?')
+                              : const TextSpan(
+                                  text: 'Ubah tanggal perjalanan?'),
                         ],
                       ),
                     ),
