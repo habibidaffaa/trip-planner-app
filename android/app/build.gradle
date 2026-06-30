@@ -35,13 +35,13 @@ def hasReleaseKeystore = keystorePropertiesFile.exists() && keystoreProperties['
 
 android {
     namespace "com.gudboi.tripplanner.v2"   // <- samakan dengan nama paket yang kamu mau
-    compileSdk 34
+    compileSdk 36
     ndkVersion "27.0.12077973"                 // <- fix NDK mismatch
 
     defaultConfig {
         applicationId "com.gudboi.tripplanner.v2"  // <- samakan dengan namespace di atas
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
