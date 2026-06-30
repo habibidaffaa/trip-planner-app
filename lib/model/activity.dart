@@ -18,6 +18,7 @@ class Activity {
       removedImagesTimestamp; // Key=path, Value=epoch ms saat dihapus
   List<String>? hiddenPhotoHashes;
   int? lastGalleryScanEpochMs;
+  String? catatan;
 
   static final _formatter24 = DateFormat('HH.mm', 'id_ID');
   static final _formatter12 = DateFormat('h:mm a', 'en_US');
@@ -37,6 +38,7 @@ class Activity {
     List<String>? images,
     List<String>? hiddenPhotoHashes,
     int? lastGalleryScanEpochMs,
+    this.catatan,
   })  : id = id ?? const Uuid().v4(),
         images = images ?? [],
         removedImages = removedImages ?? [],
@@ -59,6 +61,7 @@ class Activity {
       'removed_images_timestamp': removedImagesTimestamp,
       'hidden_photo_hashes': hiddenPhotoHashes,
       'last_gallery_scan_epoch_ms': lastGalleryScanEpochMs,
+      'catatan': catatan,
     };
   }
 
@@ -82,6 +85,7 @@ class Activity {
             ? List<String>.from(json['hidden_photo_hashes'])
             : [],
         lastGalleryScanEpochMs: json['last_gallery_scan_epoch_ms'],
+        catatan: json['catatan'],
       );
 
   factory Activity.fromJsonGPT(Map<String, dynamic> json) {
@@ -111,7 +115,8 @@ class Activity {
           longtitude == other.longtitude &&
           images == other.images &&
           removedImages == other.removedImages &&
-          removedImagesTimestamp == other.removedImagesTimestamp;
+          removedImagesTimestamp == other.removedImagesTimestamp &&
+          catatan == other.catatan;
 
   Activity copy({
     String? activityName,
@@ -127,6 +132,7 @@ class Activity {
     Map<String, int>? removedImagesTimestamp,
     List<String>? hiddenPhotoHashes,
     int? lastGalleryScanEpochMs,
+    String? catatan,
   }) =>
       Activity(
         id: id,
@@ -147,6 +153,7 @@ class Activity {
             List<String>.from(this.hiddenPhotoHashes ?? []),
         lastGalleryScanEpochMs:
             lastGalleryScanEpochMs ?? this.lastGalleryScanEpochMs,
+        catatan: catatan ?? this.catatan,
       );
 
   TimeOfDay get startTimeOfDay => _parseTimeOfDay(startActivityTime);

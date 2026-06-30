@@ -161,6 +161,16 @@ class ActivityCard extends StatelessWidget {
                           value: data.keterangan,
                           singleLine: false,
                         ),
+                        if (data.catatan != null &&
+                            data.catatan!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          _DetailRow(
+                            icon: Icons.sticky_note_2_outlined,
+                            label: 'Catatan Tambahan',
+                            value: data.catatan!,
+                            singleLine: false,
+                          ),
+                        ],
                         const SizedBox(height: 8),
                       ],
                     ),

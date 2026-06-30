@@ -7,6 +7,7 @@ import 'package:iterasi1/widget/location_autocomplete_field.dart';
 import 'package:iterasi1/widget/text_field_wirdget.dart';
 
 import '../../model/activity.dart';
+import '../../model/alert_save_dialog_result.dart';
 
 class AddActivities extends StatefulWidget {
   final Activity? initialActivity;
@@ -49,6 +50,7 @@ class _AddActivitiesState extends State<AddActivities> {
       titleController.text = widget.initialActivity!.activityName;
       lokasiController.text = widget.initialActivity!.lokasi;
       keteranganController.text = widget.initialActivity!.keterangan;
+      catatanController.text = widget.initialActivity!.catatan ?? '';
       _selectedStartTime = widget.initialActivity!.startTimeOfDay;
       _isCustomLocation = widget.initialActivity!.isCustomLocation;
       _isFromAutocomplete = !_isCustomLocation;
@@ -132,6 +134,150 @@ class _AddActivitiesState extends State<AddActivities> {
     });
   }
 
+  bool _hasUnsavedChanges() {
+    final initial = widget.initialActivity;
+    if (initial == null) {
+      return titleController.text.trim().isNotEmpty ||
+          lokasiController.text.trim().isNotEmpty ||
+          keteranganController.text.trim().isNotEmpty ||
+          catatanController.text.trim().isNotEmpty;
+    }
+    final locale = MaterialLocalizations.of(context);
+    final currentStartTime = locale
+        .formatTimeOfDay(_selectedStartTime, alwaysUse24HourFormat: true)
+        .replaceAll(':', '.');
+    final currentEndTime = locale
+        .formatTimeOfDay(_selectedEndTime, alwaysUse24HourFormat: true)
+        .replaceAll(':', '.');
+
+    return titleController.text.trim() != initial.activityName ||
+        lokasiController.text.trim() != initial.lokasi ||
+        keteranganController.text.trim() != initial.keterangan ||
+        catatanController.text.trim() != (initial.catatan ?? '') ||
+        currentStartTime != initial.startActivityTime ||
+        currentEndTime != initial.endActivityTime ||
+        _isCustomLocation != initial.isCustomLocation;
+  }
+
+  Future<void> _handleBack() async {
+    if (!_hasUnsavedChanges()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final result = await _showSaveDialog();
+    if (!mounted) return;
+    if (result == AlertSaveDialogResult.saveAndQuit) {
+      _submitActivity();
+    } else if (result == AlertSaveDialogResult.saveWithoutQuit) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<AlertSaveDialogResult?> _showSaveDialog() {
+    return showDialog<AlertSaveDialogResult?>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(100)),
+                  color: CustomColor.danger.withOpacity(0.1),
+                ),
+                child: const Icon(
+                  Icons.warning_rounded,
+                  size: 36,
+                  color: CustomColor.danger,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Konfirmasi Perubahan",
+                textAlign: TextAlign.center,
+                style: displayStyle.copyWith(
+                  color: CustomColor.ocean900,
+                  fontSize: 18,
+                  fontWeight: semibold,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            "Aktivitas Anda telah diubah. Simpan sebelum keluar?",
+            style: bodyStyle.copyWith(
+              fontSize: 14,
+              color: CustomColor.muted,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context)
+                          .pop(AlertSaveDialogResult.saveWithoutQuit),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: CustomColor.danger.withOpacity(0.5),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                      ),
+                      child: Text(
+                        "Keluar Tanpa Simpan",
+                        textAlign: TextAlign.center,
+                        style: bodyStyle.copyWith(
+                          fontSize: 12,
+                          fontWeight: semibold,
+                          color: CustomColor.danger,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context)
+                          .pop(AlertSaveDialogResult.saveAndQuit),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CustomColor.ocean900,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        "Simpan & Keluar",
+                        textAlign: TextAlign.center,
+                        style: bodyStyle.copyWith(
+                          fontSize: 12,
+                          fontWeight: semibold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _submitActivity() {
     if (!_isEndTimeValid || !_isTitleValid || !_isLokasiValid) return;
 
@@ -153,6 +299,7 @@ class _AddActivitiesState extends State<AddActivities> {
       isCustomLocation: _isCustomLocation,
       latitude: widget.initialActivity?.latitude,
       longtitude: widget.initialActivity?.longtitude,
+      catatan: catatanController.text.trim(),
     );
 
     log(newActivity.startActivityTime);
@@ -165,296 +312,305 @@ class _AddActivitiesState extends State<AddActivities> {
   Widget build(BuildContext context) {
     final isFormValid = _isEndTimeValid && _isTitleValid && _isLokasiValid;
 
-    return Scaffold(
-      backgroundColor: CustomColor.paper,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Custom header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Text(
-                      'Batal',
-                      style: monoStyle.copyWith(
-                        fontSize: 14,
-                        fontWeight: semibold,
-                        color: CustomColor.muted,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        IterasiKicker(
-                          'aktivitas',
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: CustomColor.paper,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Custom header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => _handleBack(),
+                      child: Text(
+                        'Batal',
+                        style: monoStyle.copyWith(
+                          fontSize: 14,
+                          fontWeight: semibold,
                           color: CustomColor.muted,
                         ),
-                        IterasiDisplay(
-                          widget.initialActivity != null
-                              ? 'Edit Aktivitas'
-                              : 'Aktivitas Baru',
-                          style: const TextStyle(fontSize: 17),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: isFormValid ? _submitActivity : null,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isFormValid
-                            ? CustomColor.ocean900
-                            : CustomColor.muted,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        'Simpan',
-                        style: bodyStyle.copyWith(
-                          color: Colors.white,
-                          fontWeight: semibold,
-                          fontSize: 13,
-                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            Container(
-              height: 1,
-              color: CustomColor.ocean900.withOpacity(0.08),
-            ),
-
-            // Form
-            Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                children: [
-                  // Time section
-                  IterasiKicker(
-                    'JAM MULAI · FORMAT 24H',
-                    color: CustomColor.muted,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: CustomColor.ocean900.withOpacity(0.12),
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: _TimePickerButton(
-                            label: 'Mulai',
-                            time: _selectedStartTime,
-                            onTap: () => _selectStartTime(context),
-                            hasError: false,
+                    Expanded(
+                      child: Column(
+                        children: [
+                          IterasiKicker(
+                            'aktivitas',
+                            color: CustomColor.muted,
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: CustomColor.coral600,
-                              shape: BoxShape.circle,
-                            ),
+                          IterasiDisplay(
+                            widget.initialActivity != null
+                                ? 'Edit Aktivitas'
+                                : 'Aktivitas Baru',
+                            style: const TextStyle(fontSize: 17),
                           ),
-                        ),
-                        Expanded(
-                          child: _TimePickerButton(
-                            label: 'Selesai',
-                            time: _selectedEndTime,
-                            onTap: () => _selectEndTime(context),
-                            hasError: !_isEndTimeValid,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (!_isEndTimeValid)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        'Waktu Selesai tidak boleh mendahului Waktu Mulai!',
-                        style: bodyStyle.copyWith(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                        ],
                       ),
                     ),
-
-                  // Quick-tap chips
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: _quickTimes.map((t) {
-                      return GestureDetector(
-                        onTap: () => _applyQuickTime(t),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: CustomColor.ocean900.withOpacity(0.2),
-                            ),
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: IterasiMono(
-                            t,
-                            style: const TextStyle(fontSize: 12),
-                            color: CustomColor.ocean700,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Nama field
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextFieldWidget(
-                        label: 'Judul',
-                        hintText: 'Cth. Persiapan Berangkat',
-                        controller: titleController,
-                        required: false,
-                        border: AppTheme.inputBorder(
-                          _isTitleValid
-                              ? CustomColor.muted
-                              : Theme.of(context).colorScheme.error,
-                        ),
-                        focusedBorder: AppTheme.inputBorder(
-                          _isTitleValid
+                    GestureDetector(
+                      onTap: isFormValid ? _submitActivity : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isFormValid
                               ? CustomColor.ocean900
-                              : Theme.of(context).colorScheme.error,
+                              : CustomColor.muted,
+                          borderRadius: BorderRadius.circular(100),
                         ),
-                      ),
-                      if (_showTitleValidationMessage)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            'Judul tidak boleh kosong',
-                            style: bodyStyle.copyWith(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
+                        child: Text(
+                          'Simpan',
+                          style: bodyStyle.copyWith(
+                            color: Colors.white,
+                            fontWeight: semibold,
+                            fontSize: 13,
                           ),
                         ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Lokasi
-                  LocationAutocompleteField(
-                    initialIsCustomLocation: _isCustomLocation,
-                    controller: lokasiController,
-                    isValid: _isLokasiValid,
-                    onLocationChanged: (value, isCustom,
-                        {bool fromAutocomplete = false}) {
-                      setState(() {
-                        lokasi = value;
-                        _isCustomLocation = isCustom;
-                        _isFromAutocomplete = fromAutocomplete;
-                        final hasContent = value.trim().isNotEmpty;
-                        if (value.isNotEmpty) {
-                          _lokasiHadContent = true;
-                        }
-                        _isLokasiValid = isCustom
-                            ? hasContent
-                            : fromAutocomplete && hasContent;
-                        _showLokasiValidationMessage =
-                            _lokasiHadContent && !hasContent;
-                        log("Lokasi: $value | isCustom: $isCustom | fromAuto: $fromAutocomplete");
-                      });
-                    },
-                  ),
-                  if (_showLokasiValidationMessage)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        'Lokasi tidak boleh kosong',
-                        style: bodyStyle.copyWith(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
                       ),
                     ),
-
-                  const SizedBox(height: 20),
-
-                  // Keterangan
-                  TextFieldWidget(
-                    label: 'Keterangan',
-                    hintText:
-                        'Cth. Pastikan semua barang tidak ada yang tertinggal',
-                    controller: keteranganController,
-                    required: false,
-                    keyboardType: TextInputType.multiline,
-                    minLines: 4,
-                    maxLines: null,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Catatan (opsional)
-                  IterasiKicker('CATATAN (OPSIONAL)', color: CustomColor.muted),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: CustomColor.sand100,
-                      border: Border.all(color: CustomColor.sand300),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TextField(
-                      controller: catatanController,
-                      keyboardType: TextInputType.multiline,
-                      minLines: 3,
-                      maxLines: null,
-                      style: bodyStyle.copyWith(fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Tambahkan catatan…',
-                        hintStyle: bodyStyle.copyWith(
-                            color: CustomColor.sand700, fontSize: 14),
-                        prefixIcon: const Padding(
-                          padding: EdgeInsets.only(left: 12, right: 8, top: 14),
-                          child: Icon(Icons.access_time_outlined,
-                              size: 18, color: CustomColor.sand700),
-                        ),
-                        prefixIconConstraints:
-                            const BoxConstraints(minWidth: 40),
-                        border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.fromLTRB(0, 12, 16, 12),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              Container(
+                height: 1,
+                color: CustomColor.ocean900.withOpacity(0.08),
+              ),
+
+              // Form
+              Expanded(
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                  children: [
+                    // Time section
+                    IterasiKicker(
+                      'JAM MULAI · FORMAT 24H',
+                      color: CustomColor.muted,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: CustomColor.ocean900.withOpacity(0.12),
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: _TimePickerButton(
+                              label: 'Mulai',
+                              time: _selectedStartTime,
+                              onTap: () => _selectStartTime(context),
+                              hasError: false,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: CustomColor.coral600,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: _TimePickerButton(
+                              label: 'Selesai',
+                              time: _selectedEndTime,
+                              onTap: () => _selectEndTime(context),
+                              hasError: !_isEndTimeValid,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!_isEndTimeValid)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          'Waktu Selesai tidak boleh mendahului Waktu Mulai!',
+                          style: bodyStyle.copyWith(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+
+                    // Quick-tap chips
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: _quickTimes.map((t) {
+                        return GestureDetector(
+                          onTap: () => _applyQuickTime(t),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: CustomColor.ocean900.withOpacity(0.2),
+                              ),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: IterasiMono(
+                              t,
+                              style: const TextStyle(fontSize: 12),
+                              color: CustomColor.ocean700,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Nama field
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFieldWidget(
+                          label: 'Judul',
+                          hintText: 'Cth. Persiapan Berangkat',
+                          controller: titleController,
+                          required: false,
+                          border: AppTheme.inputBorder(
+                            _isTitleValid
+                                ? CustomColor.muted
+                                : Theme.of(context).colorScheme.error,
+                          ),
+                          focusedBorder: AppTheme.inputBorder(
+                            _isTitleValid
+                                ? CustomColor.ocean900
+                                : Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                        if (_showTitleValidationMessage)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              'Judul tidak boleh kosong',
+                              style: bodyStyle.copyWith(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Lokasi
+                    LocationAutocompleteField(
+                      initialIsCustomLocation: _isCustomLocation,
+                      controller: lokasiController,
+                      isValid: _isLokasiValid,
+                      onLocationChanged: (value, isCustom,
+                          {bool fromAutocomplete = false}) {
+                        setState(() {
+                          lokasi = value;
+                          _isCustomLocation = isCustom;
+                          _isFromAutocomplete = fromAutocomplete;
+                          final hasContent = value.trim().isNotEmpty;
+                          if (value.isNotEmpty) {
+                            _lokasiHadContent = true;
+                          }
+                          _isLokasiValid = isCustom
+                              ? hasContent
+                              : fromAutocomplete && hasContent;
+                          _showLokasiValidationMessage =
+                              _lokasiHadContent && !hasContent;
+                          log("Lokasi: $value | isCustom: $isCustom | fromAuto: $fromAutocomplete");
+                        });
+                      },
+                    ),
+                    if (_showLokasiValidationMessage)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Lokasi tidak boleh kosong',
+                          style: bodyStyle.copyWith(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 20),
+
+                    // Keterangan
+                    TextFieldWidget(
+                      label: 'Keterangan',
+                      hintText:
+                          'Cth. Pastikan semua barang tidak ada yang tertinggal',
+                      controller: keteranganController,
+                      required: false,
+                      keyboardType: TextInputType.multiline,
+                      minLines: 4,
+                      maxLines: null,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Catatan (opsional)
+                    IterasiKicker('CATATAN TAMBAHAN (OPSIONAL)',
+                        color: CustomColor.muted),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: CustomColor.sand100,
+                        border: Border.all(color: CustomColor.sand300),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TextField(
+                        controller: catatanController,
+                        keyboardType: TextInputType.multiline,
+                        minLines: 3,
+                        maxLines: null,
+                        style: bodyStyle.copyWith(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Tambahkan catatan…',
+                          hintStyle: bodyStyle.copyWith(
+                              color: CustomColor.sand700, fontSize: 14),
+                          prefixIcon: const Padding(
+                            padding:
+                                EdgeInsets.only(left: 12, right: 8, top: 14),
+                            child: Icon(Icons.access_time_outlined,
+                                size: 18, color: CustomColor.sand700),
+                          ),
+                          prefixIconConstraints:
+                              const BoxConstraints(minWidth: 40),
+                          border: InputBorder.none,
+                          contentPadding:
+                              const EdgeInsets.fromLTRB(0, 12, 16, 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
