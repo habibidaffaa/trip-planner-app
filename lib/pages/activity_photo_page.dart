@@ -51,27 +51,31 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     return 'TP_${_fileNameFormatter.format(DateTime.now())}$safeExtension';
   }
 
-  Future<File?> _saveToTripPlannerAlbum(
-      File sourceFile, String fileName) async {
+  Future<void> _saveToTripPlannerAlbum(File sourceFile, String fileName) async {
     try {
-      final Directory albumDir =
-          Directory('/storage/emulated/0/Pictures/Trip Planner');
-      if (!await albumDir.exists()) {
-        await albumDir.create(recursive: true);
+      if (!await sourceFile.exists()) {
+        log('_saveToTripPlannerAlbum: source file missing: ${sourceFile.path}');
+        return;
       }
-      final File albumFile = File('${albumDir.path}/$fileName');
-      final copiedFile = await sourceFile.copy(albumFile.path);
-      try {
-        await _mediaScannerChannel.invokeMethod('scanFile', {
-          'path': copiedFile.path,
-        });
-      } catch (e) {
-        log('Media scanner failed for ${copiedFile.path}: $e');
+      final int fileSize = await sourceFile.length();
+      log('_saveToTripPlannerAlbum: saving ${sourceFile.path} ($fileSize bytes) as $fileName');
+      final String? savedUri = await _mediaScannerChannel.invokeMethod(
+        'saveToGallery',
+        {
+          'sourcePath': sourceFile.path,
+          'fileName': fileName,
+          'mimeType': 'image/jpeg',
+        },
+      );
+      if (savedUri != null) {
+        log('Photo saved to gallery: $savedUri');
+      } else {
+        log('Failed to save photo to gallery: native returned null');
       }
-      return copiedFile;
+    } on PlatformException catch (e) {
+      log('PlatformException saving to gallery: ${e.code} - ${e.message}');
     } catch (e) {
       log('Failed to save file to Trip Planner album: $e');
-      return null;
     }
   }
 
