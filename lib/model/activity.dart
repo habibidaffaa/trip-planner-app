@@ -16,8 +16,6 @@ class Activity {
   List<String>? removedImages; // Nullable List<String>
   Map<String, int>?
       removedImagesTimestamp; // Key=path, Value=epoch ms saat dihapus
-  List<String>? hiddenPhotoHashes;
-  int? lastGalleryScanEpochMs;
   String? catatan;
 
   static final _formatter24 = DateFormat('HH.mm', 'id_ID');
@@ -36,15 +34,11 @@ class Activity {
     List<String>? removedImages,
     Map<String, int>? removedImagesTimestamp,
     List<String>? images,
-    List<String>? hiddenPhotoHashes,
-    int? lastGalleryScanEpochMs,
     this.catatan,
   })  : id = id ?? const Uuid().v4(),
         images = images ?? [],
         removedImages = removedImages ?? [],
-        removedImagesTimestamp = removedImagesTimestamp ?? {},
-        hiddenPhotoHashes = hiddenPhotoHashes ?? [],
-        lastGalleryScanEpochMs = lastGalleryScanEpochMs;
+        removedImagesTimestamp = removedImagesTimestamp ?? {};
 
   Map<String, dynamic> toJson() {
     return {
@@ -59,8 +53,6 @@ class Activity {
       'images': images,
       'removed_images': removedImages,
       'removed_images_timestamp': removedImagesTimestamp,
-      'hidden_photo_hashes': hiddenPhotoHashes,
-      'last_gallery_scan_epoch_ms': lastGalleryScanEpochMs,
       'catatan': catatan,
     };
   }
@@ -81,10 +73,6 @@ class Activity {
         removedImagesTimestamp: json['removed_images_timestamp'] != null
             ? Map<String, int>.from(json['removed_images_timestamp'])
             : {},
-        hiddenPhotoHashes: json['hidden_photo_hashes'] != null
-            ? List<String>.from(json['hidden_photo_hashes'])
-            : [],
-        lastGalleryScanEpochMs: json['last_gallery_scan_epoch_ms'],
         catatan: json['catatan'],
       );
 
@@ -130,8 +118,6 @@ class Activity {
     List<String>? images,
     List<String>? removedImages,
     Map<String, int>? removedImagesTimestamp,
-    List<String>? hiddenPhotoHashes,
-    int? lastGalleryScanEpochMs,
     String? catatan,
   }) =>
       Activity(
@@ -149,10 +135,6 @@ class Activity {
             removedImages ?? List<String>.from(this.removedImages ?? []),
         removedImagesTimestamp: removedImagesTimestamp ??
             Map<String, int>.from(this.removedImagesTimestamp ?? {}),
-        hiddenPhotoHashes: hiddenPhotoHashes ??
-            List<String>.from(this.hiddenPhotoHashes ?? []),
-        lastGalleryScanEpochMs:
-            lastGalleryScanEpochMs ?? this.lastGalleryScanEpochMs,
         catatan: catatan ?? this.catatan,
       );
 

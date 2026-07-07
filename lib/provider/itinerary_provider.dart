@@ -150,36 +150,6 @@ class ItineraryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  String normalizeHiddenPhotoHash(String rawHash) {
-    return rawHash.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
-  }
-
-  void addHiddenPhotoHashForActivity({
-    required Activity activity,
-    required String hash,
-    bool shouldNotify = true,
-  }) {
-    final normalizedHash = normalizeHiddenPhotoHash(hash);
-    activity.hiddenPhotoHashes ??= [];
-    if (!activity.hiddenPhotoHashes!.contains(normalizedHash)) {
-      activity.hiddenPhotoHashes!.add(normalizedHash);
-      if (shouldNotify) {
-        notifyListeners();
-      }
-    }
-  }
-
-  void updateLastGalleryScan(
-    Activity activity,
-    int epochMs, {
-    bool shouldNotify = false,
-  }) {
-    activity.lastGalleryScanEpochMs = epochMs;
-    if (shouldNotify) {
-      notifyListeners();
-    }
-  }
-
   void removePhotoActivity({
     required Activity activity,
     required String pathImage,

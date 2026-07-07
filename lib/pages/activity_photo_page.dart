@@ -143,10 +143,6 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
     // ignore: avoid_print
     print('widget 2 : ${widget.activity.startActivityTime}');
     controller.activity = widget.activity;
-    controller.activityDate =
-        itineraryProvider.itinerary.days[widget.dayIndex].date;
-    // Permission is handled by photo_manager/image_picker on demand — no
-    // manageExternalStorage request here (it caused gallery access to fail).
     cleanUpImages();
     controller.image.value =
         controller.convertPathsToFiles(widget.activity.images!);
@@ -312,7 +308,7 @@ class _ActivityPhotoPageState extends State<ActivityPhotoPage> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    await controller.syncGalleryIncremental(force: true);
+                    controller.loadCachedImagesOnly();
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),

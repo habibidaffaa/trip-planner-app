@@ -6,7 +6,6 @@ import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_helper.dart';
 import 'package:iterasi1/widget/text_dialog.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,34 +40,16 @@ class ActivityCard extends StatelessWidget {
       }
     }
 
-    Future<void> requestGalleryPermission(Activity activity) async {
-      final result = await PhotoManager.requestPermissionExtend();
-      if (result.isAuth) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ActivityPhotoPage(
-              dayIndex: selectedDayIndex,
-              activity: activity,
-            ),
+    void openPhotoPage(Activity activity) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ActivityPhotoPage(
+            dayIndex: selectedDayIndex,
+            activity: activity,
           ),
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Perizinan Ditolak'),
-            content:
-                const Text('Aplikasi memerlukan izin untuk mengakses galeri.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
+        ),
+      );
     }
 
     void confirmDeleteActivity() {
@@ -194,7 +175,7 @@ class ActivityCard extends StatelessWidget {
                           InkWell(
                             onTap: () {
                               Navigator.pop(context);
-                              requestGalleryPermission(data);
+                              openPhotoPage(data);
                             },
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(

@@ -19,7 +19,6 @@ import 'package:iterasi1/utilities/thumbnail_storage.dart';
 import 'package:iterasi1/widget/activity_card.dart';
 import 'package:iterasi1/widget/iterasi_text.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/activity.dart';
@@ -88,97 +87,14 @@ class _AddDaysState extends State<AddDays> {
     }
   }
 
-  String? _extractAutoPhotoHash(String filePath) {
-    final fileName = filePath.split(Platform.pathSeparator).last;
-    if (!fileName.startsWith('AUTO_')) return null;
-    final extensionIndex = fileName.lastIndexOf('.');
-    final rawHash = extensionIndex > 5
-        ? fileName.substring(5, extensionIndex)
-        : fileName.substring(5);
-    if (rawHash.isEmpty) return null;
-    return itineraryProvider.normalizeHiddenPhotoHash(rawHash);
-  }
-
-  Future<void> _finalizeRemovedPhotos() async {
-    for (final day in itineraryProvider.itinerary.days) {
-      for (final activity in day.activities) {
-        final removedPaths =
-            List<String>.from(activity.removedImages ?? const <String>[]);
-        for (final removedPath in removedPaths) {
-          final hiddenHash = _extractAutoPhotoHash(removedPath);
-          if (hiddenHash != null) {
-            itineraryProvider.addHiddenPhotoHashForActivity(
-              activity: activity,
-              hash: hiddenHash,
-              shouldNotify: false,
-            );
-          }
-        }
-      }
-    }
-  }
-
-  Future<void> requestGalleryPermission(Activity activity) async {
-    final result = await PhotoManager.requestPermissionExtend();
-    if (!mounted) return;
-
-    // Full or limited access — both let the user attach photos.
-    if (result.isAuth || result == PermissionState.limited) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ActivityPhotoPage(
-            dayIndex: selectedDayIndex,
-            activity: activity,
-          ),
+  void openPhotoPage(Activity activity) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityPhotoPage(
+          dayIndex: selectedDayIndex,
+          activity: activity,
         ),
-      );
-      return;
-    }
-
-    // Denied — offer a shortcut to the system settings.
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: CustomColor.paper,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        title: const IterasiDisplay(
-          'Izin galeri diperlukan',
-          style: TextStyle(fontSize: 18),
-          color: CustomColor.ocean900,
-        ),
-        content: IterasiBody(
-          'Trip Planner membutuhkan akses ke galeri untuk melampirkan foto aktivitas. Buka pengaturan untuk mengizinkan.',
-          color: CustomColor.muted,
-          style: const TextStyle(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(
-              'Batal',
-              style: bodyStyle.copyWith(color: CustomColor.muted),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              PhotoManager.openSetting();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: CustomColor.ocean900,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-              ),
-            ),
-            child: Text(
-              'Buka Pengaturan',
-              style: bodyStyle.copyWith(color: Colors.white),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -823,7 +739,6 @@ class _AddDaysState extends State<AddDays> {
     if (!_commitPendingTitleIfAny()) return false;
     context.loaderOverlay.show();
     try {
-      await _finalizeRemovedPhotos();
       await databaseProvider.insertItinerary(
           itinerary: itineraryProvider.itinerary);
       itineraryProvider.syncInitialItinerary();
