@@ -15,6 +15,7 @@ import 'package:iterasi1/pages/itinerary_list.dart';
 import 'package:iterasi1/pages/pdf/preview_pdf_page.dart';
 import 'package:iterasi1/provider/database_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
+import 'package:iterasi1/utilities/budget_helper.dart';
 import 'package:iterasi1/utilities/thumbnail_storage.dart';
 import 'package:iterasi1/widget/activity_card.dart';
 import 'package:iterasi1/widget/iterasi_text.dart';
@@ -132,6 +133,47 @@ class _AddDaysState extends State<AddDays> {
     final day = itineraryProvider.itinerary.days[index];
     final date = _parseDate(day.date);
     return DateFormat('EEE, d MMM', 'id_ID').format(date);
+  }
+
+  Widget _buildDayBudgetSummary() {
+    if (itineraryProvider.itinerary.days.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final activities =
+        itineraryProvider.itinerary.days[selectedDayIndex].activities;
+    final dayBudget = BudgetHelper.calculateDayBudget(activities);
+    if (dayBudget == 0) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: CustomColor.coral500.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(
+          color: CustomColor.coral500.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.account_balance_wallet_outlined,
+            size: 14,
+            color: CustomColor.coral700,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            BudgetHelper.formatRupiah(dayBudget),
+            style: monoStyle.copyWith(
+              fontSize: 11,
+              fontWeight: semibold,
+              color: CustomColor.coral700,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _navigateToSelectDate() {
@@ -452,12 +494,19 @@ class _AddDaysState extends State<AddDays> {
                               color: CustomColor.coral700,
                             ),
                             const SizedBox(height: 4),
-                            IterasiDisplay(
-                              'Hari ${selectedDayIndex + 1}',
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontStyle: FontStyle.italic,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: IterasiDisplay(
+                                    'Hari ${selectedDayIndex + 1}',
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                                _buildDayBudgetSummary(),
+                              ],
                             ),
                           ],
                         ),

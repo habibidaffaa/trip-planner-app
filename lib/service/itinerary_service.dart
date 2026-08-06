@@ -12,6 +12,7 @@ class ItineraryService {
     required String departure,
     required String destination,
     required List<String> dates,
+    required int numberOfPeople,
     List<String> vibes = const [],
     String notes = '',
     String pace = '',
@@ -67,6 +68,13 @@ class ItineraryService {
         $returnRule
         - activities berisikan title, location, start_time ('HH.mm'), end_time ('HH.mm') dan description.
         - Buat aktivitas yang bervariasi dan realistis (perjalanan antar kota, makan, wisata, istirahat).
+        - Untuk aktivitas berikut: hotel/penginapan, makan, tiket wisata, transport,
+          WAJIB sertakan estimasi budget di akhir field description.
+          Format: "... | Estimasi: Rp XXX (Y orang)" di mana Y = $numberOfPeople.
+          Budget adalah total untuk seluruh rombongan, bukan per orang.
+          Contoh: "Check-in hotel bintang 3 di pusat kota | Estimasi: Rp 600.000 (4 orang)"
+          Contoh: "Makan siang nasi campur Bali | Estimasi: Rp 200.000 (4 orang)"
+          Aktivitas lain (jalan-jalan, foto, istirahat, explore) TIDAK perlu estimasi budget.
         """;
 
     final body = jsonEncode({

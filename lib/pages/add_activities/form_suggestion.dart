@@ -53,6 +53,16 @@ class FormSuggestionState extends State<FormSuggestion> {
   ];
   String? _selectedCompanion;
 
+  final Map<String, int> _companionDefaultPeople = const {
+    'Solo': 1,
+    'Couple': 2,
+    'Teman': 3,
+    'Keluarga': 4,
+    'Anak kecil': 3,
+  };
+  int _numberOfPeople = 1;
+  final TextEditingController _peopleController = TextEditingController(text: '1');
+
   final String _googleMapsApiKey = AppEnv.gmapsApiKey;
 
   void _toggleVibe(String vibe) {
@@ -92,6 +102,7 @@ class FormSuggestionState extends State<FormSuggestion> {
     _departureController.dispose();
     _destinationController.dispose();
     _notesController.dispose();
+    _peopleController.dispose();
     super.dispose();
   }
 
@@ -224,8 +235,19 @@ class FormSuggestionState extends State<FormSuggestion> {
                   _buildSingleSelectChips(
                     _companionOptions,
                     _selectedCompanion,
-                    (value) => setState(() => _selectedCompanion = value),
+                    (value) => setState(() {
+                      _selectedCompanion = value;
+                      if (value != null &&
+                          _companionDefaultPeople.containsKey(value)) {
+                        _numberOfPeople = _companionDefaultPeople[value]!;
+                        _peopleController.text = _numberOfPeople.toString();
+                      }
+                    }),
                   ),
+                  const SizedBox(height: 20),
+                  IterasiKicker('JUMLAH ORANG', color: CustomColor.muted),
+                  const SizedBox(height: 8),
+                  _buildPeopleStepper(),
                   const SizedBox(height: 20),
                   IterasiKicker('CATATAN TAMBAHAN', color: CustomColor.muted),
                   const SizedBox(height: 8),
@@ -424,6 +446,91 @@ class FormSuggestionState extends State<FormSuggestion> {
     );
   }
 
+  Widget _buildPeopleStepper() {
+    return PhysicalModel(
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.white,
+      shadowColor: CustomColor.shadowSoft,
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: CustomColor.ocean900.withOpacity(0.15),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                if (_numberOfPeople > 1) {
+                  setState(() {
+                    _numberOfPeople--;
+                    _peopleController.text = _numberOfPeople.toString();
+                  });
+                }
+              },
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: _numberOfPeople > 1
+                      ? CustomColor.ocean900
+                      : CustomColor.muted.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.remove, color: Colors.white, size: 18),
+              ),
+            ),
+            Expanded(
+              child: TextField(
+                controller: _peopleController,
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                style: bodyStyle.copyWith(
+                  fontSize: 16,
+                  fontWeight: semibold,
+                  color: CustomColor.ocean900,
+                ),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                ),
+                onChanged: (value) {
+                  final parsed = int.tryParse(value);
+                  if (parsed != null && parsed >= 1) {
+                    setState(() => _numberOfPeople = parsed);
+                  }
+                },
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                if (_numberOfPeople < 99) {
+                  setState(() {
+                    _numberOfPeople++;
+                    _peopleController.text = _numberOfPeople.toString();
+                  });
+                }
+              },
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  color: CustomColor.ocean900,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, color: Colors.white, size: 18),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSubmitButton() {
     final isFormValid = _departureController.text.isNotEmpty &&
         _destinationController.text.isNotEmpty;
@@ -441,6 +548,7 @@ class FormSuggestionState extends State<FormSuggestion> {
                         departure: _departureController.text,
                         destination: _destinationController.text,
                         dates: widget.selectedDays,
+                        numberOfPeople: _numberOfPeople,
                         vibes: _selectedVibes.toList(),
                         notes: _notesController.text,
                         pace: _selectedPace ?? '',

@@ -84,9 +84,11 @@ class _SelectDateState extends State<SelectDate> {
       child: Scaffold(
         backgroundColor: CustomColor.paper,
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Header
               Padding(
                 padding:
@@ -300,8 +302,6 @@ class _SelectDateState extends State<SelectDate> {
                   ),
                 ),
 
-              const Spacer(),
-
               // Warning chip for AI path
               if (widget.isNewItinerary && isRangeOverThree)
                 Padding(
@@ -431,6 +431,7 @@ class _SelectDateState extends State<SelectDate> {
                       ),
               ),
             ],
+            ),
           ),
         ),
       ),

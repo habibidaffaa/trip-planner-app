@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:iterasi1/model/activity.dart';
 import 'package:iterasi1/model/day.dart';
 import 'package:iterasi1/model/itinerary.dart';
@@ -9,6 +8,7 @@ import 'package:iterasi1/pages/add_days/add_days.dart';
 import 'package:iterasi1/provider/itinerary_provider.dart';
 import 'package:iterasi1/resource/theme.dart';
 import 'package:iterasi1/utilities/app_helper.dart';
+import 'package:iterasi1/utilities/budget_helper.dart';
 import 'package:iterasi1/widget/iterasi_text.dart';
 import 'package:iterasi1/widget/recommendaation_activity_card.dart';
 import 'package:provider/provider.dart';
@@ -114,6 +114,9 @@ class _SuggestionPageState extends State<SuggestionPage>
               ),
             ),
 
+            // Budget summary card
+            _buildBudgetCard(),
+
             // Tab content
             Expanded(
               child: TabBarView(
@@ -177,6 +180,49 @@ class _SuggestionPageState extends State<SuggestionPage>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBudgetCard() {
+    final currentItinerary = widget.itineraries[_tabController.index];
+    final totalBudget = BudgetHelper.calculateTripBudget(currentItinerary.days);
+    if (totalBudget == 0) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: CustomColor.coral500.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: CustomColor.coral500.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.account_balance_wallet_outlined,
+            size: 18,
+            color: CustomColor.coral700,
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IterasiKicker('ESTIMASI BUDGET', color: CustomColor.muted),
+              const SizedBox(height: 2),
+              Text(
+                BudgetHelper.formatRupiah(totalBudget),
+                style: bodyStyle.copyWith(
+                  fontSize: 16,
+                  fontWeight: semibold,
+                  color: CustomColor.coral700,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
